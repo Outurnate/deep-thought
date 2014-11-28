@@ -17,7 +17,7 @@
 struct PieceDef
 {
   std::vector<bool> def;
-  int width, height; // pre-calculate these, for speed
+  int width, height; // cache these, for speed
 };
 
 struct PieceLocation
@@ -39,19 +39,45 @@ class AIEngine
 public:
   AIEngine(boost::asio::io_service& service, std::string nickname, double g, double b, double r, double c);
   virtual ~AIEngine();
+
+  /**
+   * Connect to the given server
+   *
+   * Manages connection to the server, parses packets and dispenses them to ProcessCommand
+   */
   void Run();
 private:
+  /**
+   * Main game loop
+   *
+   * Calculates pieces and ranks their position, placing them in the highest ranked spot
+   */
   virtual void DoPlacing();
+  /**
+   * Processes a command issued from the server
+   */
   virtual void ProcessCommand(std::string cmd);
 
+  // Ranking functions
+
+  /** Counts the gaps in a field */
   inline int gapCount(const std::vector<char>& _field);
+  /** Counts the number of blockades (blocks over gaps) in a field */
   inline int blockadeCount(const std::vector<char>& _field);
+  /** Counts the height of the board in a field */
   inline int rowCount(const std::vector<char>& _field);
+  /** Counts the number of full rows made */
   inline int clearCount(std::vector<char>& _field);
+
+  /** Ranks a given location */
   inline double rank(int piece, PieceLocation location);
+
+  /** TODO */
   inline std::string makeHex(int dec);
+  /** TODO */
   inline std::string encode(std::string name, int ip[]);
 
+  /** Player's name */
   const std::string SCREEN_NAME;
 
   boost::hash<std::string> string_hash;

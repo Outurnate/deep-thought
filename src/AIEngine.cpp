@@ -108,7 +108,7 @@ inline string AIEngine::encode(string name, int ip[])
   string ipmsg = sipstr.str();
   int j = 128;
   string result = makeHex(j);
-  for (unsigned int i = 0; i < stmsg.length(); i++)
+  for (unsigned int i = 0; i < stmsg.length(); ++i)
   {
     j = ((j + stmsg[i]) % 255) ^ ipmsg[i % ipmsg.length()];
     result += makeHex(j);
@@ -120,7 +120,7 @@ void AIEngine::Run()
 {
   try
   {
-    int ip[] = { 174, 91, 161, 5 };
+    int ip[] = { 127, 0, 0, 1 };
     tcp::resolver resolver(socio);
     tcp::resolver::query query(tcp::v4(), "127.0.0.1", "31457");
     tcp::resolver::iterator iterator = resolver.resolve(query);
@@ -136,7 +136,7 @@ void AIEngine::Run()
       string res = strres.str();
       vector<string> mshbits;
       split(mshbits, res, is_any_of("\xFF"));
-      for (unsigned int i = 0; i < mshbits.size(); i++)
+      for (unsigned int i = 0; i < mshbits.size(); ++i)
         this->ProcessCommand(mshbits[i]);
     }
   }
@@ -155,14 +155,14 @@ void AIEngine::DoPlacing()
 
     fmtx.lock();
     vector<PieceLocation> pos;
-    for (long unsigned int r = 0; r < pdefs[piece].size(); r++)
-      for (unsigned int x = 0; x < (unsigned int)(FIELD_WIDTH - pdefs[piece][r].width + 1); x++)
+    for (long unsigned int r = 0; r < pdefs[piece].size(); ++r)
+      for (unsigned int x = 0; x < (unsigned int)(FIELD_WIDTH - pdefs[piece][r].width + 1); ++x)
       {
         vector<int> yyz;
-        for (unsigned int x2 = x; x2 < x + pdefs[piece][r].width; x2++)
+        for (unsigned int x2 = x; x2 < x + pdefs[piece][r].width; ++x2)
         {
           int ly = FIELD_HEIGHT;
-          for (unsigned int y = 1; y < FIELD_HEIGHT; y++)
+          for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)
             if (field[FIELD_WIDTH * y + x2] != '0')
             {
               ly = y;
@@ -188,12 +188,12 @@ top_out:
         ;
       }
     vector<AdvancedPieceLocation> clean;
-    for (long unsigned int i = 0; i < pos.size(); i++)
+    for (long unsigned int i = 0; i < pos.size(); ++i)
     {
       bool isUnclean = false;
       try
       {
-        for (int w = 0; w < 4 * 4; w++)
+        for (int w = 0; w < 4 * 4; ++w)
           if (pdefs[piece][pos[i].r].def[w])
             isUnclean |= field.at((FIELD_WIDTH * pos[i].y) + pos[i].x + (w % 4) + ((w / 4) * FIELD_WIDTH)) != '0';
         if (isUnclean)
@@ -208,7 +208,7 @@ top_out:
     }
     long unsigned int index = 0;
     double hr = -numeric_limits<double>::max();
-    for (long unsigned int i = 0; i < clean.size(); i++)
+    for (long unsigned int i = 0; i < clean.size(); ++i)
       if (clean[i].valid && clean[i].rank > hr)
       {
         index = i;
@@ -223,16 +223,16 @@ top_out:
         field[(FIELD_WIDTH * clean[index].basic.y) + clean[index].basic.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = buf[0];
       }
     int crow;
-    for (long unsigned int i = 0; i < field.size(); i++)
+    for (long unsigned int i = 0; i < field.size(); ++i)
     {
-      if (field[i] != '0') crow++;
+      if (field[i] != '0') ++crow;
       if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
       {
         if (crow == FIELD_WIDTH)
         {
-          for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; s++)
+          for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
             field[s] = '0';
-          for (long unsigned int s = i; s > 0; s--)
+          for (long unsigned int s = i; s > 0; --s)
             field[s] = s > FIELD_WIDTH ? field[s - FIELD_WIDTH] : '0';
         }
         crow = 0;
@@ -249,7 +249,7 @@ top_out:
 inline double AIEngine::rank(int piece, PieceLocation location)
 {
   vector<char> newfield(field);
-  for (int w = 0; w < 4 * 4; w++)
+  for (int w = 0; w < 4 * 4; ++w)
     if (pdefs[piece][location.r].def[w])
       newfield[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = '1';
   return
@@ -262,10 +262,10 @@ inline double AIEngine::rank(int piece, PieceLocation location)
 inline int AIEngine::gapCount(const std::vector<char>& _field)
 {
   unsigned gapCount = 0;
-  for (unsigned int x = 0; x < FIELD_WIDTH; x++)
+  for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
   {
     bool foundBlock = false;
-    for (unsigned int y = 1; y < FIELD_HEIGHT; y++)
+    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)
     {
       if (_field[FIELD_WIDTH * y + x] != '0')
         foundBlock = true;
@@ -278,14 +278,14 @@ inline int AIEngine::gapCount(const std::vector<char>& _field)
 
 inline int AIEngine::blockadeCount(const std::vector<char>& _field)
 {
-  for (long unsigned int i = 0; i < _field.size(); i++)
+  for (long unsigned int i = 0; i < _field.size(); ++i)
     ;//TODO
   return 0;
 }
 
 inline int AIEngine::rowCount(const std::vector<char>& _field)
 {
-  for (long unsigned int i = 0; i < _field.size(); i++)
+  for (long unsigned int i = 0; i < _field.size(); ++i)
     ;//TODO
   return 0;
 }
@@ -293,16 +293,16 @@ inline int AIEngine::rowCount(const std::vector<char>& _field)
 inline int AIEngine::clearCount(std::vector<char>& _field)
 {
   int clears = 0, crow;
-  for (long unsigned int i = 0; i < _field.size(); i++)
+  for (long unsigned int i = 0; i < _field.size(); ++i)
   {
-    if (field[i] != '0') crow++;
+    if (field[i] != '0') ++crow;
     if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
     {
       if (crow == FIELD_WIDTH)
       {
-        for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; s++)
+        for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
           _field[s] = '0';
-        for (long unsigned int s = i; s > 0; s--)
+        for (long unsigned int s = i; s > 0; --s)
           _field[s] = s > FIELD_WIDTH ? _field[s - FIELD_WIDTH] : '0';
         clears++;
       }
@@ -319,13 +319,13 @@ void AIEngine::ProcessCommand(string cmd)
   long unsigned int size = tokens.size();
   if (size == 0)
     return;
-  cout << "!!!" << string_hash(tokens[0]) << "!!!" << tokens[0] << endl;
+  //cout << "!!!" << string_hash(tokens[0]) << "!!!" << tokens[0] << endl;
   try
   {
     switch (string_hash(tokens[0]))
     {
     case TOKEN_PLINE:
-      for (long unsigned int i = 2; i < size; i++)
+      for (long unsigned int i = 2; i < size; ++i)
         cout << tokens.at(i) << " ";
       cout << endl;
       break;
@@ -347,9 +347,9 @@ void AIEngine::ProcessCommand(string cmd)
     {
       string freqs = tokens.at(8);
       string specs = tokens.at(9);
-      for (unsigned int i = 0; i < freqs.length(); i++)
+      for (unsigned int i = 0; i < freqs.length(); ++i)
         freqarr.insert(freqarr.end(), atoi(freqs.substr(i, 1).c_str()));
-      for (unsigned int i = 0; i < specs.length(); i++)
+      for (unsigned int i = 0; i < specs.length(); ++i)
         specarr.insert(specarr.end(), atoi(specs.substr(i, 1).c_str()));
       stringstream seedstr;
       seedstr << dec << tokens.at(12);

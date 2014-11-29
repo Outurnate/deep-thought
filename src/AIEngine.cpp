@@ -168,7 +168,8 @@ void AIEngine::DoPlacing()
               ly = y;
               break;
             }
-          if (ly == 1 && (piece == 0 || piece == 1)) goto top_out;
+          if (ly == 1 && (piece == 0 || piece == 1))
+	    goto top_out;
           yyz.push_back(ly - 4);
         }
         {
@@ -184,8 +185,7 @@ void AIEngine::DoPlacing()
           }
           pos.push_back(PieceLocation { x, y, r });
         }
-top_out:
-        ;
+        top_out:;
       }
     vector<AdvancedPieceLocation> clean;
     for (long unsigned int i = 0; i < pos.size(); ++i)
@@ -252,7 +252,7 @@ inline double AIEngine::rank(int piece, PieceLocation location)
   for (int w = 0; w < 4 * 4; ++w)
     if (pdefs[piece][location.r].def[w])
       newfield[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = '1';
-  return
+  return 
     ((double)(clearCount   (newfield) - clearCount   (field)) * _c)
     + ((double)(blockadeCount(newfield) - blockadeCount(field)) * _b)
     + ((double)(rowCount     (newfield) - rowCount     (field)) * _r)
@@ -265,12 +265,12 @@ inline int AIEngine::gapCount(const std::vector<char>& _field)
   for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
   {
     bool foundBlock = false;
-    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)
+    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y) // Search this column top-down
     {
-      if (_field[FIELD_WIDTH * y + x] != '0')
-        foundBlock = true;
-      else if (foundBlock)
-        gapCount++;
+      if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
+        foundBlock = true; // flag it
+      else if (foundBlock) // if there's no block and we've flagged
+        ++gapCount;
     }
   }
   return gapCount;
@@ -278,16 +278,43 @@ inline int AIEngine::gapCount(const std::vector<char>& _field)
 
 inline int AIEngine::blockadeCount(const std::vector<char>& _field)
 {
-  for (long unsigned int i = 0; i < _field.size(); ++i)
-    ;//TODO
-  return 0;
+  unsigned totalBlock = 0;
+  for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
+  {
+    unsigned blockCount = 0;
+    bool foundBlock = false;
+    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    {
+      if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
+      {
+        foundBlock = true; // flag it
+        blockCount++;
+      }
+      else if (foundBlock) // if we have blocks over us and this is a gap, stop counting
+        goto legitimateUseOfGoto;
+    }
+    blockCount = 0; // reached the bottom of col. without tripping goto, full col., don't count
+  legitimateUseOfGoto:
+    totalBlock += blockCount;
+  }
+  return totalBlock;
 }
 
 inline int AIEngine::rowCount(const std::vector<char>& _field)
 {
-  for (long unsigned int i = 0; i < _field.size(); ++i)
-    ;//TODO
-  return 0;
+  std::vector<unsigned> heights;
+  for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
+  {
+    unsigned colHeight = 0;
+    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)  // Search this column top-down
+      if (_field[FIELD_WIDTH * y + x] != '0') // block!
+      {
+	colHeight = y; // this is the top
+	break;
+      }
+    heights.push_back(colHeight);
+  }
+  return FIELD_HEIGHT - *std::min_element(heights.begin(), heights.end()); // find the tallest column
 }
 
 inline int AIEngine::clearCount(std::vector<char>& _field)

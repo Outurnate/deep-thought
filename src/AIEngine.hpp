@@ -5,8 +5,8 @@
  *      Author: joseph
  */
 
-#ifndef AIENGINE_H_
-#define AIENGINE_H_
+#ifndef AIENGINE_H
+#define AIENGINE_H
 
 #include <map>
 #include <iostream>
@@ -37,7 +37,17 @@ struct AdvancedPieceLocation
 class AIEngine
 {
 public:
-  AIEngine(boost::asio::io_service& service, std::string nickname, double g, double b, double r, double c);
+  /**
+   * Init the engine with the specified nick and weights
+   */
+  AIEngine(std::string nickname, double g, double b, double r, double c);
+  /**
+   * Copy constructor
+   */
+  AIEngine(const AIEngine &engine);
+  /**
+   * Destructor
+   */
   virtual ~AIEngine();
 
   /**
@@ -83,14 +93,16 @@ private:
   boost::hash<std::string> string_hash;
   std::map<int, std::string> plyrids;
   std::vector<int> freqarr, specarr;
+  /** Playing field (row major) */
   std::vector<char> field;
   int playernum;
   double _g, _b, _r, _c;
   bool cancelPlacing;
+  boost::asio::io_service service;
   boost::asio::ip::tcp::socket socket;
   boost::asio::io_service& socio;
   boost::mutex fmtx;
   boost::posix_time::seconds pieceDelay;
-  std::vector<std::vector<PieceDef> > pdefs;
+  std::vector<std::vector<PieceDef> > pdefs; // TODO make static
 };
-#endif /* AIENGINE_H_ */
+#endif

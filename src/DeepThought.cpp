@@ -1,16 +1,19 @@
-//============================================================================
-// Name        : DeepThought.cpp
-// Author      : josephd
-// Version     :
-// Description : a thing
-//============================================================================
+/*
+ * DeepThought.cpp
+ *
+ *  Created on: Oct 26, 2012
+ *      Author: joseph
+ */
 
+#include "TermInterface.hpp"
 #include "AIEngine.hpp"
 
-int main (/*int argc, const char* argv[]*/)
+int main ()
 {
-  boost::asio::io_service srv;
-  AIEngine(srv, "DeepThought", 10.f, 10.f, 0.f, 20.f).Run();
+  AIEngine engine("DeepThought", -5.f, -5.f, -7.f, 20.f);
+  TermInterface interface;
+  interface.engines.push_back(engine);
 
+  interface.Show();
   return 0;
 }

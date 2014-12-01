@@ -44,8 +44,10 @@ SET(Boost_ADDITIONAL_VERSIONS "1.39" "1.39.0" "1.40" "1.40.0" "1.41" "1.41.0" "1
 FIND_PACKAGE(Boost 1.37 COMPONENTS "date_time" "filesystem" "graph" "iostreams" "program_options" "regex" "serialization" "signals" "system" "thread" "wserialization" REQUIRED)
 FIND_PACKAGE(Log4Cxx REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(Curses REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Log4Cxx_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${CURSES_INCLUDE_DIRS})
 
 #
 # Configure Files

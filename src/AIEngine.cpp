@@ -13,6 +13,8 @@
 
 #include "AIEngine.hpp"
 
+#include "Constants.hpp"
+
 using boost::asio::ip::tcp;
 using namespace std;
 using namespace boost::algorithm;
@@ -28,13 +30,9 @@ using namespace boost::algorithm;
 #define TOKEN_PLAYERJOIN   5995087092028005159
 #define TOKEN_PLAYERLEAVE 12876743988251149938
 
-#define FIELD_WIDTH  12
-#define FIELD_HEIGHT 22
-#define FIELD_SIZE (FIELD_WIDTH * FIELD_HEIGHT)
-
-AIEngine::AIEngine(boost::asio::io_service& service, string nickname, double g, double b, double r, double c)
+AIEngine::AIEngine(string nickname, double g, double b, double r, double c)
   : SCREEN_NAME(nickname), string_hash(), plyrids(), freqarr(), specarr(), field(FIELD_SIZE, '0'), playernum(0), _g(g), _b(b), _r(r), _c(c), cancelPlacing(false),
-    socket(service), socio(service), fmtx(), pieceDelay(1), pdefs()
+    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs()
 {
   plyrids.insert(pair<int, string>(0, "Server"));
   pdefs = vector<vector<PieceDef> >
@@ -89,8 +87,26 @@ AIEngine::AIEngine(boost::asio::io_service& service, string nickname, double g, 
   }; // pdefs[tetramino][orientation];
 }
 
+AIEngine::AIEngine(const AIEngine &engine)
+  : service(), socket(service), socio(service), pieceDelay(engine.pieceDelay.total_seconds())
+{
+  string_hash = engine.string_hash;
+  plyrids = engine.plyrids;
+  freqarr = engine.freqarr;
+  specarr = engine.specarr;
+  field = engine.field;
+  playernum = engine.playernum;
+  _g = engine._g;
+  _b = engine._b;
+  _r = engine._r;
+  _c = engine._c;
+  cancelPlacing = engine.cancelPlacing;
+  pdefs = engine.pdefs;
+}
+
 AIEngine::~AIEngine()
 {
+  //TODO: close socket and io_service
 }
 
 inline string AIEngine::makeHex(int dec)
@@ -154,7 +170,7 @@ void AIEngine::DoPlacing()
     int piece = freqarr[rand() % 100] - 1; // not perfect, but, meh.
 
     fmtx.lock();
-    vector<PieceLocation> pos;
+    vector<PieceLocation> pos; // vector for all locations
     for (long unsigned int r = 0; r < pdefs[piece].size(); ++r)
       for (unsigned int x = 0; x < (unsigned int)(FIELD_WIDTH - pdefs[piece][r].width + 1); ++x)
       {
@@ -187,7 +203,7 @@ void AIEngine::DoPlacing()
         }
         top_out:;
       }
-    vector<AdvancedPieceLocation> clean;
+    vector<AdvancedPieceLocation> clean; // filter positions
     for (long unsigned int i = 0; i < pos.size(); ++i)
     {
       bool isUnclean = false;
@@ -204,8 +220,10 @@ void AIEngine::DoPlacing()
         isUnclean = true;
         cout << "Rejected Location: (" << pos[i].x << ", " << pos[i].y << "), " << pos[i].r << ".\tReason: Off the field." << endl;
       }
-      clean.push_back(AdvancedPieceLocation { pos[i], isUnclean ? 0.f : rank(piece, pos[i]) , !isUnclean });
+      if (!isUnclean)
+        clean.push_back(AdvancedPieceLocation { pos[i], isUnclean ? 0.f : rank(piece, pos[i]) , !isUnclean });
     }
+    std::cout << clean.size() << std::endl;
     long unsigned int index = 0;
     double hr = -numeric_limits<double>::max();
     for (long unsigned int i = 0; i < clean.size(); ++i)

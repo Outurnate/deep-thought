@@ -30,9 +30,9 @@ using namespace boost::algorithm;
 #define TOKEN_PLAYERJOIN   5995087092028005159
 #define TOKEN_PLAYERLEAVE 12876743988251149938
 
-AIEngine::AIEngine(string nickname, double g, double b, double r, double c)
+AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager)
   : SCREEN_NAME(nickname), string_hash(), plyrids(), freqarr(), specarr(), field(FIELD_SIZE, '0'), playernum(0), _g(g), _b(b), _r(r), _c(c), cancelPlacing(false),
-    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs()
+    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs(), manager(manager)
 {
   plyrids.insert(pair<int, string>(0, "Server"));
   pdefs = vector<vector<PieceDef> >
@@ -260,8 +260,15 @@ void AIEngine::DoPlacing()
     fstrs << "f " << playernum << " " << string(field.begin(), field.end()) << "\xFF";
     string fstr = fstrs.str();
     boost::asio::write(socket, boost::asio::buffer(string(fstr.begin(), fstr.end()), 1024));
+    manager->statusHandler({ SCREEN_NAME, field });
     fmtx.unlock();
   }
+}
+
+void AIEngine::Stop()
+{
+  cancelPlacing = true;
+  // TODO: stop....
 }
 
 inline double AIEngine::rank(int piece, PieceLocation location)

@@ -14,6 +14,11 @@
 #include <boost/thread.hpp>
 #include <boost/functional/hash.hpp>
 
+class AIEngine;
+
+#include "AIStatus.hpp"
+#include "AIManager.hpp"
+
 struct PieceDef
 {
   std::vector<bool> def;
@@ -40,7 +45,7 @@ public:
   /**
    * Init the engine with the specified nick and weights
    */
-  AIEngine(std::string nickname, double g, double b, double r, double c);
+  AIEngine(std::string nickname, double g, double b, double r, double c, AIManager* manager);
   /**
    * Copy constructor
    */
@@ -56,6 +61,10 @@ public:
    * Manages connection to the server, parses packets and dispenses them to ProcessCommand
    */
   void Run();
+  /**
+   * Performs a graceful stop
+   */
+  void Stop();
 private:
   /**
    * Main game loop
@@ -104,5 +113,6 @@ private:
   boost::mutex fmtx;
   boost::posix_time::seconds pieceDelay;
   std::vector<std::vector<PieceDef> > pdefs; // TODO make static
+  AIManager* manager;
 };
 #endif

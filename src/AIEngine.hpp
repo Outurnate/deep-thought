@@ -19,24 +19,24 @@ class AIEngine;
 #include "AIStatus.hpp"
 #include "AIManager.hpp"
 
+/** Definition of a tetramino shape */
 struct PieceDef
 {
+  /** Field-based vector of block locations */
   std::vector<bool> def;
-  int width, height; // cache these, for speed
+  /** Width and height occupied by piece */
+  unsigned width, height;
 };
 
+/** Represents placement instructions for a piece on the field */
 struct PieceLocation
 {
-  unsigned int x;
-  int y;
-  long unsigned int r;
-};
-
-struct AdvancedPieceLocation
-{
-  PieceLocation basic;
+  /** Coordinates */
+  unsigned x, y;
+  /** Rotation */
+  long unsigned r;
+  /** Rank */
   double rank;
-  bool valid;
 };
 
 class AIEngine
@@ -86,7 +86,7 @@ private:
   /** Counts the height of the board in a field */
   inline int rowCount(const std::vector<char>& _field);
   /** Counts the number of full rows made */
-  inline int clearCount(std::vector<char>& _field);
+  inline int clearCount(std::vector<char> _field);
 
   /** Ranks a given location */
   inline double rank(int piece, PieceLocation location);
@@ -95,13 +95,15 @@ private:
   inline std::string makeHex(int dec);
   /** TODO */
   inline std::string encode(std::string name, int ip[]);
+  /** Copies piece onto field */
+  inline void place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col);
 
   /** Player's name */
   const std::string SCREEN_NAME;
 
   boost::hash<std::string> string_hash;
   std::map<int, std::string> plyrids;
-  std::vector<int> freqarr, specarr;
+  std::vector<int> freqarr, specarr; // going away
   /** Playing field (row major) */
   std::vector<char> field;
   int playernum;
@@ -110,6 +112,7 @@ private:
   boost::asio::io_service service;
   boost::asio::ip::tcp::socket socket;
   boost::asio::io_service& socio;
+  /** Mutex for member field */
   boost::mutex fmtx;
   boost::posix_time::seconds pieceDelay;
   std::vector<std::vector<PieceDef> > pdefs; // TODO make static

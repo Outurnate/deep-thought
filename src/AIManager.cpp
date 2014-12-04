@@ -2,12 +2,9 @@
 
 using namespace boost;
 
-AIManager::AIManager(int poolSize)
+AIManager::AIManager()
 {
-  for (int i = 0; i < poolSize; ++i)
-  {
-    addEngine(new AIEngine("Test", -1.0f, -1.0f, -1.0f, 20.0f, this));
-  }
+  addEngine(new AIEngine("Test", -1.0f, -1.0f, -1.0f, 20.0f, this));
 }
 
 AIManager::~AIManager()

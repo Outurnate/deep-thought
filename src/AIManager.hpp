@@ -14,7 +14,7 @@ class AIManager
   friend class AIEngine;
   
 public:
-  AIManager(int poolSize);
+  AIManager();
   virtual ~AIManager();
 
   void Start();

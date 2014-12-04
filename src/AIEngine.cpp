@@ -167,90 +167,59 @@ void AIEngine::DoPlacing()
   while (!this->cancelPlacing)
   {
     boost::this_thread::sleep(pieceDelay);
-    int piece = freqarr[rand() % 100] - 1; // not perfect, but, meh.
+    unsigned piece = freqarr[rand() % 100] - 1; // grab from manager...later (TODO)
 
     fmtx.lock();
-    vector<PieceLocation> pos; // vector for all locations
-    for (long unsigned int r = 0; r < pdefs[piece].size(); ++r)
-      for (unsigned int x = 0; x < (unsigned int)(FIELD_WIDTH - pdefs[piece][r].width + 1); ++x)
+    vector<PieceLocation> placements;
+
+    vector<char> ffield = field; // field with all gaps filled
+    for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+      for (unsigned y = 1; y < FIELD_HEIGHT; ++y)
+        if (ffield[FIELD_WIDTH * y + x] == '0' && // bounds check only on right because unsigned
+            !((x - 1) < FIELD_WIDTH  && ffield[(FIELD_WIDTH  * y) + (x - 1)] == '0') &&
+	    !((x + 1) < FIELD_WIDTH  && ffield[(FIELD_WIDTH  * y) + (x - 1)] == '0') &&
+	    !((y - 1) < FIELD_HEIGHT && ffield[(FIELD_WIDTH * (y - 1)) + x]  == '0') &&
+	    !((y + 1) < FIELD_HEIGHT && ffield[(FIELD_WIDTH * (y + 1)) + x]  == '0')
+	  ) // check the surrounding squares; if filled/off-field, fill this one
+	  ffield[FIELD_WIDTH * y + x] = '-';
+    for (unsigned rindex = 0; rindex < pdefs[piece].size(); ++rindex)
+      for (unsigned x = 0; x < 4; ++x) // TODO: unhardcode
       {
-        vector<int> yyz;
-        for (unsigned int x2 = x; x2 < x + pdefs[piece][r].width; ++x2)
-        {
-          int ly = FIELD_HEIGHT;
-          for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)
-            if (field[FIELD_WIDTH * y + x2] != '0')
-            {
-              ly = y;
-              break;
-            }
-          if (ly == 1 && (piece == 0 || piece == 1))
-	    goto top_out;
-          yyz.push_back(ly - 4);
-        }
-        {
-          int y = *min_element(yyz.begin(), yyz.end());
-          if (piece == 2 || piece == 3)
-          {
-            pos.push_back(PieceLocation { x, y + 1, r });
-            pos.push_back(PieceLocation { x, y + 2, r });
-          }
-          else if (piece >= 4 || piece <= 6)
-          {
-            pos.push_back(PieceLocation { x, y + 1, r });
-          }
-          pos.push_back(PieceLocation { x, y, r });
-        }
-        top_out:;
+	unsigned height = 0;
+	for (unsigned y = 0; y < 4; ++y) // find the bottom of this column TODO: unhardcode
+	  if (pdefs[piece][rindex].def[4 * (y + x)]) // TODO: unhardcode
+	    height = y;
+	for (unsigned xf = 0; xf < FIELD_WIDTH; ++xf)
+	{
+	  unsigned fieldHeight = 0;
+	  for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)  // Search this column top-down
+	    if (ffield[FIELD_WIDTH * y + xf] != '0') // block!
+	    {
+	      fieldHeight = y; // this is the top
+	      break;
+	    }
+	  /*PieceLocation found = PieceLocation();
+	  if (validPlacement(found))
+	    placements.push_back(found);*/
+	}
       }
-    vector<AdvancedPieceLocation> clean; // filter positions
-    for (long unsigned int i = 0; i < pos.size(); ++i)
-    {
-      bool isUnclean = false;
-      try
-      {
-        for (int w = 0; w < 4 * 4; ++w)
-          if (pdefs[piece][pos[i].r].def[w])
-            isUnclean |= field.at((FIELD_WIDTH * pos[i].y) + pos[i].x + (w % 4) + ((w / 4) * FIELD_WIDTH)) != '0';
-        if (isUnclean)
-          cout << "Rejected Location: (" << pos[i].x << ", " << pos[i].y << "), " << pos[i].r << ".\tReason: Block overlap." << endl;
-      }
-      catch (out_of_range& e)
-      {
-        isUnclean = true;
-        cout << "Rejected Location: (" << pos[i].x << ", " << pos[i].y << "), " << pos[i].r << ".\tReason: Off the field." << endl;
-      }
-      if (!isUnclean)
-        clean.push_back(AdvancedPieceLocation { pos[i], isUnclean ? 0.f : rank(piece, pos[i]) , !isUnclean });
-    }
-    std::cout << clean.size() << std::endl;
-    long unsigned int index = 0;
-    double hr = -numeric_limits<double>::max();
-    for (long unsigned int i = 0; i < clean.size(); ++i)
-      if (clean[i].valid && clean[i].rank > hr)
-      {
-        index = i;
-        hr = clean[i].rank;
-      }
-    int col = (rand() % 4) + 1;
-    for (int w = 0; w < 4 * 4; w++)
-      if (pdefs[piece][clean[index].basic.r].def[w])
-      {
-        char buf[2];
-        sprintf(buf, "%d", col);
-        field[(FIELD_WIDTH * clean[index].basic.y) + clean[index].basic.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = buf[0];
-      }
+    
+    if (placements.size() == 0)
+      ; // TODO: die!
+    PieceLocation theChosenOne = *max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j) { return i.rank < j.rank; });
+    int col = (rand() % 4) + 1; // random color
+    place(field, piece, theChosenOne, col);
     int crow;
-    for (long unsigned int i = 0; i < field.size(); ++i)
+    for (long unsigned int i = 0; i < field.size(); ++i) // loop over field, find full rows and remove them
     {
-      if (field[i] != '0') ++crow;
-      if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
+      if (field[i] != '0') ++crow; // increment for each block
+      if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1) // on the last block
       {
-        if (crow == FIELD_WIDTH)
+        if (crow == FIELD_WIDTH) // full row?
         {
-          for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
+          for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s) // clear
             field[s] = '0';
-          for (long unsigned int s = i; s > 0; --s)
+          for (long unsigned int s = i; s > 0; --s) // drop
             field[s] = s > FIELD_WIDTH ? field[s - FIELD_WIDTH] : '0';
         }
         crow = 0;
@@ -342,7 +311,7 @@ inline int AIEngine::rowCount(const std::vector<char>& _field)
   return FIELD_HEIGHT - *std::min_element(heights.begin(), heights.end()); // find the tallest column
 }
 
-inline int AIEngine::clearCount(std::vector<char>& _field)
+inline int AIEngine::clearCount(std::vector<char> _field)
 {
   int clears = 0, crow;
   for (long unsigned int i = 0; i < _field.size(); ++i)
@@ -364,6 +333,13 @@ inline int AIEngine::clearCount(std::vector<char>& _field)
   return clears;
 }
 
+inline void AIEngine::place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col)
+{
+  for (int w = 0; w < 4 * 4; w++) // copy piece over
+    if (pdefs[piece][location.r].def[w]) // if placing piece is defined here
+      field[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = col + 48; // color to ascii character
+}
+
 void AIEngine::ProcessCommand(string cmd)
 {
   vector<string> tokens;
@@ -371,7 +347,6 @@ void AIEngine::ProcessCommand(string cmd)
   long unsigned int size = tokens.size();
   if (size == 0)
     return;
-  //cout << "!!!" << string_hash(tokens[0]) << "!!!" << tokens[0] << endl;
   try
   {
     switch (string_hash(tokens[0]))

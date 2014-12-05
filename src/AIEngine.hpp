@@ -97,6 +97,8 @@ private:
   inline std::string encode(std::string name, int ip[]);
   /** Copies piece onto field */
   inline void place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col);
+  /** Counts the height of blocks in a given column */
+  inline unsigned columnHeight(const std::vector<char>& _field, unsigned x);
 
   /** Player's name */
   const std::string SCREEN_NAME;

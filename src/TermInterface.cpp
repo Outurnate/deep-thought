@@ -20,14 +20,14 @@ void TermInterface::Show()
   noecho();
   start_color();
   use_default_colors();
-  
+
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
-  
+
   WINDOW* boardWindow = createWin(FIELD_HEIGHT + 2, FIELD_WIDTH + 2, 5, 1);
   WINDOW* barWindow = createWin(3, COLS - 4, 1, 1);
   WINDOW* statusWindow = createWin(FIELD_HEIGHT + 2, COLS - FIELD_WIDTH - 8, 5, FIELD_WIDTH + 5);
   WINDOW* messageWindow = createWin(LINES - FIELD_HEIGHT - 9, COLS - 4, FIELD_HEIGHT + 8, 1);
-  
+
   while (2 > 1)
   {
     wprintw(boardWindow, "TEST");

@@ -12,7 +12,7 @@ class AIManager;
 class AIManager
 {
   friend class AIEngine;
-  
+
 public:
   AIManager();
   virtual ~AIManager();

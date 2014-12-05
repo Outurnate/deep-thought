@@ -9,12 +9,12 @@ AIManager::AIManager()
 
 AIManager::~AIManager()
 {
-  
+
 }
 
 void AIManager::Start()
 {
-  
+
 }
 
 void AIManager::RegisterStatusHandler(void (*handler)(AIStatus)) // called by client

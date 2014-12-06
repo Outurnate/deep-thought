@@ -5,14 +5,37 @@
  *      Author: joseph
  */
 
+#include <log4cxx/logger.h>
+#include <log4cxx/xml/domconfigurator.h>
+#include <signal.h>
+
 #include "TermInterface.hpp"
 #include "AIManager.hpp"
 
-int main ()
-{
-  TermInterface interface;
-  AIManager manager;
+using namespace log4cxx;
+using namespace log4cxx::xml;
 
-  interface.Show();
+AIManager* manager;
+TermInterface* interface;
+
+void winchHandler(int param)
+{
+  interface->Resize();
+}
+
+int main()
+{
+  signal(SIGWINCH, winchHandler);
+  DOMConfigurator::configure("Log4cxxConfig.xml");
+  
+  manager = new AIManager();
+  interface = new TermInterface();
+  manager->RegisterStatusHandler(interface);
+
+  interface->Show();
+  manager->Start();
+
+  delete manager;
+  delete interface;
   return 0;
 }

@@ -10,6 +10,7 @@
 
 #include <map>
 #include <iostream>
+#include <log4cxx/logger.h>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/functional/hash.hpp>
@@ -45,7 +46,7 @@ public:
   /**
    * Init the engine with the specified nick and weights
    */
-  AIEngine(std::string nickname, double g, double b, double r, double c, AIManager* manager);
+  AIEngine(std::string nickname, double g, double b, double r, double c, AIManager* manager, log4cxx::LoggerPtr logger);
   /**
    * Copy constructor
    */
@@ -99,6 +100,8 @@ private:
   inline void place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col);
   /** Counts the height of blocks in a given column */
   inline unsigned columnHeight(const std::vector<char>& _field, unsigned x);
+  /** Removes control codes from a string */
+  inline std::string cleanCodes(std::string orig);
 
   /** Player's name */
   const std::string SCREEN_NAME;
@@ -119,5 +122,6 @@ private:
   boost::posix_time::seconds pieceDelay;
   std::vector<std::vector<PieceDef> > pdefs; // TODO make static
   AIManager* manager;
+  log4cxx::LoggerPtr logger;
 };
 #endif

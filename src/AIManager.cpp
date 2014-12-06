@@ -1,10 +1,13 @@
 #include "AIManager.hpp"
 
+#include <log4cxx/logger.h>
+
 using namespace boost;
+using namespace log4cxx;
 
 AIManager::AIManager()
 {
-  addEngine(new AIEngine("Test", -1.0f, -1.0f, -1.0f, 20.0f, this));
+  addEngine(new AIEngine("Test", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.Test")));
 }
 
 AIManager::~AIManager()
@@ -17,7 +20,7 @@ void AIManager::Start()
 
 }
 
-void AIManager::RegisterStatusHandler(void (*handler)(AIStatus)) // called by client
+void AIManager::RegisterStatusHandler(IFieldStatusHandler* handler) // called by client
 {
   handlers.push_back(handler);
 }
@@ -36,8 +39,6 @@ void AIManager::removeEngine(AIEngine* engine)
 
 void AIManager::statusHandler(AIStatus status) // called from engine
 {
-  for (void (*handler)(AIStatus)& : handlers)
-  {
-    handler(status);
-  }
+  for (IFieldStatusHandler* handler : handlers)
+    handler->HandleStatus(status);
 }

@@ -5,6 +5,7 @@
  *      Author: joseph
  */
 
+#include <cctype>
 #include <vector>
 #include <iomanip>
 #include <sstream>
@@ -16,7 +17,9 @@
 #include "Constants.hpp"
 
 using boost::asio::ip::tcp;
+
 using namespace std;
+using namespace log4cxx;
 using namespace boost::algorithm;
 
 // Hashes of the message tokens
@@ -30,9 +33,9 @@ using namespace boost::algorithm;
 #define TOKEN_PLAYERJOIN   5995087092028005159
 #define TOKEN_PLAYERLEAVE 12876743988251149938
 
-AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager)
+AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager, LoggerPtr logger)
   : SCREEN_NAME(nickname), string_hash(), plyrids(), freqarr(), specarr(), field(FIELD_SIZE, '0'), playernum(0), _g(g), _b(b), _r(r), _c(c), cancelPlacing(false),
-    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs(), manager(manager)
+    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs(), manager(manager), logger(logger)
 {
   plyrids.insert(pair<int, string>(0, "Server"));
   pdefs = vector<vector<PieceDef> >
@@ -102,6 +105,7 @@ AIEngine::AIEngine(const AIEngine &engine)
   _c = engine._c;
   cancelPlacing = engine.cancelPlacing;
   pdefs = engine.pdefs;
+  logger = engine.logger;
 }
 
 AIEngine::~AIEngine()
@@ -158,7 +162,7 @@ void AIEngine::Run()
   }
   catch (exception& e)
   {
-    cout << e.what();
+    LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.what());
   }
 }
 
@@ -351,14 +355,21 @@ inline void AIEngine::place(vector<char>& _field, unsigned piece, PieceLocation 
 {
   for (int w = 0; w < 4 * 4; w++) // copy piece over
     if (pdefs[piece][location.r].def[w]) // if placing piece is defined here
-      field[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = col + 48; // color to ascii character
+      _field[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = col + 48; // color to ascii character
+}
+
+inline string AIEngine::cleanCodes(string orig)
+{
+  vector<char> newV(orig.length()), oldV(orig.begin(), orig.end());
+  remove_copy_if(oldV.begin(), oldV.end(), newV.begin(), [](char c) { return iscntrl(c); });
+  return string(newV.begin(), newV.end());
 }
 
 void AIEngine::ProcessCommand(string cmd)
 {
   vector<string> tokens;
   split(tokens, cmd, is_any_of(" "));
-  long unsigned int size = tokens.size();
+  long unsigned size = tokens.size();
   if (size == 0)
     return;
   try
@@ -366,9 +377,12 @@ void AIEngine::ProcessCommand(string cmd)
     switch (string_hash(tokens[0]))
     {
     case TOKEN_PLINE:
-      for (long unsigned int i = 2; i < size; ++i)
-        cout << tokens.at(i) << " ";
-      cout << endl;
+    {
+      stringstream msg;
+      for (long unsigned i = 2; i < size; ++i)
+        msg << cleanCodes(tokens.at(i)) << " ";
+      LOG4CXX_INFO(logger, "MSG: " << cleanCodes(msg.str()));
+    }
       break;
 
     case TOKEN_PLAYERNUM:

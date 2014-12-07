@@ -196,7 +196,10 @@ void AIEngine::DoPlacing()
         for (unsigned xf = 0; xf < FIELD_WIDTH; ++xf) // loop across columns
         {
           unsigned fieldHeight = columnHeight(ffield, xf); // find height of this column
-          PieceLocation found = PieceLocation { xf - x, fieldHeight - height, rindex, 0 }; // calculate location (x, y, r, rank)
+          PieceLocation found;
+          found.x = xf - x;
+          found.y = fieldHeight - height;
+          found.r = rindex; // calculate location (x, y, r, rank)
           bool invalid = false;
           for (unsigned w = 0; w < 4 * 4; ++w) // loop across spaces in def TODO: unhardcode
           {
@@ -211,6 +214,7 @@ void AIEngine::DoPlacing()
           }
           if (!invalid)
           {
+            LOG4CXX_TRACE(logger, "fh" << fieldHeight << "x" << found.x << "y" << found.y);
             found.rank = rank(piece, found); // rank it
             placements.push_back(found); // list it
           }
@@ -218,13 +222,14 @@ void AIEngine::DoPlacing()
       }
 
     if (placements.size() == 0)
-      break;
-    PieceLocation theChosenOne = *max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j)
     {
-      return i.rank < j.rank;
-    });
+      LOG4CXX_INFO(logger, "No more moves!");
+      break;
+    }
+    PieceLocation theChosenOne = placements[0];//*max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j) { return i.rank < j.rank; });
     int col = (rand() % 4) + 1; // random color
     place(field, piece, theChosenOne, col);
+    LOG4CXX_TRACE(logger, "Placing")
     int crow;
     for (long unsigned int i = 0; i < field.size(); ++i) // loop over field, find full rows and remove them
     {
@@ -245,7 +250,7 @@ void AIEngine::DoPlacing()
     fstrs << "f " << playernum << " " << string(field.begin(), field.end()) << "\xFF";
     string fstr = fstrs.str();
     boost::asio::write(socket, boost::asio::buffer(string(fstr.begin(), fstr.end()), 1024));
-    manager->statusHandler({ SCREEN_NAME, field });
+    manager->statusHandler({ SCREEN_NAME, ffield });
     fmtx.unlock();
   }
 }
@@ -271,22 +276,24 @@ inline double AIEngine::rank(int piece, PieceLocation location)
 
 inline unsigned AIEngine::columnHeight(const vector<char>& _field, unsigned x)
 {
-  unsigned colHeight = 0;
-  for (unsigned int y = 1; y < FIELD_HEIGHT; ++y)  // Search this column top-down
+  unsigned colHeight = FIELD_HEIGHT - 1;
+  for (unsigned int y = 0; y < FIELD_HEIGHT; ++y)  // Search this column top-down
     if (_field[FIELD_WIDTH * y + x] != '0') // block!
     {
+      LOG4CXX_TRACE(logger, string(1, _field[FIELD_WIDTH * y + x]));
       colHeight = y; // this is the top
       break;
     }
+  return FIELD_HEIGHT - (colHeight + 1);
 }
 
 inline int AIEngine::gapCount(const vector<char>& _field)
 {
   unsigned gapCount = 0;
-  for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
+  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
   {
     bool foundBlock = false;
-    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
     {
       if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
         foundBlock = true; // flag it
@@ -300,11 +307,11 @@ inline int AIEngine::gapCount(const vector<char>& _field)
 inline int AIEngine::blockadeCount(const vector<char>& _field)
 {
   unsigned totalBlock = 0;
-  for (unsigned int x = 0; x < FIELD_WIDTH; ++x)
+  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
   {
     unsigned blockCount = 0;
     bool foundBlock = false;
-    for (unsigned int y = 1; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
     {
       if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
       {
@@ -332,16 +339,16 @@ inline int AIEngine::rowCount(const vector<char>& _field)
 inline int AIEngine::clearCount(vector<char> _field)
 {
   int clears = 0, crow;
-  for (long unsigned int i = 0; i < _field.size(); ++i)
+  for (long unsigned i = 0; i < _field.size(); ++i)
   {
     if (field[i] != '0') ++crow;
     if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
     {
       if (crow == FIELD_WIDTH)
       {
-        for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
+        for (long unsigned s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
           _field[s] = '0';
-        for (long unsigned int s = i; s > 0; --s)
+        for (long unsigned s = i; s > 0; --s)
           _field[s] = s > FIELD_WIDTH ? _field[s - FIELD_WIDTH] : '0';
         clears++;
       }

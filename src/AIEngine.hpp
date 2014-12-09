@@ -99,7 +99,7 @@ private:
   /** Copies piece onto field */
   inline void place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col);
   /** Counts the height of blocks in a given column */
-  inline unsigned columnHeight(const std::vector<char>& _field, unsigned x);
+  inline unsigned columnHeight(const std::vector<char>* _field, unsigned x);
   /** Removes control codes from a string */
   inline std::string cleanCodes(std::string orig);
 

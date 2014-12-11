@@ -193,7 +193,7 @@ void AIEngine::DoPlacing()
         for (unsigned y = 0; y < 4; ++y) // find the bottom of this column
           if (pdefs[piece][rindex].def[(4 * y) + x]) // TODO: unhardcode
             height = y;
-        for (unsigned xf = x; xf < (FIELD_WIDTH - (pdefs[piece][rindex].width - x) - 1); ++xf) // loop across columns
+        for (unsigned xf = x; xf < FIELD_WIDTH; ++xf) // loop across columns
         {
           unsigned fieldHeight = columnHeight(&ffield, xf); // find height of this column
           PieceLocation found;
@@ -201,11 +201,11 @@ void AIEngine::DoPlacing()
           found.y = FIELD_HEIGHT - (fieldHeight + height) - 1;
           found.r = rindex; // calculate location (x, y, r, rank)
           bool invalid = false;
-          for (unsigned w = 0; w < pdefs[piece][rindex].width * pdefs[piece][rindex].height; ++w) // loop across spaces in def
+          for (unsigned w = 0; w < (4 * 4); ++w) // loop across spaces in def
           {
-            unsigned fx = found.x + (w % pdefs[piece][rindex].width);
-            unsigned fy = found.y + (w / pdefs[piece][rindex].width);
-            if (pdefs[piece][found.r].def[w] && !((fy < FIELD_HEIGHT && ffield[(FIELD_WIDTH * fy) + fx] == '0')))
+            unsigned fx = found.x + (w % 4);
+            unsigned fy = found.y + (w / 4);
+            if (pdefs[piece][found.r].def[w] && !(fy < FIELD_HEIGHT && fx < FIELD_WIDTH && ffield[(FIELD_WIDTH * fy) + fx] == '0'))
             {
               // if piece defined at this square, and it's either off the field, or overlaps
               invalid = true; // it's no good
@@ -214,6 +214,7 @@ void AIEngine::DoPlacing()
           }
           if (!invalid)
           {
+            LOG4CXX_TRACE(logger, "x:" << found.x << "y:" << found.y);
             found.rank = rank(piece, found); // rank it
             placements.push_back(found); // list it
           }
@@ -357,10 +358,18 @@ inline int AIEngine::clearCount(vector<char> _field)
 
 inline void AIEngine::place(vector<char>& _field, unsigned piece, PieceLocation location, unsigned col)
 {
-  LOG4CXX_TRACE(logger, string(_field.begin(), _field.end()));
-  for (unsigned w = 0; w < pdefs[piece][location.r].width * pdefs[piece][location.r].height; w++) // copy piece over
+  for (unsigned w = 0; w < 4 * 4; w++) // copy piece over
     if (pdefs[piece][location.r].def[w]) // if placing piece is defined here
-      _field[(FIELD_WIDTH * location.y) + location.x + (w % pdefs[piece][location.r].width) + ((w / pdefs[piece][location.r].width) * FIELD_WIDTH)] = col + 48; // color to ascii character
+    {
+      unsigned px = w % 4;
+      unsigned py = w / 4;
+      unsigned fx = location.x;
+      unsigned fy = location.y;
+      unsigned x = px + fx;
+      unsigned y = py + fy;
+      unsigned pos = (y * FIELD_WIDTH) + x;
+      _field.at(pos) = col + 48; // color to ascii character
+    }
 }
 
 inline string AIEngine::cleanCodes(string orig)

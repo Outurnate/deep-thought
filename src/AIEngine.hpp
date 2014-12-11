@@ -81,11 +81,11 @@ private:
   // Ranking functions
 
   /** Counts the gaps in a field */
-  inline int gapCount(const std::vector<char>& _field);
+  inline int gapCount(const std::vector<char>* _field);
   /** Counts the number of blockades (blocks over gaps) in a field */
-  inline int blockadeCount(const std::vector<char>& _field);
+  inline int blockadeCount(const std::vector<char>* _field);
   /** Counts the height of the board in a field */
-  inline int rowCount(const std::vector<char>& _field);
+  inline int rowCount(const std::vector<char>* _field);
   /** Counts the number of full rows made */
   inline int clearCount(std::vector<char> _field);
 

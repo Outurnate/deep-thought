@@ -176,7 +176,7 @@ void AIEngine::DoPlacing()
     fmtx.lock();
     vector<PieceLocation> placements;
 
-    vector<char> ffield = field; // field with all gaps filled
+    vector<char> ffield(field); // field with all gaps filled
     for (unsigned x = 0; x < FIELD_WIDTH; ++x)
       for (unsigned y = 1; y < FIELD_HEIGHT; ++y)
         if (ffield[FIELD_WIDTH * y + x] == '0' && // bounds check only on right because unsigned
@@ -187,13 +187,13 @@ void AIEngine::DoPlacing()
            ) // check the surrounding squares; if filled/off-field, fill this one
           ffield[FIELD_WIDTH * y + x] = '-'; // dash is not zero
     for (unsigned rindex = 0; rindex < pdefs[piece].size(); ++rindex)
-      for (unsigned x = 0; x < 4; ++x) // TODO: unhardcode
+      for (unsigned x = 0; x < pdefs[piece][rindex].width; ++x)
       {
         unsigned height = 0;
-        for (unsigned y = 0; y < 4; ++y) // find the bottom of this column TODO: unhardcode
-          if (pdefs[piece][rindex].def[4 * (y + x)]) // TODO: unhardcode
+        for (unsigned y = 0; y < 4; ++y) // find the bottom of this column
+          if (pdefs[piece][rindex].def[(4 * y) + x]) // TODO: unhardcode
             height = y;
-        for (unsigned xf = 0; xf < FIELD_WIDTH; ++xf) // loop across columns
+        for (unsigned xf = x; xf < (FIELD_WIDTH - (pdefs[piece][rindex].width - x) - 1); ++xf) // loop across columns
         {
           unsigned fieldHeight = columnHeight(&ffield, xf); // find height of this column
           PieceLocation found;
@@ -201,24 +201,21 @@ void AIEngine::DoPlacing()
           found.y = FIELD_HEIGHT - (fieldHeight + height) - 1;
           found.r = rindex; // calculate location (x, y, r, rank)
           bool invalid = false;
-          for (unsigned w = 0; w < 4 * 4; ++w) // loop across spaces in def TODO: unhardcode
+          for (unsigned w = 0; w < pdefs[piece][rindex].width * pdefs[piece][rindex].height; ++w) // loop across spaces in def
           {
-            unsigned fx = found.x + (w % 4); // TODO: unhardcode
-            unsigned fy = found.y + (w / 4); // TODO: unhardcode
-            //LOG4CXX_TRACE(logger, "fh" << fieldHeight << "x" << found.x << "y" << found.y << "h" << height);
-            if (pdefs[piece][found.r].def[w]) // TODO: un-at
-              if (fx >= FIELD_WIDTH && fy >= FIELD_HEIGHT && ffield.at((FIELD_WIDTH * fy) + fx) != '0')
-              {
-                // if piece defined at this square, and it's either off the field, or overlaps
-                invalid = true; // it's no good
-                break; // we can stop looking at it
-              }
+            unsigned fx = found.x + (w % pdefs[piece][rindex].width);
+            unsigned fy = found.y + (w / pdefs[piece][rindex].width);
+            if (pdefs[piece][found.r].def[w] && !((fy < FIELD_HEIGHT && ffield[(FIELD_WIDTH * fy) + fx] == '0')))
+            {
+              // if piece defined at this square, and it's either off the field, or overlaps
+              invalid = true; // it's no good
+              break; // we can stop looking at it
+            }
           }
           if (!invalid)
           {
             found.rank = rank(piece, found); // rank it
             placements.push_back(found); // list it
-            //LOG4CXX_TRACE(logger, "fh" << fieldHeight << "x" << found.x << "y" << found.y << "h" << height);
           }
         }
       }
@@ -228,12 +225,12 @@ void AIEngine::DoPlacing()
       LOG4CXX_INFO(logger, "No more moves!");
       break;
     }
-    PieceLocation theChosenOne = placements[0];//*max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j) { return i.rank < j.rank; });
+    PieceLocation theChosenOne = *max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j) { return i.rank < j.rank; });
     int col = (rand() % 4) + 1; // random color
     place(field, piece, theChosenOne, col);
-    LOG4CXX_TRACE(logger, "Placing")
-    int crow;
-    for (long unsigned int i = 0; i < field.size(); ++i) // loop over field, find full rows and remove them
+    LOG4CXX_TRACE(logger, "Placing x:" << theChosenOne.x << " y:" << theChosenOne.y);
+    int crow = 0;
+    for (long unsigned i = 0; i < field.size(); ++i) // loop over field, find full rows and remove them
     {
       if (field[i] != '0') ++crow; // increment for each block
       if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1) // on the last block
@@ -249,10 +246,11 @@ void AIEngine::DoPlacing()
       }
     }
     stringstream fstrs;
+    field[0] = '5';
     fstrs << "f " << playernum << " " << string(field.begin(), field.end()) << "\xFF";
     string fstr = fstrs.str();
     boost::asio::write(socket, boost::asio::buffer(string(fstr.begin(), fstr.end()), 1024));
-    manager->statusHandler({ SCREEN_NAME, ffield });
+    manager->statusHandler({ SCREEN_NAME, field });
     fmtx.unlock();
   }
 }
@@ -265,30 +263,28 @@ void AIEngine::Stop()
 
 inline double AIEngine::rank(int piece, PieceLocation location)
 {
-  vector<char> newfield(field);
-  for (int w = 0; w < 4 * 4; ++w)
-    if (pdefs[piece][location.r].def[w])
-      newfield[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = '1';
+  vector<char>* newfield = new vector<char>(field);
+  place(*newfield, piece, location, 1);
   return
-      ((double)(clearCount   (newfield) - clearCount   (field)) * _c)
-    + ((double)(blockadeCount(newfield) - blockadeCount(field)) * _b)
-    + ((double)(rowCount     (newfield) - rowCount     (field)) * _r)
-    + ((double)(gapCount     (newfield) - gapCount     (field)) * _g);
+      ((double)(clearCount   (*newfield) - clearCount   (field)) * _c)
+    + ((double)(blockadeCount(newfield) - blockadeCount(&field)) * _b)
+    + ((double)(rowCount     (newfield) - rowCount     (&field)) * _r)
+    + ((double)(gapCount     (newfield) - gapCount     (&field)) * _g);
 }
 
 inline unsigned AIEngine::columnHeight(const vector<char>* _field, unsigned x)
 {
   unsigned colHeight = FIELD_HEIGHT - 1;
   for (unsigned int y = 0; y < FIELD_HEIGHT; ++y)  // Search this column top-down
-    if (_field->at(FIELD_WIDTH * y + x) != '0') // block!
+    if ((*_field)[FIELD_WIDTH * y + x] != '0') // block!
     {
       colHeight = y; // this is the top
       break;
     }
-  return FIELD_HEIGHT - (colHeight + 1);
+  return FIELD_HEIGHT - colHeight;
 }
 
-inline int AIEngine::gapCount(const vector<char>& _field)
+inline int AIEngine::gapCount(const vector<char>* _field)
 {
   unsigned gapCount = 0;
   for (unsigned x = 0; x < FIELD_WIDTH; ++x)
@@ -296,7 +292,7 @@ inline int AIEngine::gapCount(const vector<char>& _field)
     bool foundBlock = false;
     for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
     {
-      if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
+      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
         foundBlock = true; // flag it
       else if (foundBlock) // if there's no block and we've flagged
         ++gapCount;
@@ -305,7 +301,7 @@ inline int AIEngine::gapCount(const vector<char>& _field)
   return gapCount;
 }
 
-inline int AIEngine::blockadeCount(const vector<char>& _field)
+inline int AIEngine::blockadeCount(const vector<char>* _field)
 {
   unsigned totalBlock = 0;
   for (unsigned x = 0; x < FIELD_WIDTH; ++x)
@@ -314,7 +310,7 @@ inline int AIEngine::blockadeCount(const vector<char>& _field)
     bool foundBlock = false;
     for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
     {
-      if (_field[FIELD_WIDTH * y + x] != '0') // if there's a block
+      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
       {
         foundBlock = true; // flag it
         blockCount++;
@@ -329,20 +325,20 @@ legitimateUseOfGoto:
   return totalBlock;
 }
 
-inline int AIEngine::rowCount(const vector<char>& _field)
+inline int AIEngine::rowCount(const vector<char>* _field)
 {
   vector<unsigned>* heights = new vector<unsigned>();
   for (unsigned x = 0; x < FIELD_WIDTH; ++x)
-    heights->push_back(columnHeight(&_field, x));
+    heights->push_back(columnHeight(_field, x));
   return FIELD_HEIGHT - *std::min_element(heights->begin(), heights->end()); // find the tallest column
 }
 
 inline int AIEngine::clearCount(vector<char> _field)
 {
-  int clears = 0, crow;
+  int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
   for (long unsigned i = 0; i < _field.size(); ++i)
   {
-    if (field[i] != '0') ++crow;
+    if (_field[i] != '0') ++crow;
     if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
     {
       if (crow == FIELD_WIDTH)
@@ -361,9 +357,10 @@ inline int AIEngine::clearCount(vector<char> _field)
 
 inline void AIEngine::place(vector<char>& _field, unsigned piece, PieceLocation location, unsigned col)
 {
-  for (int w = 0; w < 4 * 4; w++) // copy piece over
+  LOG4CXX_TRACE(logger, string(_field.begin(), _field.end()));
+  for (unsigned w = 0; w < pdefs[piece][location.r].width * pdefs[piece][location.r].height; w++) // copy piece over
     if (pdefs[piece][location.r].def[w]) // if placing piece is defined here
-      _field[(FIELD_WIDTH * location.y) + location.x + (w % 4) + ((w / 4) * FIELD_WIDTH)] = col + 48; // color to ascii character
+      _field[(FIELD_WIDTH * location.y) + location.x + (w % pdefs[piece][location.r].width) + ((w / pdefs[piece][location.r].width) * FIELD_WIDTH)] = col + 48; // color to ascii character
 }
 
 inline string AIEngine::cleanCodes(string orig)

@@ -6,105 +6,34 @@
  */
 
 #include <cctype>
-#include <vector>
-#include <iomanip>
-#include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
 #include "AIEngine.hpp"
 
 #include "Constants.hpp"
 
+constexpr PieceDef *AIEngine::pdefs[7];
+
 using boost::asio::ip::tcp;
 
 using namespace std;
 using namespace log4cxx;
-using namespace boost::algorithm;
-
-// Hashes of the message tokens
-#define TOKEN_F                     2654435871
-#define TOKEN_TEAM             706246331656118
-#define TOKEN_PLINE          46082575837886005
-#define TOKEN_NEWGAME      6807035119030705139
-#define TOKEN_ENDGAME      6807153467799589089
-#define TOKEN_WINLIST      6807035647241175774
-#define TOKEN_PLAYERNUM    1514265613367712513
-#define TOKEN_PLAYERJOIN   5995087092028005159
-#define TOKEN_PLAYERLEAVE 12876743988251149938
+using namespace boost;
 
 AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager, LoggerPtr logger)
-  : SCREEN_NAME(nickname), string_hash(), plyrids(), freqarr(), specarr(), field(FIELD_SIZE, '0'), playernum(0), _g(g), _b(b), _r(r), _c(c), cancelPlacing(false),
-    service(), socket(service), socio(service), fmtx(), pieceDelay(1), pdefs(), manager(manager), logger(logger)
+  : TetrinetClient(nickname, logger), field(FIELD_SIZE, '0'), _g(g), _b(b), _r(r), _c(c), pieceDelay(1), manager(manager), logger(logger)
 {
-  plyrids.insert(pair<int, string>(0, "Server"));
-  pdefs = vector<vector<PieceDef> >
-  {
-    vector<PieceDef>
-    {
-      // I
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true }, 4, 1 },
-      PieceDef { vector<bool> { true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false }, 1, 4 }
-    },
-    vector<PieceDef>
-    {
-      // O
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false }, 2, 2 }
-    },
-    vector<PieceDef>
-    {
-      // J
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, false, false, false, true, true, true, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false }, 2, 3 },
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, true, true, false, false, true, false, false, false, true, false, false, false }, 2, 3 }
-    },
-    vector<PieceDef>
-    {
-      // L
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, true, true, false, true, false, false, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false }, 2, 3 },
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, false, false, true, false, true, true, true, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, true, true, false, false, false, true, false, false, false, true, false, false }, 2, 3 }
-    },
-    vector<PieceDef>
-    {
-      // S
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, false, true, true, false, true, true, false, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, true, false, false, false, true, true, false, false, false, true, false, false }, 2, 3 }
-    },
-    vector<PieceDef>
-    {
-      // Z
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, true, false, false, false, true, true, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, false, true, false, false, true, true, false, false, true, false, false, false }, 2, 3 }
-    },
-    vector<PieceDef>
-    {
-      // T
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, false, true, false, false, true, true, false, false, false, true, false, false }, 2, 3 },
-      PieceDef { vector<bool> { false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false }, 3, 2 },
-      PieceDef { vector<bool> { false, false, false, false, true, false, false, false, true, true, false, false, true, false, false, false }, 2, 3 }
-    }
-  }; // pdefs[tetramino][orientation];
 }
 
 AIEngine::AIEngine(const AIEngine &engine)
-  : service(), socket(service), socio(service), pieceDelay(engine.pieceDelay.total_seconds())
+  : TetrinetClient(engine), pieceDelay(engine.pieceDelay.total_seconds())
 {
-  string_hash = engine.string_hash;
-  plyrids = engine.plyrids;
   freqarr = engine.freqarr;
   specarr = engine.specarr;
   field = engine.field;
-  playernum = engine.playernum;
   _g = engine._g;
   _b = engine._b;
   _r = engine._r;
   _c = engine._c;
-  cancelPlacing = engine.cancelPlacing;
-  pdefs = engine.pdefs;
   logger = engine.logger;
 }
 
@@ -113,64 +42,17 @@ AIEngine::~AIEngine()
   //TODO: close socket and io_service
 }
 
-inline string AIEngine::makeHex(int dec)
+void AIEngine::Stop()
 {
-  stringstream decstr;
-  decstr << setfill('0') << setw(2) << hex << dec;
-  return decstr.str();
-}
-
-inline string AIEngine::encode(string name, int ip[])
-{
-  string stmsg = "tetrisstart " + name + " 1.13";
-  stringstream sipstr;
-  sipstr << 54 * ip[0] + 41 * ip[1] + 29 * ip[2] + 17 * ip[3];
-  string ipmsg = sipstr.str();
-  int j = 128;
-  string result = makeHex(j);
-  for (unsigned int i = 0; i < stmsg.length(); ++i)
-  {
-    j = ((j + stmsg[i]) % 255) ^ ipmsg[i % ipmsg.length()];
-    result += makeHex(j);
-  }
-  return result;
-}
-
-void AIEngine::Run()
-{
-  try
-  {
-    int ip[] = { 127, 0, 0, 1 };
-    tcp::resolver resolver(socio);
-    tcp::resolver::query query(tcp::v4(), "127.0.0.1", "31457");
-    tcp::resolver::iterator iterator = resolver.resolve(query);
-    string startmsg = encode(SCREEN_NAME, ip) + "\n";
-    boost::asio::connect(socket, iterator);
-    boost::asio::write(socket, boost::asio::buffer(startmsg, 1024));
-    for (;;)
-    {
-      boost::asio::streambuf response;
-      boost::asio::read_until(socket, response, "\xFF");
-      stringstream strres;
-      strres << (boost::asio::streambuf*)&response;
-      string res = strres.str();
-      vector<string> mshbits;
-      split(mshbits, res, is_any_of("\xFF"));
-      for (unsigned int i = 0; i < mshbits.size(); ++i)
-        this->ProcessCommand(mshbits[i]);
-    }
-  }
-  catch (exception& e)
-  {
-    LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.what());
-  }
+  placer->interrupt();
+  placer->join();
 }
 
 void AIEngine::DoPlacing()
 {
-  while (!this->cancelPlacing)
+  this_thread::sleep(pieceDelay);
+  while (2 > 1)
   {
-    boost::this_thread::sleep(pieceDelay);
     unsigned piece = freqarr[rand() % 100] - 1; // grab from manager...later (TODO)
 
     fmtx.lock();
@@ -186,7 +68,7 @@ void AIEngine::DoPlacing()
             !((y + 1) < FIELD_HEIGHT && ffield[(FIELD_WIDTH * (y + 1)) + x]  == '0')
            ) // check the surrounding squares; if filled/off-field, fill this one
           ffield[FIELD_WIDTH * y + x] = '-'; // dash is not zero
-    for (unsigned rindex = 0; rindex < pdefs[piece].size(); ++rindex)
+    for (unsigned rindex = 0; rindex < pdefs[piece][0].rstates; ++rindex)
       for (unsigned x = 0; x < pdefs[piece][rindex].width; ++x)
       {
         unsigned height = 0;
@@ -196,10 +78,7 @@ void AIEngine::DoPlacing()
         for (unsigned xf = x; xf < FIELD_WIDTH; ++xf) // loop across columns
         {
           unsigned fieldHeight = columnHeight(&ffield, xf); // find height of this column
-          PieceLocation found;
-          found.x = xf - x;
-          found.y = FIELD_HEIGHT - (fieldHeight + height) - 1;
-          found.r = rindex; // calculate location (x, y, r, rank)
+          PieceLocation found = PieceLocation { xf - x, FIELD_HEIGHT - (fieldHeight + height) - 1, rindex }; // calculate location (x, y, r, rank)
           bool invalid = false;
           for (unsigned w = 0; w < (4 * 4); ++w) // loop across spaces in def
           {
@@ -229,48 +108,31 @@ void AIEngine::DoPlacing()
     PieceLocation theChosenOne = *max_element(placements.begin(), placements.end(), [](PieceLocation i, PieceLocation j) { return i.rank < j.rank; });
     int col = (rand() % 4) + 1; // random color
     place(field, piece, theChosenOne, col);
-    LOG4CXX_TRACE(logger, "Placing x:" << theChosenOne.x << " y:" << theChosenOne.y);
-    int crow = 0;
-    for (long unsigned i = 0; i < field.size(); ++i) // loop over field, find full rows and remove them
-    {
-      if (field[i] != '0') ++crow; // increment for each block
-      if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1) // on the last block
-      {
-        if (crow == FIELD_WIDTH) // full row?
-        {
-          for (long unsigned int s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s) // clear
-            field[s] = '0';
-          for (long unsigned int s = i; s > 0; --s) // drop
-            field[s] = s > FIELD_WIDTH ? field[s - FIELD_WIDTH] : '0';
-        }
-        crow = 0;
-      }
-    }
-    stringstream fstrs;
-    field[0] = '5';
-    fstrs << "f " << playernum << " " << string(field.begin(), field.end()) << "\xFF";
-    string fstr = fstrs.str();
-    boost::asio::write(socket, boost::asio::buffer(string(fstr.begin(), fstr.end()), 1024));
-    manager->statusHandler({ SCREEN_NAME, field });
+    LOG4CXX_TRACE(logger, "Placing x: " << theChosenOne.x << " y: " << theChosenOne.y);
+    int crow = clearCount(&ffield);
+    SendCommand(TetrinetMessage::F, string(field.begin(), field.end()));
+    manager->statusHandler({ *GetName(), field });
     fmtx.unlock();
+    try
+    {
+      this_thread::sleep(pieceDelay);
+    }
+    catch(thread_interrupted&)
+    {
+      break;
+    }
   }
-}
-
-void AIEngine::Stop()
-{
-  cancelPlacing = true;
-  // TODO: stop....
 }
 
 inline double AIEngine::rank(int piece, PieceLocation location)
 {
-  vector<char>* newfield = new vector<char>(field);
-  place(*newfield, piece, location, 1);
+  vector<char> newfield = vector<char>(field);
+  place(newfield, piece, location, 1);
   return
-      ((double)(clearCount   (*newfield) - clearCount   (field)) * _c)
-    + ((double)(blockadeCount(newfield) - blockadeCount(&field)) * _b)
-    + ((double)(rowCount     (newfield) - rowCount     (&field)) * _r)
-    + ((double)(gapCount     (newfield) - gapCount     (&field)) * _g);
+      ((double)(clearCount   (&newfield)                        ) * _c)
+    + ((double)(blockadeCount(&newfield) - blockadeCount(&field)) * _b)
+    + ((double)(rowCount     (&newfield) - rowCount     (&field)) * _r)
+    + ((double)(gapCount     (&newfield) - gapCount     (&field)) * _g);
 }
 
 inline unsigned AIEngine::columnHeight(const vector<char>* _field, unsigned x)
@@ -334,20 +196,20 @@ inline int AIEngine::rowCount(const vector<char>* _field)
   return FIELD_HEIGHT - *std::min_element(heights->begin(), heights->end()); // find the tallest column
 }
 
-inline int AIEngine::clearCount(vector<char> _field)
+inline int AIEngine::clearCount(vector<char>* _field)
 {
   int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
-  for (long unsigned i = 0; i < _field.size(); ++i)
+  for (long unsigned i = 0; i < _field->size(); ++i)
   {
-    if (_field[i] != '0') ++crow;
+    if ((*_field)[i] != '0') ++crow;
     if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
     {
       if (crow == FIELD_WIDTH)
       {
         for (long unsigned s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
-          _field[s] = '0';
+          (*_field)[s] = '0';
         for (long unsigned s = i; s > 0; --s)
-          _field[s] = s > FIELD_WIDTH ? _field[s - FIELD_WIDTH] : '0';
+          (*_field)[s] = s > FIELD_WIDTH ? (*_field)[s - FIELD_WIDTH] : '0';
         clears++;
       }
       crow = 0;
@@ -360,77 +222,51 @@ inline void AIEngine::place(vector<char>& _field, unsigned piece, PieceLocation 
 {
   for (unsigned w = 0; w < 4 * 4; w++) // copy piece over
     if (pdefs[piece][location.r].def[w]) // if placing piece is defined here
-    {
-      unsigned px = w % 4;
-      unsigned py = w / 4;
-      unsigned fx = location.x;
-      unsigned fy = location.y;
-      unsigned x = px + fx;
-      unsigned y = py + fy;
-      unsigned pos = (y * FIELD_WIDTH) + x;
-      _field.at(pos) = col + 48; // color to ascii character
-    }
+      _field.at((((w / 4) + location.y) * FIELD_WIDTH) + ((w % 4) + location.x)) = col + 48; // color to ascii character
 }
 
-inline string AIEngine::cleanCodes(string orig)
+void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
 {
-  vector<char> newV(orig.length()), oldV(orig.begin(), orig.end());
-  remove_copy_if(oldV.begin(), oldV.end(), newV.begin(), [](char c) { return iscntrl(c); });
-  return string(newV.begin(), newV.end());
-}
-
-void AIEngine::ProcessCommand(string cmd)
-{
-  vector<string> tokens;
-  split(tokens, cmd, is_any_of(" "));
-  long unsigned size = tokens.size();
-  if (size == 0)
-    return;
   try
   {
-    switch (string_hash(tokens[0]))
+    switch (message)
     {
-    case TOKEN_PLINE:
+    case TetrinetMessage::PLINE:
     {
       stringstream msg;
-      for (long unsigned i = 2; i < size; ++i)
-        msg << cleanCodes(tokens.at(i)) << " ";
-      LOG4CXX_INFO(logger, "MSG: " << cleanCodes(msg.str()));
+      for (long unsigned i = 1; i < tokens->size(); ++i)
+        msg << tokens->at(i) << " ";
+      LOG4CXX_INFO(logger, "MSG: " << msg.str());
     }
       break;
 
-    case TOKEN_PLAYERNUM:
-      plyrids.insert(pair<int, string>(playernum = atoi(tokens.at(1).substr(0, 1).c_str()), "Me"));
-      break;
-
-    case TOKEN_F:
-      if (atoi(tokens.at(1).c_str()) == playernum)
+    case TetrinetMessage::F:
+      if (atoi(tokens->at(0).c_str()) == *GetID())
       {
         fmtx.lock();
-        field.assign(tokens.at(2).begin(), tokens.at(2).end());
+        field.assign(tokens->at(1).begin(), tokens->at(1).end());
         fmtx.unlock();
       }
       break;
 
-    case TOKEN_NEWGAME:
+    case TetrinetMessage::NEWGAME:
     {
-      string freqs = tokens.at(8);
-      string specs = tokens.at(9);
+      string freqs = tokens->at(7);
+      string specs = tokens->at(8);
       for (unsigned int i = 0; i < freqs.length(); ++i)
         freqarr.insert(freqarr.end(), atoi(freqs.substr(i, 1).c_str()));
       for (unsigned int i = 0; i < specs.length(); ++i)
         specarr.insert(specarr.end(), atoi(specs.substr(i, 1).c_str()));
       stringstream seedstr;
-      seedstr << dec << tokens.at(12);
-      srand(atoi(seedstr.str().c_str()));
-      cancelPlacing = false;
+      seedstr << dec << tokens->at(11);
+      srand(atoi(seedstr.str().c_str())); //TODO
       fill(field.begin(), field.end(), '0');
-      boost::thread placer(&AIEngine::DoPlacing, this);
+      placer = new thread(&AIEngine::DoPlacing, this);
     }
     break;
 
-    case TOKEN_ENDGAME:
-      cancelPlacing = true;
+    case TetrinetMessage::ENDGAME:
+      Stop();
       break;
     }
   }

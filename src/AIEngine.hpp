@@ -8,25 +8,22 @@
 #ifndef AIENGINE_H
 #define AIENGINE_H
 
-#include <map>
-#include <iostream>
-#include <log4cxx/logger.h>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <boost/functional/hash.hpp>
 
 class AIEngine;
 
 #include "AIStatus.hpp"
 #include "AIManager.hpp"
+#include "TetrinetClient.hpp"
 
 /** Definition of a tetramino shape */
 struct PieceDef
 {
   /** Field-based vector of block locations */
-  std::vector<bool> def;
-  /** Width and height occupied by piece */
-  unsigned width, height;
+  bool* def;
+  /** Width and height occupied by piece and no. of rotation states */
+  unsigned width, height, rstates;
 };
 
 /** Represents placement instructions for a piece on the field */
@@ -40,7 +37,10 @@ struct PieceLocation
   double rank;
 };
 
-class AIEngine
+/**
+ * Core AI class.  Connects to server and responds to messages
+ */
+class AIEngine : public TetrinetClient
 {
 public:
   /**
@@ -50,33 +50,24 @@ public:
   /**
    * Copy constructor
    */
-  AIEngine(const AIEngine &engine);
+  AIEngine(const AIEngine& engine);
   /**
    * Destructor
    */
   virtual ~AIEngine();
 
-  /**
-   * Connect to the given server
-   *
-   * Manages connection to the server, parses packets and dispenses them to ProcessCommand
-   */
-  void Run();
-  /**
-   * Performs a graceful stop
-   */
-  void Stop();
+  // Inherited from TetrinetClient
+  void Stop() override;
 private:
   /**
    * Main game loop
    *
    * Calculates pieces and ranks their position, placing them in the highest ranked spot
    */
-  virtual void DoPlacing();
-  /**
-   * Processes a command issued from the server
-   */
-  virtual void ProcessCommand(std::string cmd);
+  void DoPlacing();
+  
+  // Inherited from TetrinetClient
+  void ProcessCommand(TetrinetMessage message, std::deque<std::string>* tokens) override;
 
   // Ranking functions
 
@@ -87,41 +78,76 @@ private:
   /** Counts the height of the board in a field */
   inline int rowCount(const std::vector<char>* _field);
   /** Counts the number of full rows made */
-  inline int clearCount(std::vector<char> _field);
+  inline int clearCount(std::vector<char>* _field);
 
   /** Ranks a given location */
   inline double rank(int piece, PieceLocation location);
 
-  /** TODO */
-  inline std::string makeHex(int dec);
-  /** TODO */
-  inline std::string encode(std::string name, int ip[]);
   /** Copies piece onto field */
   inline void place(std::vector<char>& _field, unsigned piece, PieceLocation location, unsigned col);
   /** Counts the height of blocks in a given column */
   inline unsigned columnHeight(const std::vector<char>* _field, unsigned x);
-  /** Removes control codes from a string */
-  inline std::string cleanCodes(std::string orig);
 
-  /** Player's name */
-  const std::string SCREEN_NAME;
-
-  boost::hash<std::string> string_hash;
-  std::map<int, std::string> plyrids;
-  std::vector<int> freqarr, specarr; // going away
+  std::vector<int> freqarr, specarr;
   /** Playing field (row major) */
   std::vector<char> field;
-  int playernum;
   double _g, _b, _r, _c;
-  bool cancelPlacing;
-  boost::asio::io_service service;
-  boost::asio::ip::tcp::socket socket;
-  boost::asio::io_service& socio;
+  boost::thread* placer;
   /** Mutex for member field */
   boost::mutex fmtx;
   boost::posix_time::seconds pieceDelay;
-  std::vector<std::vector<PieceDef> > pdefs; // TODO make static
   AIManager* manager;
   log4cxx::LoggerPtr logger;
+
+  static constexpr PieceDef *pdefs[7]
+  {
+    std::move((PieceDef[])
+    {
+      // I
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true }, 4, 1, 2 },
+      PieceDef { (bool[]) { true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false }, 1, 4, 2 }
+    }),
+    std::move((PieceDef[])
+    {
+      // O
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false }, 2, 2, 1 }
+    }),
+    std::move((PieceDef[])
+    {
+      // J
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, false, false, false, true, true, true, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false }, 2, 3, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, true, true, false, false, true, false, false, false, true, false, false, false }, 2, 3, 4 }
+    }),
+    std::move((PieceDef[])
+    {
+      // L
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, true, false, false, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false }, 2, 3, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, false, true, false, true, true, true, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, true, true, false, false, false, true, false, false, false, true, false, false }, 2, 3, 4 }
+    }),
+    std::move((PieceDef[])
+    {
+      // S
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, true, true, false, true, true, false, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, false, true, false, false }, 2, 3, 4 }
+    }),
+    std::move((PieceDef[])
+    {
+      // Z
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, false, true, true, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, true, false, false, false }, 2, 3, 4 }
+    }),
+    std::move((PieceDef[])
+    {
+      // T
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, false, true, false, false }, 2, 3, 4 },
+      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false }, 3, 2, 4 },
+      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, true, false, false, false }, 2, 3, 4 }
+    })
+  }; // pdefs[tetramino][orientation];
 };
 #endif

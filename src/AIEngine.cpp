@@ -81,7 +81,7 @@ void AIEngine::DoPlacing()
         for (unsigned xf = x; xf < FIELD_WIDTH; ++xf) // loop across columns
         {
           unsigned fieldHeight = columnHeight(&ffield, xf); // find height of this column
-          PieceLocation found = PieceLocation { xf - x, FIELD_HEIGHT - (fieldHeight + height) - 1, rindex }; // calculate location (x, y, r, rank)
+          PieceLocation found = PieceLocation { xf - x, FIELD_HEIGHT - (fieldHeight + height), rindex }; // calculate location (x, y, r, rank)
           bool invalid = false;
           for (unsigned w = 0; w < (4 * 4); ++w) // loop across spaces in def
           {

@@ -234,6 +234,7 @@ void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
     TetrinetClient::ProcessCommand(message, tokens);
     switch (message)
     {
+    case TetrinetMessage::PLINEACT:
     case TetrinetMessage::PLINE:
     {
       stringstream msg;

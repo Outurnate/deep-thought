@@ -21,42 +21,66 @@ unsigned long constexpr djb2(const char* c)
 }
 
 unsigned long constexpr
-  TOKEN_F           = djb2("f"),
-  TOKEN_TEAM        = djb2("team"),
-  TOKEN_PLINE       = djb2("pline"),
-  TOKEN_NEWGAME     = djb2("newgame"),
-  TOKEN_ENDGAME     = djb2("endgame"),
-  TOKEN_WINLIST     = djb2("winlist"),
-  TOKEN_PLAYERNUM   = djb2("playernum"),
-  TOKEN_PLAYERJOIN  = djb2("playerjoin"),
-  TOKEN_PLAYERLEAVE = djb2("playerleave");
+  TOKEN_F            = djb2("f"           ),
+  TOKEN_SB           = djb2("sb"          ),
+//TOKEN_LVL          = djb2("lvl"         ),
+  TOKEN_GMSG         = djb2("gmsg"        ),
+//TOKEN_TEAM         = djb2("team"        ),
+  TOKEN_PLINE        = djb2("pline"       ),
+  TOKEN_PAUSE        = djb2("pause"       ),
+  TOKEN_NEWGAME      = djb2("newgame"     ),
+  TOKEN_ENDGAME      = djb2("endgame"     ),
+//TOKEN_WINLIST      = djb2("winlist"     ),
+  TOKEN_PLINEACT     = djb2("plineact"    ),
+//TOKEN_PLAYERWON    = djb2("playerwon"   ),
+  TOKEN_PLAYERNUM    = djb2("playernum"   ),
+//TOKEN_PLAYERLOST   = djb2("playerlost"  ),
+  TOKEN_PLAYERJOIN   = djb2("playerjoin"  ),
+  TOKEN_PLAYERLEAVE  = djb2("playerleave" ),
+  TOKEN_NOCONNECTING = djb2("noconnecting");
 
 enum class TetrinetMessage : unsigned long
 {
-  F           = TOKEN_F,
-  TEAM        = TOKEN_TEAM,
-  PLINE       = TOKEN_PLINE,
-  NEWGAME     = TOKEN_NEWGAME,
-  ENDGAME     = TOKEN_ENDGAME,
-  WINLIST     = TOKEN_WINLIST,
-  PLAYERNUM   = TOKEN_PLAYERNUM,
-  PLAYERJOIN  = TOKEN_PLAYERJOIN,
-  PLAYERLEAVE = TOKEN_PLAYERLEAVE
+  F            = TOKEN_F,
+  SB           = TOKEN_SB,
+//LVL          = TOKEN_LVL,
+  GMSG         = TOKEN_GMSG,
+//TEAM         = TOKEN_TEAM,
+  PLINE        = TOKEN_PLINE,
+  PAUSE        = TOKEN_PAUSE,
+  NEWGAME      = TOKEN_NEWGAME,
+  ENDGAME      = TOKEN_ENDGAME,
+//WINLIST      = TOKEN_WINLIST,
+  PLINEACT     = TOKEN_PLINEACT,
+//PLAYERNUM    = TOKEN_PLAYERWON,
+  PLAYERNUM    = TOKEN_PLAYERNUM,
+//PLAYERLOST   = TOKEN_PLAYERLOST,
+  PLAYERJOIN   = TOKEN_PLAYERJOIN,
+  PLAYERLEAVE  = TOKEN_PLAYERLEAVE,
+  NOCONNECTING = TOKEN_NOCONNECTING
 };
 
 const std::map<TetrinetMessage, std::string> MessageMap =
 {
-  { TetrinetMessage::F,           "f"           },
-  { TetrinetMessage::TEAM,        "team"        },
-  { TetrinetMessage::PLINE,       "pline"       },
-  { TetrinetMessage::NEWGAME,     "newgame"     },
-  { TetrinetMessage::ENDGAME,     "endgame"     },
-  { TetrinetMessage::WINLIST,     "winlist"     },
-  { TetrinetMessage::PLAYERNUM,   "playernum"   },
-  { TetrinetMessage::PLAYERJOIN,  "playerjoin"  },
-  { TetrinetMessage::PLAYERLEAVE, "playerleave" }
+  { TetrinetMessage::F,            "f"            },
+  { TetrinetMessage::SB,           "sb"           },
+//{ TetrinetMessage::LVL,          "lvl",         },
+  { TetrinetMessage::GMSG,         "gmsg"         },
+//{ TetrinetMessage::TEAM,         "team"         },
+  { TetrinetMessage::PLINE,        "pline"        },
+  { TetrinetMessage::PAUSE,        "pause"        },
+  { TetrinetMessage::NEWGAME,      "newgame"      },
+  { TetrinetMessage::ENDGAME,      "endgame"      },
+//{ TetrinetMessage::WINLIST,      "winlist"      },
+  { TetrinetMessage::PLINEACT,     "plineact"     },
+//{ TetrinetMessage::PLAYERNUM,    "playerwon"    },
+  { TetrinetMessage::PLAYERNUM,    "playernum"    },
+//{ TetrinetMessage::PLAYERLOST,   "playerlost"   },
+  { TetrinetMessage::PLAYERJOIN,   "playerjoin"   },
+  { TetrinetMessage::PLAYERLEAVE,  "playerleave"  },
+  { TetrinetMessage::NOCONNECTING, "noconnecting" }
 };
-
+//GMSG,SB,PAUSE
 class TetrinetClient
 {
 public:

@@ -130,6 +130,15 @@ void TetrinetClient::ProcessCommand(TetrinetMessage message, std::deque<std::str
     case TetrinetMessage::PLAYERNUM:
       plyrids.insert(pair<int, string>(playernum = atoi(tokens->at(0).substr(0, 1).c_str()), screenName));
       break;
+    case TetrinetMessage::PLAYERJOIN:
+      plyrids.insert(pair<int, string>(atoi(tokens->at(0).substr(0, 1).c_str()), tokens->at(1)));
+      break;
+    case TetrinetMessage::PLAYERLEAVE:
+      plyrids.erase(atoi(tokens->at(0).substr(0, 1).c_str()));
+      break;
+    case TetrinetMessage::NOCONNECTING:
+      LOG4CXX_ERROR(logger, "Noconnect received: " << tokens->at(0));
+      break;
   }
 }
 

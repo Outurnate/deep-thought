@@ -87,11 +87,11 @@ protected:
    * Send the given message with supplied params to the sever
    */
   void SendCommand(TetrinetMessage message, std::string param);
-private:
   /**
    * Processes a command issued from the server
    */
   virtual void ProcessCommand(TetrinetMessage message, std::deque<std::string>* tokens);
+private:
   
   /** Converts int to hex string */
   inline std::string makeHex(int dec);

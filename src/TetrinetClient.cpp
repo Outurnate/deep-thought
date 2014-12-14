@@ -60,7 +60,7 @@ void TetrinetClient::Run()
     tcp::resolver resolver(socio);
     tcp::resolver::query query(tcp::v4(), "127.0.0.1", "31457"); // limit to ipv4...since protocol doesn't support ipv6
     tcp::resolver::iterator iterator = resolver.resolve(query), end;
-    boost::system::error_code errorc = error::host_not_found;
+    error_code errorc = error::host_not_found;
     while (errorc && iterator != end)
     {
       socket.close();
@@ -92,15 +92,15 @@ void TetrinetClient::Run()
       }
     }
   }
-  catch (std::exception& e)
+  catch (error_code& e)
   {
-    LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.what());
+    LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.message());
   }
 }
 
 inline string TetrinetClient::cleanCodes(string orig)
 {
-  vector<char> newV, oldV(orig.begin(), orig.end());
+  vector<char> newV(orig.length()), oldV(orig.begin(), orig.end());
   remove_copy_if(oldV.begin(), oldV.end(), newV.begin(), [](char c) { return iscntrl(c); });
   return string(newV.begin(), newV.end());
 }
@@ -128,7 +128,7 @@ void TetrinetClient::ProcessCommand(TetrinetMessage message, std::deque<std::str
   switch(message)
   {
     case TetrinetMessage::PLAYERNUM:
-      plyrids.insert(pair<int, string>(playernum = atoi(tokens->at(0).substr(0, 1).c_str()), "Me"));
+      plyrids.insert(pair<int, string>(playernum = atoi(tokens->at(0).substr(0, 1).c_str()), screenName));
       break;
   }
 }

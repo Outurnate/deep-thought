@@ -20,7 +20,7 @@ using namespace log4cxx;
 using namespace boost;
 
 AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager, LoggerPtr logger)
-  : TetrinetClient(nickname, logger), field(FIELD_SIZE, '0'), _g(g), _b(b), _r(r), _c(c), pieceDelay(1), manager(manager), logger(logger)
+  : TetrinetClient(nickname, logger), field(FIELD_SIZE, '0'), _g(g), _b(b), _r(r), _c(c), pieceDelay(1), manager(manager), logger(logger), placer(0)
 {
 }
 
@@ -44,8 +44,11 @@ AIEngine::~AIEngine()
 
 void AIEngine::Stop()
 {
-  placer->interrupt();
-  placer->join();
+  if (placer)
+  {
+    placer->interrupt();
+    placer->join();
+  }
 }
 
 void AIEngine::DoPlacing()
@@ -93,7 +96,6 @@ void AIEngine::DoPlacing()
           }
           if (!invalid)
           {
-            LOG4CXX_TRACE(logger, "x:" << found.x << "y:" << found.y);
             found.rank = rank(piece, found); // rank it
             placements.push_back(found); // list it
           }
@@ -229,6 +231,7 @@ void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
 {
   try
   {
+    TetrinetClient::ProcessCommand(message, tokens);
     switch (message)
     {
     case TetrinetMessage::PLINE:

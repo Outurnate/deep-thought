@@ -21,7 +21,7 @@ class AIEngine;
 struct PieceDef
 {
   /** Field-based vector of block locations */
-  bool* def;
+  const bool* def;
   /** Width and height occupied by piece and no. of rotation states */
   unsigned width, height, rstates;
 };
@@ -104,49 +104,49 @@ private:
     std::move((PieceDef[])
     {
       // I
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true }, 4, 1, 2 },
-      PieceDef { (bool[]) { true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false }, 1, 4, 2 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true }), 4, 1, 2 },
+      PieceDef { std::move((bool[]) { true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false }), 1, 4, 2 }
     }),
     std::move((PieceDef[])
     {
       // O
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false }, 2, 2, 1 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false }), 2, 2, 1 }
     }),
     std::move((PieceDef[])
     {
       // J
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, false, false, false, true, true, true, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false }, 2, 3, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, true, true, false, false, true, false, false, false, true, false, false, false }, 2, 3, 4 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, false, false, false, true, true, true, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false }), 2, 3, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, true, true, false, false, true, false, false, false, true, false, false, false }), 2, 3, 4 }
     }),
     std::move((PieceDef[])
     {
       // L
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, true, false, false, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false }, 2, 3, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, false, true, false, true, true, true, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, true, true, false, false, false, true, false, false, false, true, false, false }, 2, 3, 4 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, true, false, false, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false }), 2, 3, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, false, false, true, false, true, true, true, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, true, true, false, false, false, true, false, false, false, true, false, false }), 2, 3, 4 }
     }),
     std::move((PieceDef[])
     {
       // S
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, true, true, false, true, true, false, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, false, true, false, false }, 2, 3, 4 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, false, true, true, false, true, true, false, false }), 3, 2, 2 },
+      PieceDef { std::move((bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, false, true, false, false }), 2, 3, 2 }
     }),
     std::move((PieceDef[])
     {
       // Z
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, false, true, true, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, true, false, false, false }, 2, 3, 4 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, true, false, false, false, true, true, false }), 3, 2, 2 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, true, false, false, false }), 2, 3, 2 }
     }),
     std::move((PieceDef[])
     {
       // T
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, false, true, false, false }, 2, 3, 4 },
-      PieceDef { (bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false }, 3, 2, 4 },
-      PieceDef { (bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, true, false, false, false }, 2, 3, 4 }
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, true, false, false, true, true, false, false, false, true, false, false }), 2, 3, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false }), 3, 2, 4 },
+      PieceDef { std::move((bool[]) { false, false, false, false, true, false, false, false, true, true, false, false, true, false, false, false }), 2, 3, 4 }
     })
   }; // pdefs[tetramino][orientation];
 };

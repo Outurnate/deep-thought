@@ -6,14 +6,16 @@
  */
 
 #include <log4cxx/logger.h>
-#include <log4cxx/xml/domconfigurator.h>
+#include <log4cxx/helpers/pool.h>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/fileappender.h>
+#include <log4cxx/simplelayout.h>
 #include <signal.h>
 
 #include "TermInterface.hpp"
 #include "AIManager.hpp"
 
 using namespace log4cxx;
-using namespace log4cxx::xml;
 
 AIManager* manager;
 TermInterface* interface;
@@ -26,13 +28,20 @@ void winchHandler(int param)
 int main()
 {
   signal(SIGWINCH, winchHandler);
-  DOMConfigurator::configure("Log4cxxConfig.xml");
-  
-  manager = new AIManager();
+  FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), "logfile", false);
   interface = new TermInterface();
+  interface->setLayout(LayoutPtr(new SimpleLayout()));
+
+  helpers::Pool p;
+  fileAppender->activateOptions(p);
+
+  BasicConfigurator::configure(AppenderPtr(fileAppender));
+  BasicConfigurator::configure(AppenderPtr(interface));
+  Logger::getRootLogger()->setLevel(Level::getTrace());
+
+  manager = new AIManager();
   manager->RegisterStatusHandler(interface);
 
-  interface->Show();
   manager->Start();
 
   delete manager;

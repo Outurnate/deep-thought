@@ -151,3 +151,8 @@ const int* TetrinetClient::GetID() const
 {
   return &playernum;
 }
+
+void TetrinetClient::JoinChannel(const std::string channel)
+{
+  this->SendCommand(TetrinetMessage::PLINE, "/join " + channel);
+}

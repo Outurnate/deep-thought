@@ -5,9 +5,11 @@
 #include <boost/thread.hpp>
 
 class AIManager;
+class Supervisor;
 
 #include "AIEngine.hpp"
 #include "AIStatus.hpp"
+#include "Supervisor.hpp"
 
 class IFieldStatusHandler
 {
@@ -27,6 +29,7 @@ public:
   void Start();
 
   void RegisterStatusHandler(IFieldStatusHandler* handler);
+  void SendEngineToChannel(AIEngine* engine, const std::string channel);
 private:
   std::vector<AIEngine> engines;
   std::vector<IFieldStatusHandler*> handlers;
@@ -36,6 +39,8 @@ private:
   void removeEngine(AIEngine* engine);
 
   void statusHandler(AIStatus status);
+
+  Supervisor* supervisor;
 };
 
 #endif

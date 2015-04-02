@@ -1,10 +1,13 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#define FIELD_WIDTH     12
-#define FIELD_HEIGHT    22
-#define FIELD_SIZE      (FIELD_WIDTH * FIELD_HEIGHT)
+#define FIELD_WIDTH       12
+#define FIELD_HEIGHT      22
+#define FIELD_SIZE        (FIELD_WIDTH * FIELD_HEIGHT)
 
-#define PAIR_BORDER     1
+#define PAIR_BORDER       1
+
+#define CHANNEL_PREFIX    "dp-"
+#define CHANNEL_SPECIFIER ((CHANNEL_PREFIX) + "ch")
 
 #endif

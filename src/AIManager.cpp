@@ -16,7 +16,6 @@ AIManager::AIManager()
 
 AIManager::~AIManager()
 {
-
 }
 
 void AIManager::Start()
@@ -27,6 +26,11 @@ void AIManager::Start()
 void AIManager::RegisterStatusHandler(IFieldStatusHandler* handler) // called by client
 {
   handlers.push_back(handler);
+}
+
+void AIManager::SendEngineToChannel(AIEngine* engine, const std::string channel)
+{
+  engine->JoinChannel(channel);
 }
 
 void AIManager::addEngine(AIEngine* engine)

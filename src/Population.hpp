@@ -23,16 +23,10 @@ public:
    * Retrieve a list of loaded generations
    */
   const std::vector<Generation>* GetGenerations() const;
-  /**
-   * Add a generation to this population
-   */
-  void AddGeneration(Generation* generation);
-  /**
-   * Remove a generation from this population and deallocate it
-   */
-  void RemoveGeneration(Generation* generation);
 private:
   std::vector<Generation*> generations;
+
+  void commit();
 };
 
 #endif

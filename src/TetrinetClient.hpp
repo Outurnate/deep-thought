@@ -106,6 +106,10 @@ public:
    * Gets player ID
    */
   const int* GetID() const;
+  /**
+   * Executes /join for the given channel
+   */
+  void JoinChannel(const std::string channel);
 protected:
   /**
    * Send the given message with supplied params to the sever

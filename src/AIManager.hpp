@@ -10,6 +10,8 @@ class Supervisor;
 #include "AIEngine.hpp"
 #include "AIStatus.hpp"
 #include "Supervisor.hpp"
+#include "Population.hpp"
+#include "Match.hpp"
 
 class IFieldStatusHandler
 {
@@ -25,11 +27,12 @@ class AIManager
 public:
   AIManager();
   virtual ~AIManager();
-
-  void Start();
-
+  
   void RegisterStatusHandler(IFieldStatusHandler* handler);
   void SendEngineToChannel(AIEngine* engine, const std::string channel);
+  void LoadPopulation(const std::string name);
+  void QueueMatch(Match* match);
+  void PopulationTick();
 private:
   std::vector<AIEngine> engines;
   std::vector<IFieldStatusHandler*> handlers;
@@ -41,6 +44,7 @@ private:
   void statusHandler(AIStatus status);
 
   Supervisor* supervisor;
+  Population* population;
 };
 
 #endif

@@ -8,17 +8,7 @@
 #include <boost/functional/hash.hpp>
 #include <log4cxx/logger.h>
 
-unsigned long constexpr djb2(const char* c);
-
-unsigned long constexpr djb2(const char* c, unsigned long hash)
-{
-  return !*c ? hash : djb2(c + 1, ((hash << 5) + hash) + *c);
-}
-
-unsigned long constexpr djb2(const char* c)
-{
-  return djb2(c, 5381);
-}
+#include "Constants.hpp"
 
 unsigned long constexpr
   TOKEN_F            = djb2("f"           ),

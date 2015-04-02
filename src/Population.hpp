@@ -13,16 +13,18 @@ class Population
 {
 public:
   /**
-   * Load the population from the specified connection
+   * Load the population from the specified connection by name
+   * Connection strings will exist in config with defined names
    * Will create the database if it does not exist
    */
-  Population(std::string connection);
+  Population(std::string name);
   virtual ~Population();
 
   /**
    * Retrieve a list of loaded generations
    */
-  const std::vector<Generation>* GetGenerations() const;
+  const std::vector<Generation*>* GetGenerations() const;
+//                            *>*
 private:
   std::vector<Generation*> generations;
 

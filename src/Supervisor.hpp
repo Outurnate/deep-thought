@@ -3,6 +3,7 @@
 
 #include "TetrinetClient.hpp"
 #include "AIEngine.hpp"
+#include "AIManager.hpp"
 
 /**
  * Supervisor manages rooms, issues commands, and generally wrangles bots
@@ -11,10 +12,12 @@
 class Supervisor : public TetrinetClient
 {
 public:
-  Supervisor();
+  Supervisor(AIManager* manager);
   virtual ~Supervisor();
 protected:
   void ProcessCommand(TetrinetMessage message, std::deque<std::string>* tokens) override;
+private:
+  AIManager* manager;
 };
 
 #endif

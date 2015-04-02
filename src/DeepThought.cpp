@@ -42,7 +42,7 @@ int main()
   manager = new AIManager();
   manager->RegisterStatusHandler(interface);
 
-  manager->Start();
+  while(true); //wheee
 
   delete manager;
   delete interface;

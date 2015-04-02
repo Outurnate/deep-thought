@@ -5,22 +5,15 @@
 using namespace boost;
 using namespace log4cxx;
 
-AIManager::AIManager()
+AIManager::AIManager() : population(0)
 {
-  addEngine(new AIEngine("DeepThought", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.DeepThought")));
-  addEngine(new AIEngine("Hactar", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.Hactar")));
-  addEngine(new AIEngine("HAL9000", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.HAL9000")));
-  addEngine(new AIEngine("Data", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.Data")));
-  addEngine(new AIEngine("WOPR", -1.0f, -1.0f, -1.0f, 20.0f, this, Logger::getLogger("engines.WOPR")));
+  supervisor = new Supervisor(this);
 }
 
 AIManager::~AIManager()
 {
-}
-
-void AIManager::Start()
-{
-  while (true); // you spin me right round
+  delete supervisor;
+  delete population;
 }
 
 void AIManager::RegisterStatusHandler(IFieldStatusHandler* handler) // called by client
@@ -31,6 +24,29 @@ void AIManager::RegisterStatusHandler(IFieldStatusHandler* handler) // called by
 void AIManager::SendEngineToChannel(AIEngine* engine, const std::string channel)
 {
   engine->JoinChannel(channel);
+}
+
+void AIManager::LoadPopulation(const std::string name)
+{
+  population = new Population(name);
+  if (!population->IsTrained())
+    population->Start(this);
+  //start tick loop
+}
+
+void AIManager::QueueMatch(Match* match)
+{
+}
+
+void AIManager::PopulationTick()
+{
+  //pseudo:
+  //foreach engine
+  //if done
+  //find results, send to match
+  //foreach channel in channels
+  //if free
+  //pop match queue
 }
 
 void AIManager::addEngine(AIEngine* engine)

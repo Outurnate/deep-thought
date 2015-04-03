@@ -1,14 +1,23 @@
 #include "Population.hpp"
 
+using namespace std;
 
-Population::Population(std::string name)
+Population::Population(std::string name, AIManager* manager) : manager(manager)
 {
+  generations = new list<Generation>();
+  //dummy generations
+  generations->insert(generations->end(), Generation(100));
 }
 
 Population::~Population()
 {
+  delete generations;
 }
 
-const std::vector<Generation*>* Population::GetGenerations() const
+const list<Generation>* Population::GetGenerations() const
+{
+}
+
+void Population::stateHandler(AIEngine* engine, AIState state)
 {
 }

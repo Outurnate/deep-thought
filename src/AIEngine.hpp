@@ -12,10 +12,12 @@
 #include <boost/thread.hpp>
 
 class AIEngine;
+enum class AIState;
 
 #include "AIStatus.hpp"
 #include "AIManager.hpp"
 #include "TetrinetClient.hpp"
+#include "Genome.hpp"
 
 /** Definition of a tetramino shape */
 struct PieceDef
@@ -37,6 +39,14 @@ struct PieceLocation
   double rank;
 };
 
+
+enum class AIState // should be own header
+{
+  IDLE,
+  RUNNING,
+  WAITING
+};
+
 /**
  * Core AI class.  Connects to server and responds to messages
  */
@@ -44,9 +54,9 @@ class AIEngine : public TetrinetClient
 {
 public:
   /**
-   * Init the engine with the specified nick and weights
+   * Init the engine with the genome and logger
    */
-  AIEngine(std::string nickname, double g, double b, double r, double c, AIManager* manager, log4cxx::LoggerPtr logger);
+  AIEngine(Genome genome, log4cxx::LoggerPtr logger);
   /**
    * Copy constructor
    */
@@ -58,6 +68,19 @@ public:
 
   // Inherited from TetrinetClient
   void Stop() override;
+
+  /**
+   * Gets the current state
+   */
+  AIState GetState();
+  /**
+   * Sets/clears wait flag
+   */
+  AIState SetWait(bool waiting);
+  /**
+   * Binds this engine to an AIManager
+   */
+  void BindManager(AIManager* manager);
 private:
   /**
    * Main game loop
@@ -88,6 +111,9 @@ private:
   /** Counts the height of blocks in a given column */
   inline unsigned columnHeight(const std::vector<char>* _field, unsigned x);
 
+  /** Sets current state and fires handler */
+  inline void setState(AIState state);
+
   std::vector<int> freqarr, specarr;
   /** Playing field (row major) */
   std::vector<char> field;
@@ -98,6 +124,7 @@ private:
   boost::posix_time::seconds pieceDelay;
   AIManager* manager;
   log4cxx::LoggerPtr logger;
+  AIState currentState;
 
   static constexpr PieceDef *pdefs[7]
   {

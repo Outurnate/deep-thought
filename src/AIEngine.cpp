@@ -19,8 +19,8 @@ using namespace std;
 using namespace log4cxx;
 using namespace boost;
 
-AIEngine::AIEngine(string nickname, double g, double b, double r, double c, AIManager* manager, LoggerPtr logger)
-  : TetrinetClient(nickname, logger), field(FIELD_SIZE, '0'), _g(g), _b(b), _r(r), _c(c), pieceDelay(1), manager(manager), logger(logger), placer(0)
+AIEngine::AIEngine(Genome genome, LoggerPtr logger)
+  : TetrinetClient(genome.Name, logger), field(FIELD_SIZE, '0'), _g(genome.G), _b(genome.B), _r(genome.R), _c(genome.C), pieceDelay(1), manager(0), logger(logger), placer(0), currentState(AIState::IDLE)
 {
 }
 
@@ -49,6 +49,11 @@ void AIEngine::Stop()
     placer->interrupt();
     placer->join();
   }
+}
+
+void AIEngine::BindManager(AIManager* manager)
+{
+  this->manager = manager;
 }
 
 void AIEngine::DoPlacing()
@@ -265,11 +270,13 @@ void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
       seedstr << dec << tokens->at(11);
       srand(atoi(seedstr.str().c_str())); //TODO
       fill(field.begin(), field.end(), '0');
+      setState(AIState::RUNNING);
       placer = new thread(&AIEngine::DoPlacing, this);
     }
     break;
 
     case TetrinetMessage::ENDGAME:
+      setState(AIState::IDLE);
       Stop();
       break;
     }
@@ -277,4 +284,21 @@ void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
   catch (out_of_range& e)
   {
   }
+}
+
+AIState AIEngine::GetState()
+{
+  return currentState;
+}
+
+AIState AIEngine::SetWait(bool waiting)
+{
+  if (currentState != AIState::RUNNING)
+    setState(waiting ? AIState::WAITING : AIState::IDLE);
+}
+
+void AIEngine::setState(AIState state)
+{
+  currentState = state;
+  manager->stateHandler(this, state);
 }

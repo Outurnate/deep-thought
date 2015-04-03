@@ -28,16 +28,14 @@ void AIManager::SendEngineToChannel(AIEngine* engine, const std::string channel)
 
 void AIManager::LoadPopulation(const std::string name)
 {
-  population = new Population(name);
-  if (!population->IsTrained())
-    population->Start(this);
-  //start tick loop
+  population = new Population(name, this);
 }
 
 void AIManager::QueueMatch(Match* match)
 {
 }
 
+// Called via population when status changes
 void AIManager::PopulationTick()
 {
   //pseudo:
@@ -52,6 +50,7 @@ void AIManager::PopulationTick()
 void AIManager::addEngine(AIEngine* engine)
 {
   thread* engineThread = new thread(&AIEngine::Run, engine); // will dealloc with thread group
+  engine->BindManager(this);
   engineThreads.add_thread(engineThread);
 }
 
@@ -65,4 +64,10 @@ void AIManager::statusHandler(AIStatus status) // called from engine
 {
   for (IFieldStatusHandler* handler : handlers)
     handler->HandleStatus(status);
+}
+
+void AIManager::stateHandler(AIEngine* engine, AIState state)
+{
+  if (population)
+    population->stateHandler(engine, state);
 }

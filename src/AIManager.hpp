@@ -6,6 +6,7 @@
 
 class AIManager;
 class Supervisor;
+class Match; // TODO go away
 
 #include "AIEngine.hpp"
 #include "AIStatus.hpp"
@@ -42,6 +43,7 @@ private:
   void removeEngine(AIEngine* engine);
 
   void statusHandler(AIStatus status);
+  void stateHandler(AIEngine* engine, AIState state);
 
   Supervisor* supervisor;
   Population* population;

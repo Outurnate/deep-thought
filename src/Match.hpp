@@ -12,6 +12,8 @@ public:
   bool CanPlayNow(); // check if both players are free
   void QueueMatch(); // sets both bots to 'queued' so another match cannot use them
   void Start(std::string channel);
+private:
+  AIEngine *playerOne, *playerTwo;
 };
 
 #endif

@@ -1,9 +1,40 @@
-#include <map>
-#include <string>
+#include "MarkovGenerator.hpp"
+
+#include <iterator>
+
+#include "Random.hpp"
 
 using namespace std;
 
-void main()
+MarkovGenerator::MarkovGenerator(MarkovCorpus* corpus) : corpus(corpus)
+{
+}
+
+MarkovGenerator::~MarkovGenerator()
+{
+  delete corpus;
+}
+
+string MarkovGenerator::GenerateName()
+{
+  string name = next(corpus->GetCorpus()->begin(), (Random::Get().ZeroMax() % corpus->GetCorpus()->size()))->first; // get a random trigram from corpus
+  
+}
+
+MarkovCorpus::MarkovCorpus()
+{
+}
+
+MarkovCorpus::~MarkovCorpus()
+{
+}
+
+const std::map<std::string, std::map<std::string, double>>* MarkovCorpus::GetCorpus()
+{
+  return &corpus;
+}
+
+MarkovCorpus MarkovCorpus::FromStream(const std::istream& in)
 {
   // A - trigram
   // B - single char next
@@ -13,7 +44,7 @@ void main()
 
   // Each line will contain one word
   for (string line; getline(cin, line);)
-    for (unsigned i = 0; i < (line.length - 4); ++i)
+    for (unsigned i = 0; i < (line.length() - 4); ++i)
     {
       string trigram = line.substr(i, 3);
       string next = line.substr(i + 3, 0);
@@ -40,4 +71,8 @@ void main()
       frequencyEntry.emplace(entry.first, entry.second / total);
     frequencyCorpus.emplace(trigramEntry.first, frequencyEntry);
   }
+
+  MarkovCorpus mcorpus;
+  mcorpus.corpus = frequencyCorpus;
+  return mcorpus;
 }

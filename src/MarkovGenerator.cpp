@@ -1,8 +1,10 @@
 #include "MarkovGenerator.hpp"
 
+#include <algorithm>
 #include <iterator>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/random/discrete_distribution.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace boost;
@@ -18,19 +20,22 @@ MarkovGenerator::~MarkovGenerator()
 {
 }
 
+string MarkovGenerator::weightedEntry(string trigram)
+{
+  map<string, double> entryInit = corpus->GetCorpus()->at(trigram);
+  auto beginInit = make_transform_iterator(entryInit.begin(), map_v<string, double>()),
+    endInit = make_transform_iterator(entryInit.end(), map_v<string, double>());
+  random::discrete_distribution<> distInit(beginInit, endInit);
+  return next(entryInit.begin(), distInit(*mersenne))->first;
+}
+
 string MarkovGenerator::GenerateName()
 {
-  string name = next(corpus->GetCorpus()->begin(), (*corpusDist)())->first; // get a random trigram from corpus
+  string name = weightedEntry(""); // get a random trigram from corpus
   int length = 5 + (*nameLength)(); // 5-12 length
   while (name.length() != length)
-  {
-    map<string, double> entry = corpus->GetCorpus()->at(name.substr(name.length() - 3, 3));
-    auto begin = make_transform_iterator(entry.begin(), map_v<string, double>()),
-      end = make_transform_iterator(entry.end(), map_v<string, double>());
-    random::discrete_distribution<> dist(begin, end);
-    name += next(entry.begin(), dist(*mersenne))->first;
-  }
-  return name;
+    name += weightedEntry(name.substr(name.length() - 3, 3));
+  return to_upper_copy(name.substr(0, 1)) + to_lower_copy(name.substr(1, name.length() - 1));
 }
 
 MarkovCorpus::MarkovCorpus()
@@ -46,33 +51,43 @@ const std::map<std::string, std::map<std::string, double>>* MarkovCorpus::GetCor
   return &corpus;
 }
 
+void MarkovCorpus::checkEntry(_corpus& c, string trigram, string entry)
+{
+  // Ensure keys exist
+  if (!c.count(trigram))
+    c.emplace(trigram, map<string, unsigned long>());
+  if (!c.at(trigram).count(entry))
+    c.at(trigram).emplace(entry, 0);
+}
+
 MarkovCorpus MarkovCorpus::FromStream(istream& in)
 {
-  // A - trigram
-  // B - single char next
-  // C - total
-      /*AA*/      /*BB*/  /*CCCCCCCCC*/
-  map<string, map<string, unsigned long>> corpus;
+  _corpus corpus;
 
   // Each line will contain one word
   for (string line; getline(in, line);)
+  {
+    std::transform(line.begin(), line.end(), line.begin(), ::tolower);
     for (unsigned i = 0; i < (line.length() - 4); ++i)
     {
       string trigram = line.substr(i, 3);
       string next = line.substr(i + 3, 1);
 
+      if (i == 0)
+      {
+	checkEntry(corpus, string(""), trigram);
+	++corpus.at("").at(trigram);
+      }
+
       if (next.length() == 0)
 	break;
 
-      // Ensure keys exist
-      if (!corpus.count(trigram))
-	corpus.emplace(trigram, map<string, unsigned long>());
-      if (!corpus.at(trigram).count(next))
-	corpus.at(trigram).emplace(next, 0);
+      checkEntry(corpus, trigram, next);
 
       // Increment
       ++corpus.at(trigram).at(next);
     }
+  }
 
   // Convert to frequency corpus
   map<string, map<string, double>> frequencyCorpus;

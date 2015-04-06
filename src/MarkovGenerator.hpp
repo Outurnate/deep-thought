@@ -16,13 +16,20 @@ struct map_v
   const V& operator()(const std::pair<K, V>& pair) const { return pair.second; }
 };
 
+  // A - trigram
+  // B - single char next
+  // C - total
+                 /*AAAAAAA*/           /*BBBBBBB*/  /*CCCCCCCCC*/
+typedef std::map<std::string, std::map<std::string, unsigned long>> _corpus;
+typedef std::map<std::string, std::map<std::string, double>>        _fcorpus;
+
 class MarkovCorpus
 {
 public:
   MarkovCorpus();
   virtual ~MarkovCorpus();
 
-  const std::map<std::string, std::map<std::string, double>>* GetCorpus();
+  const _fcorpus* GetCorpus();
   
   static MarkovCorpus FromStream(std::istream& in);
 private:
@@ -30,6 +37,8 @@ private:
 
   template<class Archive>
   void serialize(Archive& ar, const unsigned version) { ar & BOOST_SERIALIZATION_NVP(corpus); }
+
+  inline static void checkEntry(_corpus& c, std::string trigram, std::string entry);
   
   std::map<std::string, std::map<std::string, double>> corpus;
 };
@@ -42,6 +51,8 @@ public:
 
   std::string GenerateName();
 private:
+  inline std::string weightedEntry(std::string trigram);
+  
   MarkovCorpus* corpus;
   boost::mt11213b* mersenne;
   boost::variate_generator<boost::mt11213b, boost::uniform_int<> > *corpusDist, *nameLength;

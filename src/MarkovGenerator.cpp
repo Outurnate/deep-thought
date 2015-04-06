@@ -34,7 +34,16 @@ string MarkovGenerator::GenerateName()
   string name = weightedEntry(""); // get a random trigram from corpus
   int length = 5 + (*nameLength)(); // 5-12 length
   while (name.length() != length)
-    name += weightedEntry(name.substr(name.length() - 3, 3));
+  {
+    try
+    {
+      name += weightedEntry(name.substr(name.length() - 3, 3));
+    }
+    catch (out_of_range) // no text in corpus
+    {
+      name = name.substr(0, name.length() - 1); //backtrack
+    }
+  }
   return to_upper_copy(name.substr(0, 1)) + to_lower_copy(name.substr(1, name.length() - 1));
 }
 

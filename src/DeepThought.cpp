@@ -14,8 +14,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/parsers.hpp>
 #include <fstream>
 #include <signal.h>
+#include <string>
+#include <iostream>
 
 #include "TermInterface.hpp"
 #include "AIManager.hpp"
@@ -25,6 +30,7 @@ using namespace log4cxx;
 using namespace std;
 using namespace boost;
 using namespace boost::archive;
+using namespace boost::program_options;
 
 AIManager* manager;
 TermInterface* interface;
@@ -66,11 +72,46 @@ inline void quit()
   killCondition.notify_one();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   mutex::scoped_lock lock(killMutex);
+
+  options_description desc("Usage");
+
+  desc.add_options()
+    ("help,h", "Display this message")
+    ("version,v", "Version info")
+    ("server,s", value<string>()->required(), "Hostname or address of server to connect to")
+    ("logfile,l", value<string>()->default_value("deep-thought.log"), "Log file path")
+    ("corpus,c", value<string>()->required()->default_value("corpus.txt"), "Corpus file path")
+    ("generate-corpus,g", "Generate a corpus from stdin");
+
+  variables_map opt;
+  store(command_line_parser(argc, argv).options(desc).run(), opt);
+
+  if (opt.count("help"))
+  {
+    cout << "deep-thought  Copyright (C) 2015  Joseph D" << endl
+         << "This program comes with ABSOLUTELY NO WARRANTY; distributed under the GNU GPLv3" << endl
+         << "This is free software, and you are welcome to redistribute it." << endl
+         << "http://www.gnu.org/licenses/gpl-3.0.html" << endl << endl
+         << desc;
+    return 0;
+  }
+
+  try
+  {
+    notify(opt);
+  }
+  catch (required_option& e)
+  {
+    cerr << "Invalid command line: " << e.what() << endl
+	 << "Use -h or --help for options" << endl;
+    return 1;
+  }
+  
   // Create loggers
-  FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), "logfile", false);
+  FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), opt["logfile"].as<string>(), false);
   interface = new TermInterface();
   interface->setLayout(LayoutPtr(new SimpleLayout()));
 
@@ -82,8 +123,7 @@ int main()
   Logger::getRootLogger()->setLevel(Level::getTrace());
 
   // Register signal handlers
-  struct sigaction winchSA;
-  struct sigaction sigintSA;
+  struct sigaction winchSA, sigintSA;
   winchSA.sa_handler = winchHandler;
   sigintSA.sa_handler = sigintHandler;
   sigemptyset(&winchSA.sa_mask);

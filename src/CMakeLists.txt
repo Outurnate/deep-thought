@@ -1,9 +1,15 @@
-FILE(GLOB_RECURSE project_SRCS *.cpp *.cxx *.cc *.C *.c *.h *.hpp)
+FILE(GLOB project_SRCS *.cpp *.cxx *.cc *.C *.c *.h *.hpp)
+FILE(GLOB project_MAIN Main/*.cpp)
 SET(project_LIBS ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CURSES_LIBRARIES})
 SET(project_BIN ${PROJECT_NAME})
 
-ADD_EXECUTABLE(${project_BIN} ${project_SRCS})
-TARGET_LINK_LIBRARIES(${project_BIN} ${project_LIBS})
+ADD_LIBRARY(libdeepthought STATIC ${project_SRCS})
+TARGET_LINK_LIBRARIES(libdeepthought ${project_LIBS})
+
+ADD_EXECUTABLE(${project_BIN} ${project_MAIN})
+TARGET_LINK_LIBRARIES(${project_BIN} libdeepthought) #${project_LIBS}
 SET_TARGET_PROPERTIES(${project_BIN} PROPERTIES VERSION "${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}" OUTPUT_NAME ${project_BIN} CLEAN_DIRECT_OUTPUT 1)
+
+ADD_SUBDIRECTORY(Test)
 
 INSTALL(TARGETS ${project_BIN} DESTINATION bin)

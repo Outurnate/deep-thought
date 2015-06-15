@@ -60,7 +60,7 @@ void TetrinetClient::Run()
     tcp::resolver resolver(socio);
     tcp::resolver::query query(tcp::v4(), "127.0.0.1", "31457"); // limit to ipv4...since protocol doesn't support ipv6
     tcp::resolver::iterator iterator = resolver.resolve(query), end;
-    error_code errorc = error::host_not_found;
+    boost::system::error_code errorc = error::host_not_found;
     while (errorc && iterator != end)
     {
       socket.close();
@@ -92,7 +92,7 @@ void TetrinetClient::Run()
       }
     }
   }
-  catch (error_code& e)
+  catch (boost::system::error_code& e)
   {
     LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.message());
   }

@@ -18,6 +18,7 @@ SET(APPLICATION_VENDOR_NAME "panicnot42")
 SET(APPLICATION_VENDOR_URL "panicnot42.com")
 SET(APPLICATION_ID "${APPLICATION_VENDOR_ID}.${PROJECT_NAME}")
 LIST(APPEND CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS} -ftest-coverage -fprofile-arcs")
+ENABLE_TESTING()
 
 #
 # Debugging Options
@@ -41,7 +42,7 @@ INCLUDE_DIRECTORIES("${MAINFOLDER}/include")
 # Locate Project Prerequisites 
 #
 SET(Boost_ADDITIONAL_VERSIONS "1.39" "1.39.0" "1.40" "1.40.0" "1.41" "1.41.0" "1.42" "1.42.0" "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1.46" "1.46.0" "1.47" "1.47.0" "1.48" "1.48.0" "1.49" "1.49.0" "1.50" "1.50.0")
-FIND_PACKAGE(Boost 1.37 COMPONENTS "program_options" "system" "thread" "serialization" REQUIRED)
+FIND_PACKAGE(Boost 1.37 COMPONENTS "program_options" "system" "thread" "serialization" "unit_test_framework" REQUIRED)
 FIND_PACKAGE(Log4Cxx REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(Curses REQUIRED)

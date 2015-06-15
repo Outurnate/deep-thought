@@ -1,8 +1,9 @@
 FILE(GLOB project_tests *.cpp)
 
 FOREACH(testFile ${project_tests})
+    INCLUDE_DIRECTORIES(${MAINFOLDER}/src)
     GET_FILENAME_COMPONENT(testExecutable ${testFile} NAME_WE)
     ADD_EXECUTABLE(${testExecutable} ${testFile})
-    TARGET_LINK_LIBRARIES(${testExecutable} ${project_LIBS})
+    TARGET_LINK_LIBRARIES(${testExecutable} libdeepthought)
     ADD_TEST(${testExecutable} ${EXECUTABLE_OUTPUT_PATH}/${testExecutable})
 ENDFOREACH(testFile)

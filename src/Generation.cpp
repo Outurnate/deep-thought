@@ -5,8 +5,13 @@
 using namespace std;
 using namespace log4cxx;
 
-Generation::Generation(int genomes)
+Generation::Generation()
 {
+}
+
+Generation::Generation(unsigned generationId)
+{
+  /*int genomes
   this->genomes = new map<string, Genome>();
   this->engines = new vector<AIEngine*>(genomes);
   for (unsigned i = 0; i < genomes; ++i)
@@ -14,12 +19,12 @@ Generation::Generation(int genomes)
     Genome genome = Genome();
     this->genomes->insert(pair<string, Genome>(genome.Name, genome));
     this->engines->push_back(new AIEngine(genome, Logger::getLogger("engines." + genome.Name)));
-  }
+    }*/
 }
 
 Generation::~Generation()
 {
-  delete genomes;
+  //delete genomes;
 }
 
 const map<string, Genome>* Generation::GetGenomes() const

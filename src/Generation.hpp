@@ -11,7 +11,8 @@
 class Generation
 {
 public:
-  Generation(int genomes);
+  Generation();
+  Generation(unsigned generationId);
   virtual ~Generation();
   
   /**

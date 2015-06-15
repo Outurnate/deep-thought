@@ -68,6 +68,6 @@ void AIManager::statusHandler(AIStatus status) // called from engine
 
 void AIManager::stateHandler(AIEngine* engine, AIState state)
 {
-  if (population)
-    population->stateHandler(engine, state);
+//  if (population)
+//    population->stateHandler(engine, state);
 }

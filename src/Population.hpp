@@ -3,9 +3,11 @@
 
 #include <string>
 #include <list>
+#include <boost-optional.h>
+#include <soci/soci.h>
 
 class Population;
-class Generation; // TODO buhbye
+class Generation;
 
 #include "Generation.hpp"
 #include "AIManager.hpp"
@@ -34,13 +36,15 @@ public:
    * Retrieves training status for current population
    */
   bool IsTrained();
+  void Init();
 private:
   std::list<Generation>* generations;
 
   void commit();
-  void stateHandler(AIEngine* engine, AIState state);
 
   AIManager* manager;
+  soci::session* sql;
+  bool isInit;
 };
 
 #endif

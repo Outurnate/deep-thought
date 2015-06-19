@@ -28,7 +28,7 @@ void AIManager::SendEngineToChannel(AIEngine* engine, const std::string channel)
 
 void AIManager::LoadPopulation(const std::string name)
 {
-  population = new Population(name, this);
+  population = new Population(name);
 }
 
 void AIManager::QueueMatch(Match* match)

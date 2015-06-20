@@ -35,6 +35,7 @@ private:
   void init();
 
   std::list<Generation>* generations;
+  std::string connectionString;
   soci::session* sql;
 };
 

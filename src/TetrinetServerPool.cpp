@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <signal.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace boost;
@@ -32,12 +33,12 @@ const unsigned TetrinetServerPool::GetServerCapacity() const
 
 const unsigned TetrinetServerPool::GetStartedServers() const
 {
-  return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->Started(); });
+  return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->GetState() != TetrinetServerState::STOPPED; });
 }
 
 const unsigned TetrinetServerPool::GetActiveServers() const
 {
-  return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->Started(); }); // TODO
+  return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->GetState() == TetrinetServerState::OCCUPIED; });
 }
 
 const bool TetrinetServerPool::IsServerAvailable() const
@@ -50,18 +51,24 @@ const uint32_t TetrinetServerPool::GetIPv4Address() const
   return ipv4;
 }
 
-void TetrinetServerPool::RunMatch(Match match)
+void TetrinetServerPool::RunMatch(Match& match)
 {
+  if (!IsServerAvailable())
+    throw runtime_error("No servers free");
+
+  (*find_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->GetState() == TetrinetServerState::VACANT; }))->SetMatch(match);
 }
 
 TetrinetServerPool::TetrinetServer::TetrinetServer(const uint16_t port, const std::string pidFile, const std::string startCmd, const std::string stopCmd)
   : port(port),
     pid(-1),
-    started(false),
+    state(TetrinetServerState::STOPPED),
     pidFile(pidFile),
     startCmd(startCmd),
     stopCmd(stopCmd),
-    pidStream(pidFile)
+    pidStream(pidFile),
+    match(none),
+    onCompleteConnection(none)
 {
 }
 
@@ -76,9 +83,38 @@ const uint16_t TetrinetServerPool::TetrinetServer::GetPort() const
   return port;
 }
 
-const bool TetrinetServerPool::TetrinetServer::Started() const
+const TetrinetServerState TetrinetServerPool::TetrinetServer::GetState() const
 {
-  return started = kill(pid, 0) == 0;
+  return state = (kill(pid, 0) == 0 ? (match != none ? TetrinetServerState::VACANT : TetrinetServerState::OCCUPIED) : TetrinetServerState::STOPPED);
+}
+
+const optional<Match&> TetrinetServerPool::TetrinetServer::GetMatch() const
+{
+  return match;
+}
+
+void TetrinetServerPool::TetrinetServer::SetMatch(const Match& match)
+{
+  if (state != TetrinetServerState::VACANT)
+    throw runtime_error("Server not vacant or stopped");
+  
+  this->match = match;
+  state = TetrinetServerState::OCCUPIED;
+  onCompleteConnection = match.addOnComplete(Match::CompleteSignal::slot_type(bind(&TetrinetServerPool::TetrinetServer::ClearMatch, this, _1)));
+}
+
+void TetrinetServerPool::TetrinetServer::ClearMatch(const Match& match)
+{
+  if (!this->match && optional<const Match&>(const_cast<const Match&>(this->match.get())) != optional<const Match&>(match)) // this whole line is derp
+    throw runtime_error("Wrong match event received, or no match in progress");
+  
+  state = TetrinetServerState::VACANT;
+  this->match = none;
+  
+  if (!this->onCompleteConnection)
+    throw runtime_error("Slot never connected");
+  
+  onCompleteConnection->disconnect();
 }
 
 void TetrinetServerPool::TetrinetServer::Start()
@@ -97,4 +133,3 @@ void TetrinetServerPool::TetrinetServer::Stop()
 {
   system(stopCmd.c_str());
 }
-

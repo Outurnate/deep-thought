@@ -2,18 +2,22 @@
 #define MATCH_HPP
 
 #include <string>
+#include <boost/signals2.hpp>
+#include <boost/signals2/connection.hpp>
+
+#include "Genome.hpp"
 
 class Match
 {
 public:
-  //Match(AIEngine* playerOne, AIEngine* playerTwo);
+  typedef boost::signals2::signal<void (Match*)> CompleteSignal;
+  
+  Match(Genome* a, Genome* b);
   virtual ~Match();
 
-  bool CanPlayNow(); // check if both players are free
-  void QueueMatch(); // sets both bots to 'queued' so another match cannot use them
-  void Start(std::string channel);
+  boost::signals2::connection& addOnComplete(const CompleteSignal::slot_type& slot) const;
 private:
-  //AIEngine *playerOne, *playerTwo;
+  mutable CompleteSignal OnComplete;
 };
 
 #endif

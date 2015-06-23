@@ -3,7 +3,7 @@
 /*Match::Match(AIEngine* playerOne, AIEngine* playerTwo) : playerOne(playerOne), playerTwo(playerTwo)
 {
 }*/
-
+/*
 Match::~Match()
 {
 }
@@ -24,3 +24,4 @@ void Match::Start(std::string channel)
   //playerOne->JoinChannel(channel);
   //playerTwo->JoinChannel(channel);
 }
+*/

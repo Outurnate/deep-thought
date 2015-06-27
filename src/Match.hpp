@@ -10,14 +10,14 @@
 class Match
 {
 public:
-  typedef boost::signals2::signal<void (Match*)> CompleteSignal;
+  typedef boost::signals2::signal<void (const Match&)> CompleteSignal;
   
   Match(Genome* a, Genome* b);
   virtual ~Match();
 
-  boost::signals2::connection& addOnComplete(const CompleteSignal::slot_type& slot) const;
+  const boost::signals2::connection& AddOnComplete(const CompleteSignal::slot_type& slot) const;
 private:
-  mutable CompleteSignal OnComplete;
+  mutable CompleteSignal onComplete;
 };
 
 #endif

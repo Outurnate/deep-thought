@@ -1,27 +1,15 @@
 #include "Match.hpp"
 
-/*Match::Match(AIEngine* playerOne, AIEngine* playerTwo) : playerOne(playerOne), playerTwo(playerTwo)
+Match::Match(Genome* a, Genome* b)
+  : onComplete()
 {
-}*/
-/*
+}
+
 Match::~Match()
 {
 }
 
-bool Match::CanPlayNow()
+const boost::signals2::connection& Match::AddOnComplete(const CompleteSignal::slot_type& slot) const
 {
-//  return playerOne->GetState() == AIState::IDLE && playerTwo->GetState() == AIState::IDLE;
+  return onComplete.connect(slot);
 }
-
-void Match::QueueMatch()
-{
-  //playerOne->SetWait(true);
-  //playerTwo->SetWait(true);
-}
-
-void Match::Start(std::string channel)
-{
-  //playerOne->JoinChannel(channel);
-  //playerTwo->JoinChannel(channel);
-}
-*/

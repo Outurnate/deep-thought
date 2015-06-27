@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!DOCTYPE tetrinet-server PUBLIC "-//LFJR//Jetrix TetriNET Server//EN" "http://jetrix.sourceforge.net/dtd/tetrinet-server.dtd">
+
+<tetrinet-server host="[ALL]">
+  <name>Jetrix TetriNET Server</name>
+  <language>en</language>
+  <timeout>1000</timeout>
+  <max-channels>1</max-channels>
+  <max-players>50</max-players>
+  <max-connections>50</max-connections>
+  <op-password>jetrixpass</op-password>
+  <admin-password>adminpass</admin-password>
+  <access-log path="log/access%g.log" />
+  <error-log  path="log/error%g.log" />
+  <listeners>
+    <listener class="net.jetrix.listeners.TetrinetListener" port="==PORT==" />
+    <listener class="net.jetrix.listeners.TSpecListener"/>
+  </listeners>
+  <services>
+    <service class="net.jetrix.services.GhostbusterService"/>
+    <service class="net.jetrix.services.VersionService"/>
+  </services>
+  <commands>
+    <command class="net.jetrix.commands.AwayCommand"/>
+    <command class="net.jetrix.commands.BroadcastCommand"/>
+    <command class="net.jetrix.commands.ConfigCommand"/>
+    <command class="net.jetrix.commands.EmoteCommand"/>
+    <command class="net.jetrix.commands.GotoCommand"/>
+    <command class="net.jetrix.commands.HelpCommand"/>
+    <command class="net.jetrix.commands.IgnoreCommand"/>
+    <command class="net.jetrix.commands.IpCommand"/>
+    <command class="net.jetrix.commands.JoinCommand"/>
+    <command class="net.jetrix.commands.KickCommand"/>
+    <command class="net.jetrix.commands.LanguageCommand"/>
+    <command class="net.jetrix.commands.ListCommand"/>
+    <command class="net.jetrix.commands.MotdCommand"/>
+    <command class="net.jetrix.commands.MoveCommand"/>
+    <command class="net.jetrix.commands.OperatorCommand"/>
+    <command class="net.jetrix.commands.PauseCommand"/>
+    <command class="net.jetrix.commands.PetitionCommand"/>
+    <command class="net.jetrix.commands.PingCommand"/>
+    <command class="net.jetrix.commands.RandomCommand"/>
+    <command class="net.jetrix.commands.ReplyCommand"/>
+    <command class="net.jetrix.commands.SpecListCommand"/>
+    <command class="net.jetrix.commands.StartCommand"/>
+    <command class="net.jetrix.commands.StopCommand"/>
+    <command class="net.jetrix.commands.SummonCommand"/>
+    <command class="net.jetrix.commands.TeamMessageCommand"/>
+    <command class="net.jetrix.commands.TeleportCommand"/>
+    <command class="net.jetrix.commands.TellCommand"/>
+    <command class="net.jetrix.commands.TimeCommand"/>
+    <command class="net.jetrix.commands.VersionCommand"/>
+    <command class="net.jetrix.commands.WhoCommand"/>
+  </commands>
+</tetrinet-server>

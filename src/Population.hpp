@@ -29,7 +29,7 @@ public:
   /**
    * Retrieves training status for current population
    */
-  const bool IsTrained() const;
+  bool IsTrained() const;
 private:
   void commit();
   void init();

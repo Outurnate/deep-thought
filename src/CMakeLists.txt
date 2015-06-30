@@ -1,15 +1,8 @@
-FILE(GLOB project_SRCS *.cpp *.cxx *.cc *.C *.c *.h *.hpp)
-LIST(REMOVE_ITEM project_SRCS DeepThought.cpp)
+FILE(GLOB project_SRCS *.cpp *.hpp Engine/*.cpp Engine/*.hpp)
 SET(project_LIBS ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CURSES_LIBRARIES} ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${SQLITE3_LIBRARIES})
-SET(project_BIN ${PROJECT_NAME})
 
-ADD_LIBRARY(libdeepthought STATIC ${project_SRCS})
-TARGET_LINK_LIBRARIES(libdeepthought ${project_LIBS})
-
-ADD_EXECUTABLE(${project_BIN} DeepThought.cpp)
-TARGET_LINK_LIBRARIES(${project_BIN} libdeepthought)
-SET_TARGET_PROPERTIES(${project_BIN} PROPERTIES VERSION "${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}" OUTPUT_NAME ${project_BIN} CLEAN_DIRECT_OUTPUT 1)
+ADD_LIBRARY(deepthought STATIC ${project_SRCS})
+TARGET_LINK_LIBRARIES(deepthought ${project_LIBS})
 
 ADD_SUBDIRECTORY(Test)
-
-INSTALL(TARGETS ${project_BIN} DESTINATION bin)
+ADD_SUBDIRECTORY(Program)

@@ -7,11 +7,34 @@
 
 using namespace std;
 
-const FieldTransform Piece::GetTransform(unsigned x, unsigned y) const
+const FieldTransform Piece::GetTransform(unsigned x, unsigned y, FieldElement element) const
 {
+  FieldTransform transform;
+  for (uint8_t i = 0; i < (width * height); ++i)
+  {
+    uint8_t x2 = i % width,
+            y2 = i / width;
+    if ((*this)(x2, y2))
+      transform(x + x2, y + y2) = element;
+  }
+  return transform;
 }
 
-constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, uint16_t definition, uint8_t width, uint8_t height)
+Piece Piece::Get(PieceShape shape, PieceRotation rotation)
+{
+  return defs[shape][rotation];
+}
+
+bool Piece::operator() (unsigned x, unsigned y) const
+{
+  if (x >= width)
+    throw out_of_range("x");
+  if (y >= height)
+    throw out_of_range("y");
+  return definition[(y * pieceWidth) + x];
+}
+
+constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uint8_t width, uint8_t height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
 {
 }
@@ -28,7 +51,7 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
   assert(size == 20);
   return Piece(static_cast<PieceShape>(definition[0]),
 	       numCharToNum<PieceRotation>(definition[1]),
-	       stoi(string(&definition[4]), nullptr, 2),
+	       PieceDefinition(string(&definition[4])),
 	       numCharToNum<uint8_t>(definition[2]),
 	       numCharToNum<uint8_t>(definition[3]));
 }

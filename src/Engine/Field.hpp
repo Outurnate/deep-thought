@@ -2,6 +2,7 @@
 #define FIELD_HPP
 
 #include <boost/core/noncopyable.hpp>
+#include <memory>
 
 #include "Enum.hpp"
 #include "FieldTransform.hpp"
@@ -18,7 +19,7 @@ public:
   const FieldElement& operator()(unsigned x, unsigned y);
 private:
   const unsigned fieldWidth, fieldHeight, fieldSize;
-  FieldType field;
+  std::unique_ptr<FieldType> field;
 };
 
 #endif

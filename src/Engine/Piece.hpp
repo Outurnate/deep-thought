@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <vector>
 #include <map>
-#include <boost/mpl/map.hpp>
+#include <bitset>
 
 #include "Enum.hpp"
 #include "FieldTransform.hpp"
@@ -22,17 +22,21 @@ class Piece
   constexpr Piece friend operator "" _pd(const char* definition, size_t size); // size must always be 20 (turn this off for release) TODO
 
 public:
-  const FieldTransform GetTransform(unsigned x, unsigned y) const;
+  const FieldTransform GetTransform(unsigned x, unsigned y, FieldElement element) const;
+  bool operator() (unsigned x, unsigned y) const;
 
-  static Piece Get(PieceShape shape, PieceRotation rotation);
+  static inline Piece Get(PieceShape shape, PieceRotation rotation);
 private:
-  constexpr Piece(PieceShape shape, PieceRotation rotation, uint16_t definition, uint8_t width, uint8_t height);
+  static const uint8_t pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
+  typedef std::bitset<pieceSize> PieceDefinition;
+  
+  constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uint8_t width, uint8_t height);
   
   const PieceRotation rotation;
   const PieceShape shape;
-  const uint16_t definition;
+  const PieceDefinition definition;
   const uint8_t width, height; // apparent size, actual is always 4x4
-
+  
   static PieceDefinitionMap defs;
 };
 

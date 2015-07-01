@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <vector>
-#include <memory>
 
 enum class FieldElement : char
 {
@@ -40,6 +39,6 @@ enum class PieceShape : char
 };
 
 typedef uint8_t PieceRotation;
-typedef std::unique_ptr<std::vector<FieldElement> > FieldType; // origin top left, row-major
+typedef std::vector<FieldElement> FieldType; // origin top left, row-major
 
 #endif

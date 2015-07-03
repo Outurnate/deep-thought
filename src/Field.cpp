@@ -9,7 +9,7 @@ using namespace std;
 
 Field::Field(unsigned width, unsigned height)
   : fieldWidth(width), fieldHeight(height), fieldSize(width * height),
-    field(new vector<FieldElement>(fieldSize, FieldElement::NONE))
+    field(new FieldType(fieldSize, FieldElement::NONE))
 {
 }
 
@@ -29,4 +29,14 @@ void Field::ApplyTransform(const FieldTransform& transform)
 const FieldElement& Field::operator()(unsigned x, unsigned y)
 {
   return (*field)[(y * fieldWidth) + x];
+}
+
+unsigned Field::GetWidth() const
+{
+  return fieldWidth;
+}
+
+unsigned Field::GetHeight() const
+{
+  return fieldHeight;
 }

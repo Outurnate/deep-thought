@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <bitset>
+#include <iostream>
 
 #include "Enum.hpp"
 #include "FieldTransform.hpp"
@@ -21,11 +22,14 @@ class Piece
   // "[shape][state][width][height][16 bit definition]"
   constexpr Piece friend operator "" _pd(const char* definition, size_t size); // size must always be 20 (turn this off for release) TODO
 
+  friend std::ostream& operator<< (std::ostream& stream, const Piece& piece);
 public:
   const FieldTransform GetTransform(unsigned x, unsigned y, FieldElement element) const;
   bool operator() (unsigned x, unsigned y) const;
+  unsigned GetWidth() const;
+  unsigned GetHeight() const;
 
-  static inline Piece Get(PieceShape shape, PieceRotation rotation);
+  static Piece Get(PieceShape shape, PieceRotation rotation);
 private:
   static const uint8_t pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
   typedef std::bitset<pieceSize> PieceDefinition;

@@ -17,6 +17,8 @@ public:
   void ApplyTransform(const FieldTransform& transform);
   
   const FieldElement& operator()(unsigned x, unsigned y);
+  unsigned GetWidth() const;
+  unsigned GetHeight() const;
 private:
   const unsigned fieldWidth, fieldHeight, fieldSize;
   std::unique_ptr<FieldType> field;

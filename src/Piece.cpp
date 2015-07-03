@@ -34,29 +34,71 @@ bool Piece::operator() (unsigned x, unsigned y) const
   return definition[(y * pieceWidth) + x];
 }
 
+unsigned Piece::GetWidth() const
+{
+  return width;
+}
+
+unsigned Piece::GetHeight() const
+{
+  return height;
+}
+
+ostream& operator << (ostream& os, const Piece& piece)
+{
+  return os << piece.definition.to_string();
+}
+
 constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uint8_t width, uint8_t height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
 {
 }
 
+// here be dragons
+constexpr bool isNumeric(char c)
+{
+  return c >= '0' && c <= '9';
+}
+
+constexpr unsigned _stoi(const char* string, unsigned base, unsigned count, unsigned val = 0)
+{
+  return count != 0 ?
+    isNumeric(*string) ?
+      _stoi(string - 1, base, count - 1, (*string - '0' + val * base)) : throw "invalid numeric string"
+    : val;
+}
+
+constexpr unsigned _bc(const char* string, unsigned base = 10, unsigned count = 0)
+{
+  return *string ? // string null or not
+    _bc(string + 1, base, count + 1) // recurse, counting
+    : _stoi(string - 1, base, count); // at the end of the string, trigger loop back
+}
+
+constexpr unsigned stoi(const char* string, unsigned base = 10)
+{
+  return _bc(string, base);
+}
+
 template <typename T>
 constexpr T numCharToNum(char num) // digit to number
 {
-  assert(num >= '0' && num <= '9');
+//  assert(num >= '0' && num <= '9');
   return num - '0';
 }
+// end dragons
 
 constexpr Piece operator "" _pd(const char* definition, size_t size)
 {
-  assert(size == 20);
+//  assert(size == 20);
   return Piece(static_cast<PieceShape>(definition[0]),
 	       numCharToNum<PieceRotation>(definition[1]),
-	       PieceDefinition(string(&definition[4])),
+	       Piece::PieceDefinition(stoi(&definition[4], 2)),
 	       numCharToNum<uint8_t>(definition[2]),
 	       numCharToNum<uint8_t>(definition[3]));
 }
 
-PieceDefinitionMap Piece::defs = PieceDefinitionMap()
+PieceDefinitionMap Piece::defs = PieceDefinitionMap
 {
   {
     PieceShape::I,

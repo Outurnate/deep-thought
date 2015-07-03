@@ -1,5 +1,5 @@
 #ifndef FIELDTRANSFORM_HPP
-#define FIELDTRANSFORM_HP
+#define FIELDTRANSFORM_HPP
 
 #include <memory>
 
@@ -11,8 +11,8 @@ public:
   FieldTransform(unsigned width = 12, unsigned height = 22);
   
   FieldElement& operator() (uint8_t x, uint8_t y);
-  FieldType::const_iterator begin() const;
-  FieldType::const_iterator end() const;
+  const FieldType::const_iterator begin() const;
+  const FieldType::const_iterator end() const;
 private:
   const unsigned fieldWidth, fieldHeight, fieldSize;
   

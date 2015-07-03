@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <iostream>
 
 enum class FieldElement : char
 {
@@ -40,5 +41,10 @@ enum class PieceShape : char
 
 typedef uint8_t PieceRotation;
 typedef std::vector<FieldElement> FieldType; // origin top left, row-major
+
+inline std::ostream& operator<<(std::ostream& os, const FieldElement& element)
+{
+  return os << char(element);
+}
 
 #endif

@@ -7,39 +7,26 @@
 
 using namespace std;
 
-const FieldTransform Piece::GetTransform(unsigned x, unsigned y, FieldElement element) const
-{
-  FieldTransform transform;
-  for (uint8_t i = 0; i < (width * height); ++i)
-  {
-    uint8_t x2 = i % width,
-            y2 = i / width;
-    if ((*this)(x2, y2))
-      transform(x + x2, y + y2) = element;
-  }
-  return transform;
-}
-
 Piece Piece::Get(PieceShape shape, PieceRotation rotation)
 {
   return defs[shape][rotation];
 }
 
-bool Piece::operator() (unsigned x, unsigned y) const
+bool Piece::operator() (Coord x, Coord y) const
 {
-  if (x >= width)
+  if (x >= GetWidth())
     throw out_of_range("x");
-  if (y >= height)
+  if (y >= GetHeight())
     throw out_of_range("y");
   return definition[(y * pieceWidth) + x];
 }
 
-unsigned Piece::GetWidth() const
+Coord Piece::GetWidth() const
 {
   return width;
 }
 
-unsigned Piece::GetHeight() const
+Coord Piece::GetHeight() const
 {
   return height;
 }
@@ -49,7 +36,7 @@ ostream& operator << (ostream& os, const Piece& piece)
   return os << piece.definition.to_string();
 }
 
-constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uint8_t width, uint8_t height)
+constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
 {
 }
@@ -94,8 +81,8 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
   return Piece(static_cast<PieceShape>(definition[0]),
 	       numCharToNum<PieceRotation>(definition[1]),
 	       Piece::PieceDefinition(stoi(&definition[4], 2)),
-	       numCharToNum<uint8_t>(definition[2]),
-	       numCharToNum<uint8_t>(definition[3]));
+	       numCharToNum<Coord>(definition[2]),
+	       numCharToNum<Coord>(definition[3]));
 }
 
 PieceDefinitionMap Piece::defs = PieceDefinitionMap

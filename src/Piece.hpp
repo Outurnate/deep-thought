@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "Enum.hpp"
-#include "FieldTransform.hpp"
 
 class Piece;
 
@@ -24,22 +23,21 @@ class Piece
 
   friend std::ostream& operator<< (std::ostream& stream, const Piece& piece);
 public:
-  const FieldTransform GetTransform(unsigned x, unsigned y, FieldElement element) const;
-  bool operator() (unsigned x, unsigned y) const;
-  unsigned GetWidth() const;
-  unsigned GetHeight() const;
+  bool operator() (Coord x, Coord y) const;
+  Coord GetWidth() const;
+  Coord GetHeight() const;
 
   static Piece Get(PieceShape shape, PieceRotation rotation);
 private:
-  static const uint8_t pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
+  static const Coord pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
   typedef std::bitset<pieceSize> PieceDefinition;
   
-  constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uint8_t width, uint8_t height);
+  constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height);
   
   const PieceRotation rotation;
   const PieceShape shape;
   const PieceDefinition definition;
-  const uint8_t width, height; // apparent size, actual is always 4x4
+  const Coord width, height; // apparent size, actual is always 4x4
   
   static PieceDefinitionMap defs;
 };

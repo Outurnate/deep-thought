@@ -39,6 +39,7 @@ enum class PieceShape : char
   T = 'T'
 };
 
+typedef uint16_t Coord;
 typedef uint8_t PieceRotation;
 typedef std::vector<FieldElement> FieldType; // origin top left, row-major
 

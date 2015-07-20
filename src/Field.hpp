@@ -2,12 +2,19 @@
 #define FIELD_HPP
 
 #include <boost/core/noncopyable.hpp>
+#include <boost/range/any_range.hpp>
 #include <memory>
 
 class Field;
 
 #include "Enum.hpp"
 #include "FieldTransform.hpp"
+
+typedef boost::any_range<
+  FieldElement,
+  boost::forward_traversal_tag,
+  FieldElement,
+  std::ptrdiff_t> FieldElementRange;
 
 class Field : private boost::noncopyable
 {
@@ -16,12 +23,17 @@ public:
   Field(Coord width = 12, Coord height = 22);
   ~Field();
 
-  bool IsValidTransform(const FieldTransform& transform);
   void ApplyTransform(const FieldTransform& transform);
   
   const FieldElement& operator()(Coord x, Coord y);
   Coord GetWidth() const;
   Coord GetHeight() const;
+
+  const FieldType::const_iterator begin() const;
+  const FieldType::const_iterator end() const;
+
+  const FieldElementRange column(Coord x) const;
+  const FieldElementRange row(Coord y) const;
 private:
   const Coord fieldWidth, fieldHeight, fieldSize;
   std::unique_ptr<FieldType> field;

@@ -6,6 +6,7 @@
 
 #include "Field.hpp"
 #include "Piece.hpp"
+#include "FieldEvaluator.hpp"
 
 BOOST_AUTO_TEST_SUITE(EngineTest)
 
@@ -94,6 +95,17 @@ BOOST_AUTO_TEST_CASE(FieldIterators)
     BOOST_MESSAGE(y);
     BOOST_REQUIRE_EQUAL(w, field.GetWidth());
   }
+}
+
+// Time for some meat
+
+BOOST_AUTO_TEST_CASE(SheetTransformTrivial)
+{
+  Field field;
+  field.ApplyTransform(FieldTransform(field, Piece::Get(PieceShape::I, PieceRotation(0)), 2, 10, FieldElement::RED));
+  field.ApplyTransform(FieldEvaluator::GenerateSheetTransform(field));
+  BOOST_MESSAGE(field);
+  BOOST_REQUIRE_EQUAL(field(2, 11), FieldElement::UNDEFINED);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -21,11 +21,27 @@ FieldTransform::FieldTransform(const Field& field, const Piece& piece, Coord x, 
   }
 }
 
+FieldTransform::FieldTransform(const FieldTransform& transform)
+  : field(transform.field),
+    fieldWidth(transform.fieldWidth),
+    fieldHeight(transform.fieldHeight),
+    fieldSize(transform.fieldSize),
+    transforms(new TransformType(*transform.transforms))
+{
+}
+
 ostream& operator << (ostream& os, const FieldTransform& fieldTransform)
 {
   for (pair<const Coord, FieldElement>& element : *fieldTransform.transforms)
     os << (int)element.first << " = " << element.second << endl;
   return os;
+}
+
+FieldTransform& operator += (FieldTransform& destination, const FieldTransform& source)
+{
+  for (const auto& element : source)
+    (*destination.transforms)[element.first] = element.second;
+  return destination;
 }
 
 FieldElement& FieldTransform::operator() (Coord x, Coord y)
@@ -45,4 +61,12 @@ const FieldTransform::TransformType::const_iterator FieldTransform::begin() cons
 const FieldTransform::TransformType::const_iterator FieldTransform::end() const
 {
   return transforms->end();
+}
+
+bool FieldTransform::ContainsTransform(const FieldTransform& transform) const
+{
+  return all_of(transform.begin(), transform.end(), [this](pair<Coord, FieldElement> element)
+		{
+		  return (*transforms)[element.first] != FieldElement::NONE;
+		});
 }

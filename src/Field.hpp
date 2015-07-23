@@ -25,7 +25,7 @@ public:
 
   void ApplyTransform(const FieldTransform& transform);
   
-  const FieldElement& operator()(Coord x, Coord y);
+  const FieldElement& operator()(Coord x, Coord y) const;
   Coord GetWidth() const;
   Coord GetHeight() const;
 

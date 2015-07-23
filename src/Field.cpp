@@ -35,7 +35,7 @@ void Field::ApplyTransform(const FieldTransform& transform)
     (*field)[element.first] = element.second;
 }
 
-const FieldElement& Field::operator()(Coord x, Coord y)
+const FieldElement& Field::operator()(Coord x, Coord y) const
 {
   return (*field)[(y * fieldWidth) + x];
 }

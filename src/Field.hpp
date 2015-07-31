@@ -26,8 +26,10 @@ public:
   void ApplyTransform(const FieldTransform& transform);
   
   const FieldElement& operator()(Coord x, Coord y) const;
+  const FieldElement& operator()(Coord i) const;
   Coord GetWidth() const;
   Coord GetHeight() const;
+  Coord GetSize() const;
 
   const FieldType::const_iterator begin() const;
   const FieldType::const_iterator end() const;

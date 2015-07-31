@@ -1,6 +1,9 @@
 #include "FieldTransform.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 using namespace std;
+using namespace boost;
 
 FieldTransform::FieldTransform(const Field& field)
   : field(field), fieldWidth(field.GetWidth()), fieldHeight(field.GetHeight()),
@@ -44,13 +47,35 @@ FieldTransform& operator += (FieldTransform& destination, const FieldTransform& 
   return destination;
 }
 
+// TODO these violate const, fix
 FieldElement& FieldTransform::operator() (Coord x, Coord y)
+{ 
+  return const_cast<FieldElement&>(
+    static_cast<const FieldTransform&>(*this)(x, y));
+}
+
+
+FieldElement& FieldTransform::operator() (Coord i)
 {
-  if (fieldWidth <= x)
-    throw out_of_range("x");
-  if (fieldHeight <= y)
-    throw out_of_range("y");
-  return (*transforms)[(y * fieldWidth) + x];
+  return const_cast<FieldElement&>(
+    static_cast<const FieldTransform&>(*this)(i));
+}
+
+const FieldElement& FieldTransform::operator() (Coord x, Coord y) const
+{
+  if (!(x < fieldWidth))
+    throw out_of_range("x = " + lexical_cast<string>(x));
+  if (!(y < fieldHeight))
+    throw out_of_range("y = " + lexical_cast<string>(y));
+  return (*this)((y * fieldWidth) + x);
+}
+
+
+const FieldElement& FieldTransform::operator() (Coord i) const
+{
+  if (!(i < fieldSize))
+    throw out_of_range("i = " + lexical_cast<string>(i));
+  return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
 }
 
 const FieldTransform::TransformType::const_iterator FieldTransform::begin() const

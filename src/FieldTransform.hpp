@@ -22,6 +22,11 @@ public:
   FieldTransform(const FieldTransform& transform);
   
   FieldElement& operator() (Coord x, Coord y);
+  FieldElement& operator() (Coord i);
+  
+  const FieldElement& operator() (Coord x, Coord y) const;
+  const FieldElement& operator() (Coord i) const;
+  
   const TransformType::const_iterator begin() const;
   const TransformType::const_iterator end() const;
 

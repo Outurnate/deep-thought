@@ -5,6 +5,7 @@
 #include <iterator>
 #include <boost/range/adaptor/strided.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "Piece.hpp"
 
@@ -37,7 +38,18 @@ void Field::ApplyTransform(const FieldTransform& transform)
 
 const FieldElement& Field::operator()(Coord x, Coord y) const
 {
+  if (!(x < fieldWidth))
+    throw out_of_range("x = " + lexical_cast<string>(x));
+  if (!(y < fieldHeight))
+    throw out_of_range("y = " + lexical_cast<string>(y));
   return (*field)[(y * fieldWidth) + x];
+}
+
+const FieldElement& Field::operator()(Coord i) const
+{
+  if (!(i < fieldSize))
+    throw out_of_range("i = " + lexical_cast<string>(i));
+  return (*field)[i];
 }
 
 Coord Field::GetWidth() const
@@ -48,6 +60,11 @@ Coord Field::GetWidth() const
 Coord Field::GetHeight() const
 {
   return fieldHeight;
+}
+
+Coord Field::GetSize() const
+{
+  return fieldSize;
 }
 
 const FieldType::const_iterator Field::begin() const

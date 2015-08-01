@@ -7,9 +7,10 @@
 #include <bitset>
 #include <iostream>
 
-#include "Enum.hpp"
-
 class Piece;
+
+#include "Field.hpp"
+#include "Enum.hpp"
 
 typedef std::map<PieceShape, std::vector<Piece> > PieceDefinitionMap;
 
@@ -24,8 +25,12 @@ class Piece
   friend std::ostream& operator<< (std::ostream& stream, const Piece& piece);
 public:
   bool operator() (Coord x, Coord y) const;
+  Piece& operator= (const Piece& piece);
+  
   Coord GetWidth() const;
   Coord GetHeight() const;
+
+  bool Rotate(const Field& field, RotationDirection direction, Coord& x, Coord& y);
 
   static Piece Get(PieceShape shape, PieceRotation rotation);
 private:
@@ -34,12 +39,13 @@ private:
   
   constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height);
   
-  const PieceRotation rotation;
-  const PieceShape shape;
-  const PieceDefinition definition;
-  const Coord width, height; // apparent size, actual is always 4x4
+  PieceRotation rotation;
+  PieceShape shape;
+  PieceDefinition definition;
+  Coord width, height; // apparent size, actual is always 4x4
   
   static PieceDefinitionMap defs;
+  static SRSKickMap srsmap_jlstz, srsmap_i;
 };
 
 #endif

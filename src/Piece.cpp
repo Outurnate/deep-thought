@@ -9,7 +9,7 @@ using namespace std;
 
 Piece Piece::Get(PieceShape shape, PieceRotation rotation)
 {
-  return defs[shape][rotation];
+  return defs[shape][uint8_t(rotation)];
 }
 
 bool Piece::operator() (Coord x, Coord y) const
@@ -36,9 +36,47 @@ ostream& operator << (ostream& os, const Piece& piece)
   return os << piece.definition.to_string();
 }
 
+Piece& Piece::operator = (const Piece& piece)
+{
+  if(this == &piece)
+    return *this;
+
+  this->rotation   = piece.rotation;
+  this->shape      = piece.shape;
+  this->definition = piece.definition;
+  this->width      = piece.width;
+  this->height     = piece.height;
+  
+  return *this;
+}
+
 constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
 {
+}
+
+bool Piece::Rotate(const Field& field, RotationDirection direction, Coord& x, Coord& y)
+{
+  if (this->shape == PieceShape::O)
+    return true;
+  
+  PieceRotation rotation = PieceRotation(uint8_t(this->rotation) + (bool(direction) ? -1 : 1));
+  Piece newPiece = Get(this->shape, rotation);
+  for (TransformPair& transform : (this->shape == PieceShape::I ? srsmap_i : srsmap_jlstz)[PieceRotationPair(this->rotation, rotation)])
+  {
+    FieldTransform ftransform(field, newPiece, x + transform.first, y + transform.second, FieldElement::RED);
+    if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<Coord, FieldElement> element)
+			 {
+			   return field(element.first) == FieldElement::NONE && element.second == FieldElement::NONE;
+			 }))
+    {
+      *this = newPiece;
+      x += transform.first;
+      y += transform.second;
+      return true;
+    }
+  }
+  return false;
 }
 
 // here be dragons
@@ -71,7 +109,7 @@ template <typename T>
 constexpr T numCharToNum(char num) // digit to number
 {
 //  assert(num >= '0' && num <= '9');
-  return num - '0';
+  return T(num - '0');
 }
 // end dragons
 
@@ -85,29 +123,207 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
 	       numCharToNum<Coord>(definition[3]));
 }
 
+SRSKickMap Piece::srsmap_jlstz = SRSKickMap
+{
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( +1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( -1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( -1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( +1,  -2 )
+    }
+  },
+};
+
+SRSKickMap Piece::srsmap_i = SRSKickMap
+{
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  -1 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  +1 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  +2 ),
+      TransformPair( +2,  -1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  -2 ),
+      TransformPair( -2,  +1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  +1 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  -1 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  -2 ),
+      TransformPair( -2,  +1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  +2 ),
+      TransformPair( +2,  -1 )
+    }
+  },
+};
+
 PieceDefinitionMap Piece::defs = PieceDefinitionMap
 {
   {
     PieceShape::I,
     {
-      "I041"
+      "I044"
+        "0000"
         "1111"
         "0000"
-        "0000"
         "0000"_pd,
-      "I114"
-        "1000"
-        "1000"
-        "1000"
-        "1000"_pd,
+      "I144"
+        "0010"
+        "0010"
+        "0010"
+        "0010"_pd,
+      "I244"
+        "0000"
+        "0000"
+        "1111"
+        "0000"_pd,
+      "I344"
+        "0100"
+        "0100"
+        "0100"
+        "0100"_pd,
     }
   },
   {
     PieceShape::O,
     {
-      "O022"
-        "1100"
-        "1100"
+      "O033"
+        "0110"
+        "0110"
         "0000"
         "0000"_pd
     }
@@ -115,62 +331,72 @@ PieceDefinitionMap Piece::defs = PieceDefinitionMap
   {
     PieceShape::J,
     {
-      "J023"
-        "0100"
-        "0100"
-        "1100"
-        "0000"_pd,
-      "J132"
+      "J033"
         "1000"
         "1110"
         "0000"
         "0000"_pd,
-      "J232"
-        "1100"
-        "1000"
-        "1000"
+      "J133"
+        "0110"
+        "0100"
+        "0100"
         "0000"_pd,
-      "J332"
+      "J233"
+        "0000"
         "1110"
         "0010"
-        "0000"
+        "0000"_pd,
+      "J333"
+        "0100"
+        "0100"
+        "1100"
         "0000"_pd
     }
   },
   {
     PieceShape::L,
     {
-      "L023"
-        "1000"
-        "1000"
-        "1100"
-        "0000"_pd,
-      "L132"
+      "L033"
         "0010"
         "1110"
         "0000"
         "0000"_pd,
-      "L223"
+      "L133"
+        "0100"
+        "0100"
+        "0110"
+        "0000"_pd,
+      "L233"
+        "0000"
+        "1110"
+        "1000"
+        "0000"_pd,
+      "L332"
         "1100"
         "0100"
         "0100"
-        "0000"_pd,
-      "L332"
-        "1110"
-        "1000"
-        "0000"
         "0000"_pd
     }
   },
   {
     PieceShape::S,
     {
-      "S032"
+      "S033"
         "0110"
         "1100"
         "0000"
         "0000"_pd,
-      "S123"
+      "S133"
+        "0100"
+        "0110"
+        "0010"
+        "0000"_pd,
+      "S233"
+        "0000"
+        "0110"
+        "1100"
+        "0000"_pd,
+      "S333"
         "1000"
         "1100"
         "0100"
@@ -180,37 +406,47 @@ PieceDefinitionMap Piece::defs = PieceDefinitionMap
   {
     PieceShape::Z,
     {
-      "Z032"
-        "1100"
+      "Z033"
         "0110"
+        "1100"
         "0000"
         "0000"_pd,
-      "Z123"
+      "Z133"
         "0100"
+        "0110"
+        "0010"
+        "0000"_pd,
+      "Z233"
+        "0000"
+        "0110"
         "1100"
+        "0000"_pd,
+      "Z333"
         "1000"
+        "1100"
+        "0100"
         "0000"_pd
     }
   },
   {
     PieceShape::T,
     {
-      "T032"
-        "1110"
-        "0100"
-        "0000"
-        "0000"_pd,
-      "T123"
-        "1000"
-        "1100"
-        "1000"
-        "0000"_pd,
-      "T232"
+      "T033"
         "0100"
         "1110"
         "0000"
         "0000"_pd,
-      "T323"
+      "T133"
+        "0100"
+        "0110"
+        "0100"
+        "0000"_pd,
+      "T233"
+        "0000"
+        "1110"
+        "0100"
+        "0000"_pd,
+      "T333"
         "0100"
         "1100"
         "0100"

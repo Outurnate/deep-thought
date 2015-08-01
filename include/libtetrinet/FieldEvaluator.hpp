@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "FieldTransform.hpp"
+#include "libtetrinet/FieldTransform.hpp"
 
 class FieldEvaluator
 {

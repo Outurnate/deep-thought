@@ -1,4 +1,4 @@
-#include "Generation.hpp"
+#include "libdeepthought/Generation.hpp"
 
 #include <log4cxx/logger.h>
 #include <soci/sqlite3/soci-sqlite3.h>

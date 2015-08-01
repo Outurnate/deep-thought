@@ -9,8 +9,8 @@
 
 class Piece;
 
-#include "Field.hpp"
-#include "Enum.hpp"
+#include "libtetrinet/Field.hpp"
+#include "libtetrinet/Enum.hpp"
 
 typedef std::map<PieceShape, std::vector<Piece> > PieceDefinitionMap;
 

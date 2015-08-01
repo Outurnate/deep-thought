@@ -7,8 +7,8 @@
 
 class Field;
 
-#include "Enum.hpp"
-#include "FieldTransform.hpp"
+#include "libtetrinet/Enum.hpp"
+#include "libtetrinet/FieldTransform.hpp"
 
 typedef boost::any_range<
   FieldElement,

@@ -1,4 +1,4 @@
-#include "Genome.hpp"
+#include "libdeepthought/Genome.hpp"
 
 Genome::Genome()
   : Genome(0.0, 0.0, 0.0, 0.0, "Kevin")

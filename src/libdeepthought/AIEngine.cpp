@@ -7,7 +7,7 @@
 
 #include <cctype>
 
-#include "AIEngine.hpp"
+#include "libdeepthought/AIEngine.hpp"
 
 #include "Constants.hpp"
 

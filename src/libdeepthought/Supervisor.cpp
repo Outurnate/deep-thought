@@ -1,4 +1,4 @@
-#include "Supervisor.hpp"
+#include "libdeepthought/Supervisor.hpp"
 
 #include "Constants.hpp"
 

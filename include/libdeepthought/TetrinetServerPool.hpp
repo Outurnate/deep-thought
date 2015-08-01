@@ -8,7 +8,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/signals2/connection.hpp>
 
-#include "Match.hpp"
+#include "libdeepthought/Match.hpp"
 
 enum class TetrinetServerState
 {

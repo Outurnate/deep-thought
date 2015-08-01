@@ -1,4 +1,4 @@
-#include "TetrinetClient.hpp"
+#include "libtetrinet/TetrinetClient.hpp"
 
 #include <string>
 #include <sstream>

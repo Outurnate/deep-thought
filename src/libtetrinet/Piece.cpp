@@ -1,9 +1,9 @@
-#include "Piece.hpp"
+#include "libtetrinet/Piece.hpp"
 
 #include <assert.h>
 #include <string>
 
-#include "Enum.hpp"
+#include "libtetrinet/Enum.hpp"
 
 using namespace std;
 

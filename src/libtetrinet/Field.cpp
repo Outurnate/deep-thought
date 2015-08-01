@@ -1,4 +1,4 @@
-#include "Field.hpp"
+#include "libtetrinet/Field.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -7,7 +7,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "Piece.hpp"
+#include "libtetrinet/Piece.hpp"
 
 using namespace std;
 using namespace boost;

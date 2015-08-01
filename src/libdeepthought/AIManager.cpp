@@ -1,4 +1,4 @@
-#include "AIManager.hpp"
+#include "libdeepthought/AIManager.hpp"
 
 #include <log4cxx/logger.h>
 

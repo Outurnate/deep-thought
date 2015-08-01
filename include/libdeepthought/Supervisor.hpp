@@ -1,9 +1,9 @@
 #ifndef SUPERVISOR_HPP
 #define SUPERVISOR_HPP
 
-#include "TetrinetClient.hpp"
-#include "AIEngine.hpp"
-#include "AIManager.hpp"
+#include "libtetrinet/TetrinetClient.hpp"
+#include "libdeepthought/AIEngine.hpp"
+#include "libdeepthought/AIManager.hpp"
 
 /**
  * Supervisor manages rooms, issues commands, and generally wrangles bots

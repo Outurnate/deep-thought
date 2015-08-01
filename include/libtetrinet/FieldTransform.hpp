@@ -6,9 +6,9 @@
 
 class FieldTransform;
 
-#include "Enum.hpp"
-#include "Field.hpp"
-#include "Piece.hpp"
+#include "libtetrinet/Enum.hpp"
+#include "libtetrinet/Field.hpp"
+#include "libtetrinet/Piece.hpp"
 
 class FieldTransform
 {

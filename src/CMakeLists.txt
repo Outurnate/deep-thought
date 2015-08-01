@@ -1,8 +1,9 @@
-FILE(GLOB project_SRCS *.cpp *.hpp Engine/*.cpp Engine/*.hpp)
 SET(project_LIBS ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CURSES_LIBRARIES} ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${SQLITE3_LIBRARIES})
 
-ADD_LIBRARY(deepthought STATIC ${project_SRCS})
-TARGET_LINK_LIBRARIES(deepthought ${project_LIBS})
-
+ADD_SUBDIRECTORY(libdeepthought)
+ADD_SUBDIRECTORY(libsimplemarkov)
+ADD_SUBDIRECTORY(libtetrinet)
+ADD_SUBDIRECTORY(misc)
+ADD_SUBDIRECTORY(server)
+ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(Test)
-ADD_SUBDIRECTORY(Program)

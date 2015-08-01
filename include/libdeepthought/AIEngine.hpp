@@ -14,10 +14,10 @@
 class AIEngine;
 enum class AIState;
 
-#include "AIStatus.hpp"
-#include "AIManager.hpp"
-#include "TetrinetClient.hpp"
-#include "Genome.hpp"
+#include "libdeepthought/AIStatus.hpp"
+#include "libdeepthought/AIManager.hpp"
+#include "libdeepthought/Genome.hpp"
+#include "libtetrinet/TetrinetClient.hpp"
 
 /** Definition of a tetramino shape */
 struct PieceDef

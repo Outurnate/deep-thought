@@ -1,4 +1,4 @@
-#include "Match.hpp"
+#include "libdeepthought/Match.hpp"
 
 Match::Match(Genome* a, Genome* b)
   : onComplete()

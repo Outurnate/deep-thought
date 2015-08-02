@@ -2,7 +2,7 @@
 #define BOOST_TEST_MODULE ServerTest
 #include <boost/test/unit_test.hpp>
 
-#include <TetrinetServerPool.hpp>
+#include "libdeepthought/TetrinetServerPool.hpp"
 
 constexpr uint32_t FromOctets(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {

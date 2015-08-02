@@ -22,9 +22,8 @@
 #include <string>
 #include <iostream>
 
-#include "TermInterface.hpp"
-#include "AIManager.hpp"
-#include "MarkovGenerator.hpp"
+#include "libdeepthought/AIManager.hpp"
+#include "libsimplemarkov/MarkovGenerator.hpp"
 
 using namespace log4cxx;
 using namespace std;
@@ -33,14 +32,13 @@ using namespace boost::archive;
 using namespace boost::program_options;
 
 AIManager* manager;
-TermInterface* interface;
 condition killCondition;
 mutex killMutex;
 bool sigself = false;
 
 void winchHandler(int param)
 {
-  interface->Resize();
+//  interface->Resize();
 }
 
 void sigintHandler(int param)
@@ -112,14 +110,14 @@ int main(int argc, char *argv[])
   
   // Create loggers
   FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), opt["logfile"].as<string>(), false);
-  interface = new TermInterface();
-  interface->setLayout(LayoutPtr(new SimpleLayout()));
+//  interface = new TermInterface();
+//  interface->setLayout(LayoutPtr(new SimpleLayout()));
 
   helpers::Pool p;
   fileAppender->activateOptions(p);
 
   BasicConfigurator::configure(AppenderPtr(fileAppender));
-  BasicConfigurator::configure(AppenderPtr(interface));
+//  BasicConfigurator::configure(AppenderPtr(interface));
   Logger::getRootLogger()->setLevel(Level::getTrace());
 
   // Register signal handlers
@@ -134,12 +132,12 @@ int main(int argc, char *argv[])
   if (sigaction(SIGINT, &sigintSA, NULL) == -1) exit(1);
 
   manager = new AIManager();
-  manager->RegisterStatusHandler(interface);
+  //manager->RegisterStatusHandler(interface);
 
   killCondition.wait(lock); // release lock and wait for kill
 
   delete manager;
-  delete interface;
+  //delete interface;
   
   if (sigself) // if we got sigint, pass on the sig
   {

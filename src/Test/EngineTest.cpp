@@ -4,9 +4,9 @@
 
 #include <boost/foreach.hpp>
 
-#include "Field.hpp"
-#include "Piece.hpp"
-#include "FieldEvaluator.hpp"
+#include "libtetrinet/Field.hpp"
+#include "libtetrinet/Piece.hpp"
+#include "libtetrinet/FieldEvaluator.hpp"
 
 BOOST_AUTO_TEST_SUITE(EngineTest)
 

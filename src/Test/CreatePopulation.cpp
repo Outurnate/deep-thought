@@ -2,7 +2,7 @@
 #define BOOST_TEST_MODULE PopulationTest
 #include <boost/test/unit_test.hpp>
 
-#include <Population.hpp>
+#include "libdeepthought/Population.hpp"
 
 BOOST_AUTO_TEST_SUITE(PopulationTest)
 

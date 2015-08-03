@@ -34,6 +34,16 @@ FieldTransform::FieldTransform(const FieldTransform& transform)
 {
 }
 
+FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
+{
+  if(this == &rhs)
+    return *this;
+  
+  this->transforms = rhs.transforms;
+
+  return *this;
+}
+
 ostream& operator << (ostream& os, const FieldTransform& fieldTransform)
 {
   for (pair<const uCoord, FieldElement>& element : *fieldTransform.transforms)
@@ -46,6 +56,11 @@ FieldTransform& operator += (FieldTransform& destination, const FieldTransform& 
   for (const auto& element : source)
     (*destination.transforms)[element.first] = element.second;
   return destination;
+}
+
+bool operator == (const FieldTransform& lhs, const FieldTransform& rhs)
+{
+  return *lhs.transforms == *rhs.transforms;
 }
 
 FieldElement& FieldTransform::operator() (uCoord x, uCoord y)
@@ -90,8 +105,25 @@ const FieldTransform::TransformType::const_iterator FieldTransform::end() const
 
 bool FieldTransform::ContainsTransform(const FieldTransform& transform) const
 {
-  return all_of(transform.begin(), transform.end(), [this](pair<uCoord, FieldElement> element)
+  return all_of(transform.begin(), transform.end(), [this](const pair<uCoord, FieldElement>& element)
 		{
 		  return (*transforms)[element.first] != FieldElement::NONE;
+		});
+}
+
+string FieldTransform::GetFullFieldString() const
+{
+  string fstr(field.GetSize(), char(FieldElement::NONE));
+  for (pair<uCoord, FieldElement> element : *transforms)
+    fstr[element.first] = char(element.second);
+  return fstr;
+}
+
+bool FieldTransform::CanApplyToField(const Field& field) const
+{
+  return all_of(transforms->begin(), transforms->end(), [&field](const pair<uCoord, FieldElement>& element)
+		{
+		  return (element.second != FieldElement::NONE || element.second != FieldElement::UNDEFINED)
+		    && field(element.first) == FieldElement::NONE;
 		});
 }

@@ -1,8 +1,12 @@
 #include "libtetrinet/FieldEvaluator.hpp"
 
 #include <functional>
+#include <algorithm>
+#include <boost/cast.hpp>
+#include <unordered_set>
 
 using namespace std;
+using namespace boost;
 
 FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
 {
@@ -33,9 +37,48 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-vector<FieldTransform> FieldEvaluator::DiscoverTransforms(const Field& field)
+vector<FieldTransform> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape, FieldElement color)
 {
-  vector<FieldTransform> transforms;
+  unordered_set<FieldTransform> transforms;
+  vector<TransformPair> perches;
 
-  return transforms;
+  for (uCoord x = 0; x < field.GetWidth(); ++x)
+  {
+    bool prev = true;
+    for (uCoord y = field.GetHeight() - 1; y < field.GetHeight(); --y) // go up
+    {
+      if (prev && field(x, y) != FieldElement::NONE) // if last block and not current block
+	perches.push_back(TransformPair(x, y));
+      prev = field(x, y) != FieldElement::NONE;
+    }
+  }
+  
+  for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
+  {
+    Piece piece = Piece::Get(pieceShape, rotation);
+    
+    vector<TransformPair> columnOffsets; // might want to cache these; could be done compile time for eff.
+    for (uCoord x = 0; x < field.GetWidth(); ++x)
+    {
+      // last found block
+      sCoord ylast = -1; // will never be correct; used as a symbolic value
+      for (uCoord y = 0; y < piece.GetHeight(); ++y)
+	if (piece(x, y))
+	  ylast = y;
+      if (ylast != -1)
+	columnOffsets.push_back(TransformPair(-numeric_cast<sCoord>(x), -ylast));
+    }
+
+    for (TransformPair perch : perches)
+      for (TransformPair offset : columnOffsets)
+	transforms.emplace(field, piece, perch.first + offset.first, perch.second + offset.second, color);
+  }
+
+  vector<FieldTransform> finalTransforms;
+  copy_if(transforms.begin(), transforms.end(), finalTransforms.begin(), [&field](const FieldTransform& transform)
+	  {
+	    return transform.CanApplyToField(field);
+	  });
+  
+  return finalTransforms;
 }

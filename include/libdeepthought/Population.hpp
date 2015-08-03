@@ -1,10 +1,8 @@
 #ifndef POPULATION_HPP
 #define POPULATION_HPP
 
+#include <Wt/Dbo/Dbo>
 #include <string>
-#include <list>
-#include <boost-optional.h>
-#include <soci/soci.h>
 
 #include "Generation.hpp"
 
@@ -26,17 +24,15 @@ public:
    * Retrieve a list of loaded generations
    */
   std::list<Generation> const* GetGenerations() const;
-  /**
-   * Retrieves training status for current population
-   */
-  bool IsTrained() const;
+  
+  Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > generations;
+  
+  template<typename Action>
+  void persist(Action& a)
+  {
+    Wt::Dbo::hasMany(a, generations, Wt::Dbo::ManyToOne, "population");
+  }
 private:
-  void commit();
-  void init();
-
-  std::list<Generation>* generations;
-  std::string connectionString;
-  soci::session* sql;
 };
 
 #endif

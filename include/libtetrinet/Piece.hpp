@@ -24,25 +24,25 @@ class Piece
 
   friend std::ostream& operator<< (std::ostream& stream, const Piece& piece);
 public:
-  bool operator() (Coord x, Coord y) const;
+  bool operator() (uCoord x, uCoord y) const;
   Piece& operator= (const Piece& piece);
   
-  Coord GetWidth() const;
-  Coord GetHeight() const;
+  uAxis GetWidth() const;
+  uAxis GetHeight() const;
 
-  bool Rotate(const Field& field, RotationDirection direction, Coord& x, Coord& y);
+  bool Rotate(const Field& field, RotationDirection direction, sCoord& x, sCoord& y);
 
   static Piece Get(PieceShape shape, PieceRotation rotation);
 private:
-  static const Coord pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
+  static const uAxis pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
   typedef std::bitset<pieceSize> PieceDefinition;
   
-  constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height);
+  constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height);
   
   PieceRotation rotation;
   PieceShape shape;
   PieceDefinition definition;
-  Coord width, height; // apparent size, actual is always 4x4
+  uAxis width, height; // apparent size, actual is always 4x4
   
   static PieceDefinitionMap defs;
   static SRSKickMap srsmap_jlstz, srsmap_i;

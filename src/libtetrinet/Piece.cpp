@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string>
+#include <iostream>
 
 #include "libtetrinet/Enum.hpp"
 
@@ -12,7 +13,7 @@ Piece Piece::Get(PieceShape shape, PieceRotation rotation)
   return defs[shape][uint8_t(rotation)];
 }
 
-bool Piece::operator() (Coord x, Coord y) const
+bool Piece::operator() (uCoord x, uCoord y) const
 {
   if (x >= GetWidth())
     throw out_of_range("x");
@@ -21,12 +22,12 @@ bool Piece::operator() (Coord x, Coord y) const
   return definition[(y * pieceWidth) + x];
 }
 
-Coord Piece::GetWidth() const
+uAxis Piece::GetWidth() const
 {
   return width;
 }
 
-Coord Piece::GetHeight() const
+uAxis Piece::GetHeight() const
 {
   return height;
 }
@@ -50,12 +51,12 @@ Piece& Piece::operator = (const Piece& piece)
   return *this;
 }
 
-constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, Coord width, Coord height)
+constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
 {
 }
 
-bool Piece::Rotate(const Field& field, RotationDirection direction, Coord& x, Coord& y)
+bool Piece::Rotate(const Field& field, RotationDirection direction, sCoord& x, sCoord& y)
 {
   if (this->shape == PieceShape::O)
     return true;
@@ -64,16 +65,23 @@ bool Piece::Rotate(const Field& field, RotationDirection direction, Coord& x, Co
   Piece newPiece = Get(this->shape, rotation);
   for (TransformPair& transform : (this->shape == PieceShape::I ? srsmap_i : srsmap_jlstz)[PieceRotationPair(this->rotation, rotation)])
   {
-    FieldTransform ftransform(field, newPiece, x + transform.first, y + transform.second, FieldElement::RED);
-    if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<Coord, FieldElement> element)
-			 {
-			   return field(element.first) == FieldElement::NONE && element.second == FieldElement::NONE;
-			 }))
+    try
     {
-      *this = newPiece;
-      x += transform.first;
-      y += transform.second;
-      return true;
+      FieldTransform ftransform(field, newPiece, x + transform.first, y + transform.second, FieldElement::RED);
+      if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<uCoord, FieldElement> element)
+		 {
+		   return element.second != FieldElement::NONE && field(element.first) == FieldElement::NONE;
+		 }))
+      {
+	*this = newPiece;
+	x += transform.first;
+	y += transform.second;
+	return true;
+      }
+    }
+    catch (std::out_of_range)
+    {
+      continue; // piece was placed off field
     }
   }
   return false;
@@ -119,8 +127,8 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
   return Piece(static_cast<PieceShape>(definition[0]),
 	       numCharToNum<PieceRotation>(definition[1]),
 	       Piece::PieceDefinition(stoi(&definition[4], 2)),
-	       numCharToNum<Coord>(definition[2]),
-	       numCharToNum<Coord>(definition[3]));
+	       numCharToNum<uCoord>(definition[2]),
+	       numCharToNum<uCoord>(definition[3]));
 }
 
 SRSKickMap Piece::srsmap_jlstz = SRSKickMap
@@ -321,9 +329,9 @@ PieceDefinitionMap Piece::defs = PieceDefinitionMap
   {
     PieceShape::O,
     {
-      "O033"
-        "0110"
-        "0110"
+      "O022"
+        "1100"
+        "1100"
         "0000"
         "0000"_pd
     }

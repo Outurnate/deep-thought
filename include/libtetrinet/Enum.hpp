@@ -55,9 +55,11 @@ enum class RotationDirection : bool
   CCW = true
 };
 
-typedef uint16_t Coord;
+typedef uint16_t uCoord;
+typedef  int32_t sCoord;
+typedef uint32_t uAxis;
 typedef std::pair<PieceRotation, PieceRotation> PieceRotationPair;
-typedef std::pair<int16_t, int16_t> TransformPair;
+typedef std::pair<sCoord, sCoord> TransformPair;
 typedef std::vector<FieldElement> FieldType; // origin top left, row-major
 
 typedef std::map<PieceRotationPair, std::array<TransformPair, 5> > SRSKickMap;

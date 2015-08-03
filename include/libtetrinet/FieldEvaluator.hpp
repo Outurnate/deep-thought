@@ -9,7 +9,7 @@ class FieldEvaluator
 {
 public:
   static FieldTransform GenerateSheetTransform(const Field& field);
-  static void FillGap(const Field& field, const Coord start, FieldTransform& result);
+  static void FillGap(const Field& field, const uCoord start, FieldTransform& result);
   static std::vector<FieldTransform> DiscoverTransforms(const Field& field);
 };
 

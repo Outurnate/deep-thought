@@ -20,24 +20,24 @@ class Field : private boost::noncopyable
 {
   friend std::ostream& operator<< (std::ostream& stream, const Field& field);
 public:
-  Field(Coord width = 12, Coord height = 22);
+  Field(uAxis width = 12, uAxis height = 22);
   ~Field();
 
   void ApplyTransform(const FieldTransform& transform);
   
-  const FieldElement& operator()(Coord x, Coord y) const;
-  const FieldElement& operator()(Coord i) const;
-  Coord GetWidth() const;
-  Coord GetHeight() const;
-  Coord GetSize() const;
+  const FieldElement& operator()(uCoord x, uCoord y) const;
+  const FieldElement& operator()(uCoord i) const;
+  uAxis GetWidth() const;
+  uAxis GetHeight() const;
+  uAxis GetSize() const;
 
   const FieldType::const_iterator begin() const;
   const FieldType::const_iterator end() const;
 
-  const FieldElementRange column(Coord x) const;
-  const FieldElementRange row(Coord y) const;
+  const FieldElementRange column(uCoord x) const;
+  const FieldElementRange row(uCoord y) const;
 private:
-  const Coord fieldWidth, fieldHeight, fieldSize;
+  const uAxis fieldWidth, fieldHeight, fieldSize;
   std::unique_ptr<FieldType> field;
 };
 

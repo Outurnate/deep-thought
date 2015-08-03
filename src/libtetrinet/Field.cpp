@@ -13,7 +13,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::adaptors;
 
-Field::Field(Coord width, Coord height)
+Field::Field(uAxis width, uAxis height)
   : fieldWidth(width), fieldHeight(height), fieldSize(width * height),
     field(new FieldType(fieldSize, FieldElement::NONE))
 {
@@ -32,11 +32,11 @@ ostream& operator<< (ostream& os, const Field& field)
 
 void Field::ApplyTransform(const FieldTransform& transform)
 {
-  for (const pair<const Coord, FieldElement>& element : transform)
+  for (const pair<const uCoord, FieldElement>& element : transform)
     (*field)[element.first] = element.second;
 }
 
-const FieldElement& Field::operator()(Coord x, Coord y) const
+const FieldElement& Field::operator()(uCoord x, uCoord y) const
 {
   if (!(x < fieldWidth))
     throw out_of_range("x = " + lexical_cast<string>(x));
@@ -45,24 +45,24 @@ const FieldElement& Field::operator()(Coord x, Coord y) const
   return (*field)[(y * fieldWidth) + x];
 }
 
-const FieldElement& Field::operator()(Coord i) const
+const FieldElement& Field::operator()(uCoord i) const
 {
   if (!(i < fieldSize))
     throw out_of_range("i = " + lexical_cast<string>(i));
   return (*field)[i];
 }
 
-Coord Field::GetWidth() const
+uAxis Field::GetWidth() const
 {
   return fieldWidth;
 }
 
-Coord Field::GetHeight() const
+uAxis Field::GetHeight() const
 {
   return fieldHeight;
 }
 
-Coord Field::GetSize() const
+uAxis Field::GetSize() const
 {
   return fieldSize;
 }
@@ -77,12 +77,12 @@ const FieldType::const_iterator Field::end() const
   return field->cend();
 }
 
-const FieldElementRange Field::column(Coord x) const
+const FieldElementRange Field::column(uCoord x) const
 {
   return iterator_range<FieldType::const_iterator>(next(field->begin(), x), field->end()) | strided(fieldWidth);
 }
 
-const FieldElementRange Field::row(Coord y) const
+const FieldElementRange Field::row(uCoord y) const
 {
   const auto start = next(field->begin(), y * fieldWidth);
   return iterator_range<FieldType::const_iterator>(start, next(start, fieldWidth));

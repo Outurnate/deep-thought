@@ -12,20 +12,20 @@ class FieldTransform;
 
 class FieldTransform
 {
-  typedef std::map<Coord, FieldElement> TransformType;
+  typedef std::map<uCoord, FieldElement> TransformType;
   
   friend std::ostream& operator << (std::ostream& stream, const FieldTransform& fieldTransform);
   friend FieldTransform& operator += (FieldTransform& destination, const FieldTransform& source);
 public:
   FieldTransform(const Field& field);
-  FieldTransform(const Field& field, const Piece& piece, Coord x, Coord y, FieldElement element);
+  FieldTransform(const Field& field, const Piece& piece, sCoord x, sCoord y, FieldElement element);
   FieldTransform(const FieldTransform& transform);
   
-  FieldElement& operator() (Coord x, Coord y);
-  FieldElement& operator() (Coord i);
+  FieldElement& operator() (uCoord x, uCoord y);
+  FieldElement& operator() (uCoord i);
   
-  const FieldElement& operator() (Coord x, Coord y) const;
-  const FieldElement& operator() (Coord i) const;
+  const FieldElement& operator() (uCoord x, uCoord y) const;
+  const FieldElement& operator() (uCoord i) const;
   
   const TransformType::const_iterator begin() const;
   const TransformType::const_iterator end() const;
@@ -33,7 +33,7 @@ public:
   bool ContainsTransform(const FieldTransform& transform) const;
 private:
   const Field& field;
-  const Coord fieldWidth, fieldHeight, fieldSize;
+  const uAxis fieldWidth, fieldHeight, fieldSize;
   
   std::unique_ptr<TransformType> transforms;
 };

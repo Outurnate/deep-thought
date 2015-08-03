@@ -1,6 +1,7 @@
 #include "libtetrinet/FieldTransform.hpp"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -12,13 +13,13 @@ FieldTransform::FieldTransform(const Field& field)
 }
 
 
-FieldTransform::FieldTransform(const Field& field, const Piece& piece, Coord x, Coord y, FieldElement element)
+FieldTransform::FieldTransform(const Field& field, const Piece& piece, sCoord x, sCoord y, FieldElement element)
   : FieldTransform(field)
 {
-  for (Coord i = 0; i < (piece.GetWidth() * piece.GetHeight()); ++i)
+  for (sCoord i = 0; i < numeric_cast<sCoord>(piece.GetWidth() * piece.GetHeight()); ++i)
   {
-    Coord x2 = i % piece.GetWidth(),
-          y2 = i / piece.GetWidth();
+    uCoord x2 = numeric_cast<uCoord>(i % piece.GetWidth()),
+           y2 = numeric_cast<uCoord>(i / piece.GetWidth());
     if (piece(x2, y2))
       (*this)(x + x2, y + y2) = element;
   }
@@ -35,8 +36,8 @@ FieldTransform::FieldTransform(const FieldTransform& transform)
 
 ostream& operator << (ostream& os, const FieldTransform& fieldTransform)
 {
-  for (pair<const Coord, FieldElement>& element : *fieldTransform.transforms)
-    os << (int)element.first << " = " << element.second << endl;
+  for (pair<const uCoord, FieldElement>& element : *fieldTransform.transforms)
+    os << (uCoord)element.first << " = " << element.second << endl;
   return os;
 }
 
@@ -47,21 +48,20 @@ FieldTransform& operator += (FieldTransform& destination, const FieldTransform& 
   return destination;
 }
 
-// TODO these violate const, fix
-FieldElement& FieldTransform::operator() (Coord x, Coord y)
+FieldElement& FieldTransform::operator() (uCoord x, uCoord y)
 { 
   return const_cast<FieldElement&>(
     static_cast<const FieldTransform&>(*this)(x, y));
 }
 
 
-FieldElement& FieldTransform::operator() (Coord i)
+FieldElement& FieldTransform::operator() (uCoord i)
 {
   return const_cast<FieldElement&>(
     static_cast<const FieldTransform&>(*this)(i));
 }
 
-const FieldElement& FieldTransform::operator() (Coord x, Coord y) const
+const FieldElement& FieldTransform::operator() (uCoord x, uCoord y) const
 {
   if (!(x < fieldWidth))
     throw out_of_range("x = " + lexical_cast<string>(x));
@@ -70,8 +70,8 @@ const FieldElement& FieldTransform::operator() (Coord x, Coord y) const
   return (*this)((y * fieldWidth) + x);
 }
 
-
-const FieldElement& FieldTransform::operator() (Coord i) const
+// TODO these violate const, fix
+const FieldElement& FieldTransform::operator() (uCoord i) const
 {
   if (!(i < fieldSize))
     throw out_of_range("i = " + lexical_cast<string>(i));
@@ -90,7 +90,7 @@ const FieldTransform::TransformType::const_iterator FieldTransform::end() const
 
 bool FieldTransform::ContainsTransform(const FieldTransform& transform) const
 {
-  return all_of(transform.begin(), transform.end(), [this](pair<Coord, FieldElement> element)
+  return all_of(transform.begin(), transform.end(), [this](pair<uCoord, FieldElement> element)
 		{
 		  return (*transforms)[element.first] != FieldElement::NONE;
 		});

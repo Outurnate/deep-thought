@@ -8,8 +8,8 @@ FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
 {
   FieldTransform result(field);
   vector<bool> tripped = vector<bool>(field.GetWidth(), false); // will be set to true each column that has a block
-  for (Coord y = 0; y < field.GetHeight(); ++y)
-    for (Coord x = 0; x < field.GetWidth(); ++x)
+  for (uCoord y = 0; y < field.GetHeight(); ++y)
+    for (uCoord x = 0; x < field.GetWidth(); ++x)
     {
       if (!tripped[x])
       {
@@ -22,13 +22,13 @@ FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
   return result;
 }
 
-void FieldEvaluator::FillGap(const Field& field, const Coord start, FieldTransform& result)
+void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result)
 {
   if (field(start) != FieldElement::NONE)
     throw runtime_error("cannot fill gap, start block exists");
   
   result(start) = FieldElement::UNDEFINED;
-  for (const Coord location : { Coord(start - field.GetWidth()), Coord(start + field.GetWidth()), Coord(start + 1), Coord(start - 1) })
+  for (const uCoord location : { uCoord(start - field.GetWidth()), uCoord(start + field.GetWidth()), uCoord(start + 1), uCoord(start - 1) })
     if (location < field.GetSize() && field(location) == FieldElement::NONE && result(location) == FieldElement::NONE)
       FillGap(field, location, result);
 }

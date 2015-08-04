@@ -20,8 +20,8 @@ class FieldTransform
   friend FieldTransform& operator += (FieldTransform& destination, const FieldTransform& source);
   friend bool operator == (const FieldTransform& lhs, const FieldTransform& rhs);
 public:
-  FieldTransform(const Field& field);
-  FieldTransform(const Field& field, const Piece& piece, sCoord x, sCoord y, FieldElement element);
+  FieldTransform();
+  FieldTransform(const Piece& piece, sCoord x, sCoord y, FieldElement element);
   FieldTransform(const FieldTransform& transform);
   FieldTransform& operator= (const FieldTransform& rhs);
   
@@ -38,8 +38,7 @@ public:
   std::string GetFullFieldString() const;
   bool CanApplyToField(const Field& field) const;
 private:
-  const Field& field;
-  const uAxis fieldWidth, fieldHeight, fieldSize;
+//  const uAxis fieldWidth, fieldHeight, fieldSize;
   
   std::unique_ptr<TransformType> transforms;
 };

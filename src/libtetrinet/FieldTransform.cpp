@@ -6,15 +6,14 @@
 using namespace std;
 using namespace boost;
 
-FieldTransform::FieldTransform(const Field& field)
-  : field(field), fieldWidth(field.GetWidth()), fieldHeight(field.GetHeight()),
-    fieldSize(fieldWidth * fieldHeight), transforms(new TransformType())
+FieldTransform::FieldTransform()
+  : transforms(new TransformType())
 {
 }
 
 
-FieldTransform::FieldTransform(const Field& field, const Piece& piece, sCoord x, sCoord y, FieldElement element)
-  : FieldTransform(field)
+FieldTransform::FieldTransform(const Piece& piece, sCoord x, sCoord y, FieldElement element)
+  : FieldTransform()
 {
   for (sCoord i = 0; i < numeric_cast<sCoord>(piece.GetWidth() * piece.GetHeight()); ++i)
   {
@@ -26,11 +25,7 @@ FieldTransform::FieldTransform(const Field& field, const Piece& piece, sCoord x,
 }
 
 FieldTransform::FieldTransform(const FieldTransform& transform)
-  : field(transform.field),
-    fieldWidth(transform.fieldWidth),
-    fieldHeight(transform.fieldHeight),
-    fieldSize(transform.fieldSize),
-    transforms(new TransformType(*transform.transforms))
+  : transforms(new TransformType(*transform.transforms))
 {
 }
 
@@ -39,7 +34,7 @@ FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
   if(this == &rhs)
     return *this;
   
-  this->transforms = rhs.transforms;
+  this->transforms = unique_ptr<TransformType>(new TransformType(*rhs.transforms));
 
   return *this;
 }
@@ -113,7 +108,7 @@ bool FieldTransform::ContainsTransform(const FieldTransform& transform) const
 
 string FieldTransform::GetFullFieldString() const
 {
-  string fstr(field.GetSize(), char(FieldElement::NONE));
+  string fstr(fieldSize, char(FieldElement::NONE));
   for (pair<uCoord, FieldElement> element : *transforms)
     fstr[element.first] = char(element.second);
   return fstr;

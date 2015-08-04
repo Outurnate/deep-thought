@@ -67,7 +67,7 @@ bool Piece::Rotate(const Field& field, RotationDirection direction, sCoord& x, s
   {
     try
     {
-      FieldTransform ftransform(field, newPiece, x + transform.first, y + transform.second, FieldElement::RED);
+      FieldTransform ftransform(newPiece, x + transform.first, y + transform.second, FieldElement::RED);
       if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<uCoord, FieldElement> element)
 		 {
 		   return element.second != FieldElement::NONE && field(element.first) == FieldElement::NONE;

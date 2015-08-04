@@ -8,6 +8,11 @@
 class Field;
 
 #include "libtetrinet/Enum.hpp"
+
+const uAxis fieldWidth = 12;
+const uAxis fieldHeight = 22;
+const uAxis fieldSize = fieldWidth * fieldHeight;
+
 #include "libtetrinet/FieldTransform.hpp"
 
 typedef boost::any_range<
@@ -20,16 +25,13 @@ class Field : private boost::noncopyable
 {
   friend std::ostream& operator<< (std::ostream& stream, const Field& field);
 public:
-  Field(uAxis width = 12, uAxis height = 22);
+  Field();
   ~Field();
 
   void ApplyTransform(const FieldTransform& transform);
   
   const FieldElement& operator()(uCoord x, uCoord y) const;
   const FieldElement& operator()(uCoord i) const;
-  uAxis GetWidth() const;
-  uAxis GetHeight() const;
-  uAxis GetSize() const;
 
   const FieldType::const_iterator begin() const;
   const FieldType::const_iterator end() const;
@@ -37,7 +39,6 @@ public:
   const FieldElementRange column(uCoord x) const;
   const FieldElementRange row(uCoord y) const;
 private:
-  const uAxis fieldWidth, fieldHeight, fieldSize;
   std::unique_ptr<FieldType> field;
 };
 

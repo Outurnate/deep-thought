@@ -13,9 +13,8 @@ using namespace std;
 using namespace boost;
 using namespace boost::adaptors;
 
-Field::Field(uAxis width, uAxis height)
-  : fieldWidth(width), fieldHeight(height), fieldSize(width * height),
-    field(new FieldType(fieldSize, FieldElement::NONE))
+Field::Field()
+  : field(new FieldType(fieldSize, FieldElement::NONE))
 {
 }
 
@@ -50,21 +49,6 @@ const FieldElement& Field::operator()(uCoord i) const
   if (!(i < fieldSize))
     throw out_of_range("i = " + lexical_cast<string>(i));
   return (*field)[i];
-}
-
-uAxis Field::GetWidth() const
-{
-  return fieldWidth;
-}
-
-uAxis Field::GetHeight() const
-{
-  return fieldHeight;
-}
-
-uAxis Field::GetSize() const
-{
-  return fieldSize;
 }
 
 const FieldType::const_iterator Field::begin() const

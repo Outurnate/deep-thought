@@ -1,52 +1,38 @@
 #ifndef AIMANAGER_HPP
 #define AIMANAGER_HPP
 
-#include <vector>
+#include <memory>
 #include <boost/thread.hpp>
+#include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-class AIManager;
-class Supervisor;
-class Match; // TODO go away
-
-#include "AIEngine.hpp"
-#include "AIStatus.hpp"
-#include "Supervisor.hpp"
-#include "Population.hpp"
-#include "Match.hpp"
-
-class IFieldStatusHandler
+class AIManager : private boost::noncopyable
 {
-public:
-  virtual ~IFieldStatusHandler() {}
-  virtual void HandleStatus(AIStatus status) = 0;
-};
-
-class AIManager
-{
-  friend class AIEngine;
-
 public:
   AIManager();
-  virtual ~AIManager();
-  
-  void RegisterStatusHandler(IFieldStatusHandler* handler);
-  void SendEngineToChannel(AIEngine* engine, const std::string channel);
-  void LoadPopulation(const std::string name);
-  void QueueMatch(Match* match);
-  void PopulationTick();
+
+  void Run();
 private:
-  std::vector<AIEngine> engines;
-  std::vector<IFieldStatusHandler*> handlers;
-  boost::thread_group engineThreads;
+  class AIManagerConnection : public boost::enable_shared_from_this<AIManagerConnection>
+  {
+  public:
+    typedef std::shared_ptr<AIManagerConnection> Pointer;
 
-  void addEngine(AIEngine* engine);
-  void removeEngine(AIEngine* engine);
+    static Pointer Create(boost::asio::io_service& ioService);
+    boost::asio::ip::tcp::socket& Socket();
+    void Start();
+  private:
+    AIManagerConnection(boost::asio::io_service& ioService);
+    void handleWrite(const boost::system::error_code& error, size_t bytesTransferred);
 
-  void statusHandler(AIStatus status);
-  void stateHandler(AIEngine* engine, AIState state);
-
-  Supervisor* supervisor;
-  Population* population;
+    boost::asio::ip::tcp::socket socket;
+  };
+  
+  void startAccept();
+  void handleAccept(AIManagerConnection::Pointer newConnection, const boost::system::error_code& error);
+  
+  boost::asio::io_service service;
+  boost::asio::ip::tcp::acceptor tcpAcceptor;
 };
 
 #endif

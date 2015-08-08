@@ -26,7 +26,7 @@ FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
   return result;
 }
 
-void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result)
+void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result) // TODO maybe return?
 {
   if (field(start) != FieldElement::NONE)
     throw runtime_error("cannot fill gap, start block exists");
@@ -37,9 +37,9 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-vector<FieldTransform> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape, FieldElement color)
+vector<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
-  unordered_set<FieldTransform> transforms;
+  unordered_set<PieceLocation> transforms;
   vector<TransformPair> perches;
 
   for (uCoord x = 0; x < fieldWidth; ++x)
@@ -71,14 +71,87 @@ vector<FieldTransform> FieldEvaluator::DiscoverTransforms(const Field& field, Pi
 
     for (TransformPair perch : perches)
       for (TransformPair offset : columnOffsets)
-	transforms.emplace(piece, perch.first + offset.first, perch.second + offset.second, color);
+	transforms.emplace(piece, perch.first + offset.first, perch.second + offset.second);
   }
 
-  vector<FieldTransform> finalTransforms;
-  copy_if(transforms.begin(), transforms.end(), finalTransforms.begin(), [&field](const FieldTransform& transform)
+  vector<PieceLocation> finalTransforms;
+  copy_if(transforms.begin(), transforms.end(), finalTransforms.begin(), [&field](const PieceLocation& piece)
 	  {
-	    return transform.CanApplyToField(field);
+	    return piece.GetTransform().CanApplyToField(field);
 	  });
   
   return finalTransforms;
+}
+
+bool FieldEvaluator::CanEscape(const Field& field, FieldTransform& paint, FieldTransform& escapeRegion, const PieceLocation start)
+{
+  paint += start.GetTransform();
+  if (escapeRegion && start.GetTransform())
+  {
+    vector<PieceLocation> locations
+    {
+      PieceLocation(start.GetPiece(), start.GetX() + 1, start.GetY()),
+      PieceLocation(start.GetPiece(), start.GetX() - 1, start.GetY()),
+      PieceLocation(start.GetPiece(), start.GetX(),     start.GetY() - 1)
+    };
+    PieceLocation pCW = PieceLocation(start);
+    if (Rotate(pCW, field, RotationDirection::CW))
+      locations.push_back(pCW);
+    PieceLocation pCCW = PieceLocation(start);
+    if (Rotate(pCW, field, RotationDirection::CCW))
+      locations.push_back(pCCW);
+    for (PieceLocation location : locations)
+    {
+      //FieldTransform tmpTrans(location, FieldElement::RED);
+      if (location.GetTransform().CanApplyToField(field))
+      {
+	if (!(escapeRegion && location.GetTransform())) // it's a new transform
+	{
+	  if (CanEscape(field, paint, escapeRegion, location))
+	    return true;
+	}
+      }
+    }
+  }
+  else
+    return true;
+  return false;
+}
+
+void FieldEvaluator::ValidateTransforms(const Field& field, vector<FieldTransform>& transforms)
+{
+  FieldTransform sheetTransform(GenerateSheetTransform(field));
+  for (const FieldTransform& transform : transforms)
+    if (transform && sheetTransform)
+    {
+    }
+}
+
+bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)
+{
+  if (location.GetPiece().GetShape() == PieceShape::O)
+    return true;
+  
+  PieceRotation rotation = PieceRotation(uint8_t(location.GetPiece().GetRotation()) + (bool(direction) ? -1 : 1));
+  Piece newPiece = Piece::Get(location.GetPiece().GetShape(), rotation);
+  for (TransformPair& transform : (location.GetPiece().GetShape() == PieceShape::I ? srsmap_i : srsmap_jlstz)[PieceRotationPair(location.GetPiece().GetRotation(), rotation)])
+  {
+    try
+    {
+      FieldTransform ftransform(PieceLocation(newPiece, location.GetX() + transform.first, location.GetY() + transform.second).GetTransform());
+      if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<uCoord, FieldElement> element)
+		 {
+		   return element.second != FieldElement::NONE && field(element.first) == FieldElement::NONE;
+		 }))
+      {
+	location = PieceLocation(newPiece, location.GetX() + transform.first, location.GetY() + transform.second);
+	return true;
+      }
+    }
+    catch (std::out_of_range) // TODO REMOVE
+    {
+      continue; // piece was placed off field
+    }
+  }
+  return false;
 }

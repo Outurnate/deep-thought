@@ -7,6 +7,7 @@
 #include "libtetrinet/Enum.hpp"
 
 using namespace std;
+using namespace boost;
 
 Piece Piece::Get(PieceShape shape, PieceRotation rotation)
 {
@@ -30,6 +31,16 @@ uAxis Piece::GetWidth() const
 uAxis Piece::GetHeight() const
 {
   return height;
+}
+
+PieceRotation Piece::GetRotation() const
+{
+  return rotation;
+}
+
+PieceShape Piece::GetShape() const
+{
+  return shape;
 }
 
 ostream& operator << (ostream& os, const Piece& piece)
@@ -56,35 +67,15 @@ constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition
 {
 }
 
-bool Piece::Rotate(const Field& field, RotationDirection direction, sCoord& x, sCoord& y)
+Piece::operator std::string() const
 {
-  if (this->shape == PieceShape::O)
-    return true;
-  
-  PieceRotation rotation = PieceRotation(uint8_t(this->rotation) + (bool(direction) ? -1 : 1));
-  Piece newPiece = Get(this->shape, rotation);
-  for (TransformPair& transform : (this->shape == PieceShape::I ? srsmap_i : srsmap_jlstz)[PieceRotationPair(this->rotation, rotation)])
-  {
-    try
-    {
-      FieldTransform ftransform(newPiece, x + transform.first, y + transform.second, FieldElement::RED);
-      if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<uCoord, FieldElement> element)
-		 {
-		   return element.second != FieldElement::NONE && field(element.first) == FieldElement::NONE;
-		 }))
-      {
-	*this = newPiece;
-	x += transform.first;
-	y += transform.second;
-	return true;
-      }
-    }
-    catch (std::out_of_range)
-    {
-      continue; // piece was placed off field
-    }
-  }
-  return false;
+  return lexical_cast<std::string>(int(rotation)) + lexical_cast<std::string>(int(shape)) + definition.to_string()
+    + lexical_cast<std::string>(width) + lexical_cast<std::string>(height);
+}
+
+bool Piece::operator == (const Piece& rhs) const
+{
+  return rotation == rhs.rotation && shape == rhs.shape && definition == rhs.definition && width == rhs.width && height == rhs.height;
 }
 
 // here be dragons
@@ -130,174 +121,6 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
 	       numCharToNum<uCoord>(definition[2]),
 	       numCharToNum<uCoord>(definition[3]));
 }
-
-SRSKickMap Piece::srsmap_jlstz = SRSKickMap
-{
-  {
-    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( -1,  +1 ),
-      TransformPair(  0,  -2 ),
-      TransformPair( -1,  -2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( +1,  -1 ),
-      TransformPair(  0,  +2 ),
-      TransformPair( +1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::R, PieceRotation::T),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( +1,  -1 ),
-      TransformPair(  0,  +2 ),
-      TransformPair( +1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::T, PieceRotation::R),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( -1,  +1 ),
-      TransformPair(  0,  -2 ),
-      TransformPair( -1,  -2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::T, PieceRotation::L),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( +1,  +1 ),
-      TransformPair(  0,  -2 ),
-      TransformPair( +1,  -2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::L, PieceRotation::T),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( -1,  -1 ),
-      TransformPair(  0,  +2 ),
-      TransformPair( -1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( -1,  -1 ),
-      TransformPair(  0,  +2 ),
-      TransformPair( -1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( +1,  +1 ),
-      TransformPair(  0,  -2 ),
-      TransformPair( +1,  -2 )
-    }
-  },
-};
-
-SRSKickMap Piece::srsmap_i = SRSKickMap
-{
-  {
-    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -2,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( -2,  -1 ),
-      TransformPair( +1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +2,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( +2,  +1 ),
-      TransformPair( -1,  -2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::R, PieceRotation::T),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( +2,  0  ),
-      TransformPair( -1,  +2 ),
-      TransformPair( +2,  -1 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::T, PieceRotation::R),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( -2,  0  ),
-      TransformPair( +1,  -2 ),
-      TransformPair( -2,  +1 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::T, PieceRotation::L),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +2,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( +2,  +1 ),
-      TransformPair( -1,  -2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::L, PieceRotation::T),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -2,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( -2,  -1 ),
-      TransformPair( +1,  +2 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( +1,  0  ),
-      TransformPair( -2,  0  ),
-      TransformPair( +1,  -2 ),
-      TransformPair( -2,  +1 )
-    }
-  },
-  {
-    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
-    {
-      TransformPair(  0,  0  ),
-      TransformPair( -1,  0  ),
-      TransformPair( +2,  0  ),
-      TransformPair( -1,  +2 ),
-      TransformPair( +2,  -1 )
-    }
-  },
-};
 
 PieceDefinitionMap Piece::defs = PieceDefinitionMap
 {

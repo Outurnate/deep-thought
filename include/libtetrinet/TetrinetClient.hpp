@@ -9,6 +9,7 @@
 #include <log4cxx/logger.h>
 
 #include "Constants.hpp"
+#include "libtetrinet/TetrinetConnection.hpp"
 
 unsigned long constexpr
   TOKEN_F            = djb2("f"           ),
@@ -71,11 +72,10 @@ const std::map<TetrinetMessage, std::string> MessageMap =
   { TetrinetMessage::NOCONNECTING, "noconnecting" }
 };
 //GMSG,SB,PAUSE
-class TetrinetClient
+class TetrinetClient : private boost::noncopyable
 {
 public:
   TetrinetClient(std::string nickname, log4cxx::LoggerPtr logger);
-  TetrinetClient(const TetrinetClient& client);
   virtual ~TetrinetClient();
   
   /**
@@ -83,23 +83,19 @@ public:
    *
    * Manages connection to the server, parses packets and dispenses them to ProcessCommand
    */
-  virtual void Run();
+  virtual void Run(std::shared_ptr<boost::asio::io_service> service, TetrinetConnection& connection);
   /**
    * Performs a graceful stop
    */
-  virtual void Stop() {}
+  virtual void Stop();
   /**
    * Gets AI name
    */
-  const std::string* GetName() const;
+  const std::string GetName() const;
   /**
    * Gets player ID
    */
-  const int* GetID() const;
-  /**
-   * Executes /join for the given channel
-   */
-  void JoinChannel(const std::string channel);
+  int GetID() const;
 protected:
   /**
    * Send the given message with supplied params to the sever
@@ -108,9 +104,8 @@ protected:
   /**
    * Processes a command issued from the server
    */
-  virtual void ProcessCommand(TetrinetMessage message, std::deque<std::string>* tokens);
+  virtual void ProcessCommand(TetrinetMessage message, std::deque<std::string>& tokens);
 private:
-  
   /** Converts int to hex string */
   inline std::string makeHex(int dec);
   /** Magic function for encoding start message */
@@ -118,9 +113,8 @@ private:
   /** Removes control codes from a string */
   inline std::string cleanCodes(std::string orig);
   
-  boost::asio::io_service service;
-  boost::asio::ip::tcp::socket socket;
-  boost::asio::io_service& socio;
+  std::shared_ptr<boost::asio::io_service> service;
+  std::unique_ptr<boost::asio::ip::tcp::socket> socket;
   log4cxx::LoggerPtr logger;
   std::map<int, std::string> plyrids;
   int playernum;

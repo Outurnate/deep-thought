@@ -19,9 +19,10 @@ class FieldTransform
   friend std::ostream& operator << (std::ostream& stream, const FieldTransform& fieldTransform);
   friend FieldTransform& operator += (FieldTransform& destination, const FieldTransform& source);
   friend bool operator == (const FieldTransform& lhs, const FieldTransform& rhs);
+  friend bool operator && (const FieldTransform& lhs, const FieldTransform& rhs);
 public:
   FieldTransform();
-  FieldTransform(const Piece& piece, sCoord x, sCoord y, FieldElement element);
+  //FieldTransform(const PieceLocation& location, FieldElement element);
   FieldTransform(const FieldTransform& transform);
   FieldTransform& operator= (const FieldTransform& rhs);
   
@@ -34,12 +35,9 @@ public:
   const TransformType::const_iterator begin() const;
   const TransformType::const_iterator end() const;
 
-  bool ContainsTransform(const FieldTransform& transform) const;
   std::string GetFullFieldString() const;
   bool CanApplyToField(const Field& field) const;
 private:
-//  const uAxis fieldWidth, fieldHeight, fieldSize;
-  
   std::unique_ptr<TransformType> transforms;
 };
 

@@ -11,19 +11,6 @@ FieldTransform::FieldTransform()
 {
 }
 
-
-FieldTransform::FieldTransform(const Piece& piece, sCoord x, sCoord y, FieldElement element)
-  : FieldTransform()
-{
-  for (sCoord i = 0; i < numeric_cast<sCoord>(piece.GetWidth() * piece.GetHeight()); ++i)
-  {
-    uCoord x2 = numeric_cast<uCoord>(i % piece.GetWidth()),
-           y2 = numeric_cast<uCoord>(i / piece.GetWidth());
-    if (piece(x2, y2))
-      (*this)(x + x2, y + y2) = element;
-  }
-}
-
 FieldTransform::FieldTransform(const FieldTransform& transform)
   : transforms(new TransformType(*transform.transforms))
 {
@@ -98,11 +85,11 @@ const FieldTransform::TransformType::const_iterator FieldTransform::end() const
   return transforms->end();
 }
 
-bool FieldTransform::ContainsTransform(const FieldTransform& transform) const
+bool operator && (const FieldTransform& lhs, const FieldTransform& rhs)
 {
-  return all_of(transform.begin(), transform.end(), [this](const pair<uCoord, FieldElement>& element)
+  return all_of(lhs.transforms->begin(), lhs.transforms->end(), [rhs](const pair<uCoord, FieldElement>& element)
 		{
-		  return (*transforms)[element.first] != FieldElement::NONE;
+		  return (*rhs.transforms)[element.first] != FieldElement::NONE;
 		});
 }
 

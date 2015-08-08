@@ -28,9 +28,9 @@ BOOST_AUTO_TEST_CASE(TransformCheck)
     BOOST_CHECK(piece(2, 1));
     BOOST_CHECK(piece(3, 1));
     BOOST_WARN_THROW(piece(5, 5), std::out_of_range);
-    BOOST_WARN_THROW(FieldTransform(piece,    fieldWidth  + 1, 0, FieldElement::RED), std::out_of_range);
-    BOOST_WARN_THROW(FieldTransform(piece, 0, fieldHeight + 1,    FieldElement::RED), std::out_of_range);
-    BOOST_REQUIRE_THROW(FieldTransform(piece, -1, -1, FieldElement::RED), std::out_of_range);
+    BOOST_WARN_THROW(PieceLocation(piece, fieldWidth + 1, 0              ).GetTransform(), std::out_of_range);
+    BOOST_WARN_THROW(PieceLocation(piece, 0,              fieldHeight + 1).GetTransform(), std::out_of_range);
+    BOOST_REQUIRE_THROW(PieceLocation(piece, -1, -1).GetTransform(), std::out_of_range);
   }
   Piece piece = Piece::Get(PieceShape::I, PieceRotation::R);
   BOOST_CHECK(piece(2, 0));
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(TransformCheck)
   BOOST_CHECK(piece(2, 2));
   BOOST_CHECK(piece(2, 3));
   BOOST_WARN_THROW(piece(5, 5), std::out_of_range);
-  field.ApplyTransform(FieldTransform(piece, 0, 0, FieldElement::RED));
+  field.ApplyTransform(PieceLocation(piece, 0, 0).GetTransform());
   BOOST_REQUIRE_EQUAL(field(2, 0), FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(2, 1), FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(2, 2), FieldElement::RED);
@@ -49,10 +49,10 @@ BOOST_AUTO_TEST_CASE(FieldExtents)
 {
   Field field;
   Piece piece = Piece::Get(PieceShape::O, PieceRotation::Z);
-  field.ApplyTransform(FieldTransform(piece, 0,                             0,                               FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, fieldWidth - piece.GetWidth(), 0,                               FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, 0,                             fieldHeight - piece.GetHeight(), FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight(), FieldElement::RED));
+  field.ApplyTransform(PieceLocation(piece, 0,                             0                              ).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), 0                              ).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, 0,                             fieldHeight - piece.GetHeight()).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight()).GetTransform());
   BOOST_REQUIRE_EQUAL(field(0,              0),               FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(fieldWidth - 1, 0),               FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(0,              fieldHeight - 1), FieldElement::RED);
@@ -63,10 +63,10 @@ BOOST_AUTO_TEST_CASE(FieldIterators)
 {
   Field field;
   Piece piece = Piece::Get(PieceShape::O, PieceRotation::Z);
-  field.ApplyTransform(FieldTransform(piece, 0,                             0,                               FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, fieldWidth - piece.GetWidth(), 0,                               FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, 0,                             fieldHeight - piece.GetHeight(), FieldElement::RED));
-  field.ApplyTransform(FieldTransform(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight(), FieldElement::RED));
+  field.ApplyTransform(PieceLocation(piece, 0,                             0                              ).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), 0                              ).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, 0,                             fieldHeight - piece.GetHeight()).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight()).GetTransform());
   for (uCoord x = 0; x < fieldWidth; ++x)
   {
     uCoord h = 0;
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(FieldIterators)
 BOOST_AUTO_TEST_CASE(SheetTransformTrivial)
 {
   Field field;
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::I, PieceRotation::Z), 2, 9, FieldElement::RED));
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 2, 9).GetTransform());
   field.ApplyTransform(FieldEvaluator::GenerateSheetTransform(field));
   BOOST_REQUIRE_EQUAL(field(2, 11), FieldElement::UNDEFINED);
   BOOST_REQUIRE_EQUAL(field(1, 11), FieldElement::NONE);
@@ -104,14 +104,14 @@ BOOST_AUTO_TEST_CASE(SheetTransformTrivial)
 BOOST_AUTO_TEST_CASE(GapExploreTrivial)
 {
   Field field;
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 10, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 4, 10, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 10, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 8, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 8, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 6, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 4, 6, FieldElement::RED));
-  field.ApplyTransform(FieldTransform(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 6, FieldElement::RED));
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 10).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 4, 10).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 10).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 8).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 8).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 2, 6).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 4, 6).GetTransform());
+  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::O, PieceRotation::Z), 6, 6).GetTransform());
   FieldTransform gaps;
   FieldEvaluator::FillGap(field, (fieldWidth * 8) + 4, gaps);
   field.ApplyTransform(gaps);
@@ -125,11 +125,10 @@ BOOST_AUTO_TEST_CASE(GapExploreTrivial)
 
 BOOST_AUTO_TEST_CASE(SimpleRotation)
 {
-  Piece piece = Piece::Get(PieceShape::J, PieceRotation::Z);
-  sCoord x = 0, y = 0;
+  PieceLocation location(Piece::Get(PieceShape::J, PieceRotation::Z), 0, 0);
   {
     Field field;
-    field.ApplyTransform(FieldTransform(piece, x, y, FieldElement::RED));
+    field.ApplyTransform(location.GetTransform());
     BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
@@ -137,8 +136,8 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
   }
   {
     Field field;
-    piece.Rotate(field, RotationDirection::CW, x, y);
-    field.ApplyTransform(FieldTransform(piece, x, y, FieldElement::RED));
+    FieldEvaluator::Rotate(location, field, RotationDirection::CW);
+    field.ApplyTransform(location.GetTransform());
     BOOST_REQUIRE_EQUAL(field(1, 0), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(2, 0), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
@@ -146,8 +145,8 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
   }
   {
     Field field;
-    piece.Rotate(field, RotationDirection::CCW, x, y);
-    field.ApplyTransform(FieldTransform(piece, x, y, FieldElement::RED));
+    FieldEvaluator::Rotate(location, field, RotationDirection::CCW);
+    field.ApplyTransform(location.GetTransform());
     BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
@@ -157,11 +156,10 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
 
 BOOST_AUTO_TEST_CASE(WallKickRotation)
 {
-  Piece piece = Piece::Get(PieceShape::L, PieceRotation::R);
-  sCoord x = -1, y = 0;
+  PieceLocation location(Piece::Get(PieceShape::L, PieceRotation::R), -1, 0);
   {
     Field field;
-    field.ApplyTransform(FieldTransform(piece, x, y, FieldElement::RED));
+    field.ApplyTransform(location.GetTransform());
     BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(0, 2), FieldElement::RED);
@@ -169,8 +167,8 @@ BOOST_AUTO_TEST_CASE(WallKickRotation)
   }
   {
     Field field;
-    piece.Rotate(field, RotationDirection::CW, x, y);
-    field.ApplyTransform(FieldTransform(piece, x, y, FieldElement::RED));
+    FieldEvaluator::Rotate(location, field, RotationDirection::CW);
+    field.ApplyTransform(location.GetTransform());
     BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(0, 2), FieldElement::RED);
     BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);

@@ -6,6 +6,7 @@
 #include <map>
 #include <bitset>
 #include <iostream>
+#include <boost/lexical_cast.hpp>
 
 class Piece;
 
@@ -22,17 +23,20 @@ class Piece
   // "[shape][state][width][height][16 bit definition]"
   constexpr Piece friend operator "" _pd(const char* definition, size_t size); // size must always be 20 (turn this off for release) TODO
 
-  friend std::ostream& operator<< (std::ostream& stream, const Piece& piece);
+  friend std::ostream& operator << (std::ostream& stream, const Piece& piece);
 public:
   bool operator() (uCoord x, uCoord y) const;
   Piece& operator= (const Piece& piece);
   
   uAxis GetWidth() const;
   uAxis GetHeight() const;
-
-  bool Rotate(const Field& field, RotationDirection direction, sCoord& x, sCoord& y);
+  PieceRotation GetRotation() const;
+  PieceShape GetShape() const;
 
   static Piece Get(PieceShape shape, PieceRotation rotation);
+  
+  operator std::string() const;
+  bool operator == (const Piece& rhs) const;
 private:
   static const uAxis pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
   typedef std::bitset<pieceSize> PieceDefinition;
@@ -45,7 +49,6 @@ private:
   uAxis width, height; // apparent size, actual is always 4x4
   
   static PieceDefinitionMap defs;
-  static SRSKickMap srsmap_jlstz, srsmap_i;
 };
 
 #endif

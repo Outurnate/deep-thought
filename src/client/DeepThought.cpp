@@ -23,7 +23,6 @@
 #include <iostream>
 
 #include "libdeepthought/AIManager.hpp"
-#include "libsimplemarkov/MarkovGenerator.hpp"
 
 using namespace log4cxx;
 using namespace std;
@@ -36,33 +35,11 @@ condition killCondition;
 mutex killMutex;
 bool sigself = false;
 
-void winchHandler(int param)
-{
-//  interface->Resize();
-}
-
 void sigintHandler(int param)
 {
   mutex::scoped_lock lock(killMutex);
   killCondition.notify_one();
   sigself = true;
-}
-
-inline MarkovCorpus readCorpus()
-{
-  return MarkovCorpus::FromStream(cin);
-}
-
-inline MarkovCorpus loadCorpus(ifstream& in)
-{
-  MarkovCorpus n;
-  text_iarchive(in) >> n;
-  return n;
-}
-
-inline void saveCorpus(ofstream& out, const MarkovCorpus& n)
-{
-  text_oarchive(out) << n;
 }
 
 inline void quit()
@@ -89,7 +66,7 @@ int main(int argc, char *argv[])
 
   if (opt.count("help"))
   {
-    cout << "deep-thought  Copyright (C) 2015  Joseph D" << endl
+    cout << "deep-thought  Copyright (C) 2014-2015  Joseph D" << endl
          << "This program comes with ABSOLUTELY NO WARRANTY; distributed under the GNU GPLv3" << endl
          << "This is free software, and you are welcome to redistribute it." << endl
          << "http://www.gnu.org/licenses/gpl-3.0.html" << endl << endl
@@ -108,36 +85,27 @@ int main(int argc, char *argv[])
     return 1;
   }
   
-  // Create loggers
+  // Create logger
   FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), opt["logfile"].as<string>(), false);
-//  interface = new TermInterface();
-//  interface->setLayout(LayoutPtr(new SimpleLayout()));
 
   helpers::Pool p;
   fileAppender->activateOptions(p);
 
   BasicConfigurator::configure(AppenderPtr(fileAppender));
-//  BasicConfigurator::configure(AppenderPtr(interface));
   Logger::getRootLogger()->setLevel(Level::getTrace());
 
   // Register signal handlers
   struct sigaction winchSA, sigintSA;
-  winchSA.sa_handler = winchHandler;
   sigintSA.sa_handler = sigintHandler;
-  sigemptyset(&winchSA.sa_mask);
   sigemptyset(&sigintSA.sa_mask);
-  winchSA.sa_flags = SA_RESTART;
   sigintSA.sa_flags = SA_RESTART;
-  if (sigaction(SIGWINCH, &winchSA, NULL) == -1) exit(1);
   if (sigaction(SIGINT, &sigintSA, NULL) == -1) exit(1);
 
   manager = new AIManager();
-  //manager->RegisterStatusHandler(interface);
 
   killCondition.wait(lock); // release lock and wait for kill
 
   delete manager;
-  //delete interface;
   
   if (sigself) // if we got sigint, pass on the sig
   {

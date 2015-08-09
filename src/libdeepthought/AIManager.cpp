@@ -1,73 +1,54 @@
 #include "libdeepthought/AIManager.hpp"
 
+#include <boost/bind.hpp>
 #include <log4cxx/logger.h>
 
+using boost::asio::ip::tcp;
+
 using namespace boost;
+using namespace boost::asio;
 using namespace log4cxx;
 
-AIManager::AIManager() : population(0)
-{
-  supervisor = new Supervisor(this);
-}
-
-AIManager::~AIManager()
-{
-  delete supervisor;
-  delete population;
-}
-
-void AIManager::RegisterStatusHandler(IFieldStatusHandler* handler) // called by client
-{
-  handlers.push_back(handler);
-}
-
-void AIManager::SendEngineToChannel(AIEngine* engine, const std::string channel)
-{
-  engine->JoinChannel(channel);
-}
-
-void AIManager::LoadPopulation(const std::string name)
-{
-  population = new Population(name);
-}
-
-void AIManager::QueueMatch(Match* match)
+AIManager::AIManager()
+  : service(), tcpAcceptor(service, tcp::endpoint(tcp::v4(), 1300))
 {
 }
 
-// Called via population when status changes
-void AIManager::PopulationTick()
+void AIManager::Run()
 {
-  //pseudo:
-  //foreach engine
-  //if done
-  //find results, send to match
-  //foreach channel in channels
-  //if free
-  //pop match queue
+  service.run();
 }
 
-void AIManager::addEngine(AIEngine* engine)
+void AIManager::startAccept()
 {
-  thread* engineThread = new thread(&AIEngine::Run, engine); // will dealloc with thread group
-  engine->BindManager(this);
-  engineThreads.add_thread(engineThread);
+  AIManagerConnection::Pointer newConnection = AIManagerConnection::Create(service);
+  tcpAcceptor.async_accept(newConnection->Socket(), bind(&AIManager::handleAccept, this, newConnection, placeholders::error));
 }
 
-void AIManager::removeEngine(AIEngine* engine)
+void AIManager::handleAccept(AIManagerConnection::Pointer newConnection, const boost::system::error_code& error)
 {
-  engine->Stop();
-  delete engine;
+  if (!error)
+    newConnection->Start();
+
+  startAccept();
 }
 
-void AIManager::statusHandler(AIStatus status) // called from engine
+AIManager::AIManagerConnection::Pointer AIManager::AIManagerConnection::Create(io_service& ioService)
 {
-  for (IFieldStatusHandler* handler : handlers)
-    handler->HandleStatus(status);
+  return AIManagerConnection::Pointer(new AIManagerConnection(ioService));
 }
 
-void AIManager::stateHandler(AIEngine* engine, AIState state)
+tcp::socket& AIManager::AIManagerConnection::Socket()
 {
-//  if (population)
-//    population->stateHandler(engine, state);
+  return socket;
+}
+
+void AIManager::AIManagerConnection::Start()
+{
+  async_write(socket, buffer("asdf"), bind(&AIManagerConnection::handleWrite, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+}
+
+AIManager::AIManagerConnection::AIManagerConnection(io_service& ioService)
+  : socket(ioService)
+{
 }

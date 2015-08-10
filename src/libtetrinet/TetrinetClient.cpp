@@ -80,7 +80,7 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
         split(tokens, clean, is_any_of(" "));
         if (tokens.size() == 0)
           break;
-        TetrinetMessage hash = (TetrinetMessage)djb2(tokens.front().c_str());
+        TetrinetMessage hash = TetrinetMessage(djb2(tokens.front().c_str()));
         tokens.pop_front();
         this->ProcessCommand(hash, tokens);
       }
@@ -92,6 +92,10 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
   }
 }
 
+void TetrinetClient::Stop()
+{
+}
+
 inline string TetrinetClient::cleanCodes(string orig)
 {
   vector<char> newV(orig.length()), oldV(orig.begin(), orig.end());
@@ -99,7 +103,7 @@ inline string TetrinetClient::cleanCodes(string orig)
   return string(newV.begin(), newV.end());
 }
 
-void TetrinetClient::SendCommand(TetrinetMessage message, std::string param)
+void TetrinetClient::SendCommand(TetrinetMessage message, string param)
 {
   stringstream str;
   str << MessageMap.at(message) << " ";
@@ -117,23 +121,38 @@ void TetrinetClient::SendCommand(TetrinetMessage message, std::string param)
   write(*socket, buffer(string(sstr.begin(), sstr.end()), 1024));
 }
 
-void TetrinetClient::ProcessCommand(TetrinetMessage message, std::deque<std::string>& tokens)
+void TetrinetClient::ProcessCommand(TetrinetMessage message, deque<string>& tokens)
 {
   switch(message)
   {
     case TetrinetMessage::PLAYERNUM:
-      plyrids.insert(pair<int, string>(playernum = atoi(tokens.at(0).substr(0, 1).c_str()), screenName));
+      playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
+      setField(playerNum.get(), screenName);
       break;
     case TetrinetMessage::PLAYERJOIN:
-      plyrids.insert(pair<int, string>(atoi(tokens.at(0).substr(0, 1).c_str()), tokens.at(1)));
+      if (playerNum)
+	LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  This will generate a field leak.  Please ignore, server is incorrect in its implementation");
+      setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
       break;
     case TetrinetMessage::PLAYERLEAVE:
-      plyrids.erase(atoi(tokens.at(0).substr(0, 1).c_str()));
+      playerFields[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
       break;
     case TetrinetMessage::NOCONNECTING:
       LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
       break;
   }
+}
+
+void TetrinetClient::setField(unsigned num, const string& name)
+{
+  if (playerFields[num])
+  {
+    LOG4CXX_WARN(logger, "Field leaked!");
+    playerFields[num].reset();
+  }
+  playerFields[num].reset(new Field());
+
+  playerNames[num] = name;
 }
 
 const string TetrinetClient::GetName() const
@@ -143,5 +162,5 @@ const string TetrinetClient::GetName() const
 
 int TetrinetClient::GetID() const
 {
-  return playernum;
+  return playerNum.get();
 }

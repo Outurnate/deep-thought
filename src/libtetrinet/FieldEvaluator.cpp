@@ -155,3 +155,101 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   }
   return false;
 }
+
+/* TODO: port
+
+inline double rank(int piece, PieceLocation location)
+{
+  vector<char> newfield = vector<char>(field);
+  place(newfield, piece, location, 1);
+  return
+      ((double)(clearCount   (&newfield)                        ) * _c)
+    + ((double)(blockadeCount(&newfield) - blockadeCount(&field)) * _b)
+    + ((double)(rowCount     (&newfield) - rowCount     (&field)) * _r)
+    + ((double)(gapCount     (&newfield) - gapCount     (&field)) * _g);
+}
+
+inline unsigned columnHeight(const vector<char>* _field, unsigned x)
+{
+  unsigned colHeight = FIELD_HEIGHT - 1;
+  for (unsigned int y = 0; y < FIELD_HEIGHT; ++y)  // Search this column top-down
+    if ((*_field)[FIELD_WIDTH * y + x] != '0') // block!
+    {
+      colHeight = y; // this is the top
+      break;
+    }
+  return FIELD_HEIGHT - colHeight;
+}
+
+inline int gapCount(const vector<char>* _field)
+{
+  unsigned gapCount = 0;
+  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+  {
+    bool foundBlock = false;
+    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    {
+      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
+        foundBlock = true; // flag it
+      else if (foundBlock) // if there's no block and we've flagged
+        ++gapCount;
+    }
+  }
+  return gapCount;
+}
+
+inline int blockadeCount(const vector<char>* _field)
+{
+  unsigned totalBlock = 0;
+  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+  {
+    unsigned blockCount = 0;
+    bool foundBlock = false;
+    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    {
+      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
+      {
+        foundBlock = true; // flag it
+        blockCount++;
+      }
+      else if (foundBlock) // if we have blocks over us and this is a gap, stop counting
+        goto legitimateUseOfGoto;
+    }
+    blockCount = 0; // reached the bottom of col. without tripping goto, full col., don't count
+legitimateUseOfGoto:
+    totalBlock += blockCount;
+  }
+  return totalBlock;
+}
+
+inline int rowCount(const vector<char>* _field)
+{
+  vector<unsigned>* heights = new vector<unsigned>();
+  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+    heights->push_back(columnHeight(_field, x));
+  return FIELD_HEIGHT - *std::min_element(heights->begin(), heights->end()); // find the tallest column
+}
+
+inline int clearCount(vector<char>* _field)
+{
+  int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
+  for (long unsigned i = 0; i < _field->size(); ++i)
+  {
+    if ((*_field)[i] != '0') ++crow;
+    if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
+    {
+      if (crow == FIELD_WIDTH)
+      {
+        for (long unsigned s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
+          (*_field)[s] = '0';
+        for (long unsigned s = i; s > 0; --s)
+          (*_field)[s] = s > FIELD_WIDTH ? (*_field)[s - FIELD_WIDTH] : '0';
+        clears++;
+      }
+      crow = 0;
+    }
+  }
+  return clears;
+}
+
+*/

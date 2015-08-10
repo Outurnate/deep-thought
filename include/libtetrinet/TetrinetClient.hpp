@@ -9,16 +9,17 @@
 #include <log4cxx/logger.h>
 
 #include "Constants.hpp"
+#include "libtetrinet/Field.hpp"
 #include "libtetrinet/TetrinetConnection.hpp"
 
 unsigned long constexpr
   TOKEN_F            = djb2("f"           ),
-  TOKEN_SB           = djb2("sb"          ),
+//TOKEN_SB           = djb2("sb"          ),
 //TOKEN_LVL          = djb2("lvl"         ),
-  TOKEN_GMSG         = djb2("gmsg"        ),
+//TOKEN_GMSG         = djb2("gmsg"        ),
 //TOKEN_TEAM         = djb2("team"        ),
   TOKEN_PLINE        = djb2("pline"       ),
-  TOKEN_PAUSE        = djb2("pause"       ),
+//TOKEN_PAUSE        = djb2("pause"       ),
   TOKEN_NEWGAME      = djb2("newgame"     ),
   TOKEN_ENDGAME      = djb2("endgame"     ),
 //TOKEN_WINLIST      = djb2("winlist"     ),
@@ -33,12 +34,12 @@ unsigned long constexpr
 enum class TetrinetMessage : unsigned long
 {
   F            = TOKEN_F,
-  SB           = TOKEN_SB,
+//SB           = TOKEN_SB,
 //LVL          = TOKEN_LVL,
-  GMSG         = TOKEN_GMSG,
+//GMSG         = TOKEN_GMSG,
 //TEAM         = TOKEN_TEAM,
   PLINE        = TOKEN_PLINE,
-  PAUSE        = TOKEN_PAUSE,
+//PAUSE        = TOKEN_PAUSE,
   NEWGAME      = TOKEN_NEWGAME,
   ENDGAME      = TOKEN_ENDGAME,
 //WINLIST      = TOKEN_WINLIST,
@@ -54,17 +55,17 @@ enum class TetrinetMessage : unsigned long
 const std::map<TetrinetMessage, std::string> MessageMap =
 {
   { TetrinetMessage::F,            "f"            },
-  { TetrinetMessage::SB,           "sb"           },
+//{ TetrinetMessage::SB,           "sb"           },
 //{ TetrinetMessage::LVL,          "lvl",         },
-  { TetrinetMessage::GMSG,         "gmsg"         },
+//{ TetrinetMessage::GMSG,         "gmsg"         },
 //{ TetrinetMessage::TEAM,         "team"         },
   { TetrinetMessage::PLINE,        "pline"        },
-  { TetrinetMessage::PAUSE,        "pause"        },
+//{ TetrinetMessage::PAUSE,        "pause"        },
   { TetrinetMessage::NEWGAME,      "newgame"      },
   { TetrinetMessage::ENDGAME,      "endgame"      },
 //{ TetrinetMessage::WINLIST,      "winlist"      },
   { TetrinetMessage::PLINEACT,     "plineact"     },
-//{ TetrinetMessage::PLAYERNUM,    "playerwon"    },
+//{ TetrinetMessage::PLAYERWON,    "playerwon"    },
   { TetrinetMessage::PLAYERNUM,    "playernum"    },
 //{ TetrinetMessage::PLAYERLOST,   "playerlost"   },
   { TetrinetMessage::PLAYERJOIN,   "playerjoin"   },
@@ -112,12 +113,14 @@ private:
   inline std::string encode(std::string name, std::string address);
   /** Removes control codes from a string */
   inline std::string cleanCodes(std::string orig);
+  void setField(unsigned num, const std::string& name);
   
   std::shared_ptr<boost::asio::io_service> service;
   std::unique_ptr<boost::asio::ip::tcp::socket> socket;
+  std::map<unsigned, std::unique_ptr<Field> > playerFields;
+  std::map<unsigned, std::string> playerNames;
   log4cxx::LoggerPtr logger;
-  std::map<int, std::string> plyrids;
-  int playernum;
+  boost::optional<unsigned> playerNum;
 
   /** AI screen name */
   const std::string screenName;

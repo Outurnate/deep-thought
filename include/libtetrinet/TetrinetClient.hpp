@@ -6,76 +6,54 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/signals2.hpp>
+#include <boost/signals2/connection.hpp>
 #include <log4cxx/logger.h>
 
-#include "Constants.hpp"
 #include "libtetrinet/Field.hpp"
 #include "libtetrinet/TetrinetConnection.hpp"
 
-unsigned long constexpr
-  TOKEN_F            = djb2("f"           ),
-//TOKEN_SB           = djb2("sb"          ),
-//TOKEN_LVL          = djb2("lvl"         ),
-//TOKEN_GMSG         = djb2("gmsg"        ),
-//TOKEN_TEAM         = djb2("team"        ),
-  TOKEN_PLINE        = djb2("pline"       ),
-//TOKEN_PAUSE        = djb2("pause"       ),
-  TOKEN_NEWGAME      = djb2("newgame"     ),
-  TOKEN_ENDGAME      = djb2("endgame"     ),
-//TOKEN_WINLIST      = djb2("winlist"     ),
-  TOKEN_PLINEACT     = djb2("plineact"    ),
-//TOKEN_PLAYERWON    = djb2("playerwon"   ),
-  TOKEN_PLAYERNUM    = djb2("playernum"   ),
-//TOKEN_PLAYERLOST   = djb2("playerlost"  ),
-  TOKEN_PLAYERJOIN   = djb2("playerjoin"  ),
-  TOKEN_PLAYERLEAVE  = djb2("playerleave" ),
-  TOKEN_NOCONNECTING = djb2("noconnecting");
-
-enum class TetrinetMessage : unsigned long
+struct TetrinetPlayer
 {
-  F            = TOKEN_F,
-//SB           = TOKEN_SB,
-//LVL          = TOKEN_LVL,
-//GMSG         = TOKEN_GMSG,
-//TEAM         = TOKEN_TEAM,
-  PLINE        = TOKEN_PLINE,
-//PAUSE        = TOKEN_PAUSE,
-  NEWGAME      = TOKEN_NEWGAME,
-  ENDGAME      = TOKEN_ENDGAME,
-//WINLIST      = TOKEN_WINLIST,
-  PLINEACT     = TOKEN_PLINEACT,
-//PLAYERNUM    = TOKEN_PLAYERWON,
-  PLAYERNUM    = TOKEN_PLAYERNUM,
-//PLAYERLOST   = TOKEN_PLAYERLOST,
-  PLAYERJOIN   = TOKEN_PLAYERJOIN,
-  PLAYERLEAVE  = TOKEN_PLAYERLEAVE,
-  NOCONNECTING = TOKEN_NOCONNECTING
+  Field field;
+  std::string name, team;
+  unsigned level;
+  bool playing;
+
+  TetrinetPlayer(std::string name, std::string team) : field(), name(name), team(team), level(0), playing(false) {}
 };
 
-const std::map<TetrinetMessage, std::string> MessageMap =
+struct GameSettings
 {
-  { TetrinetMessage::F,            "f"            },
-//{ TetrinetMessage::SB,           "sb"           },
-//{ TetrinetMessage::LVL,          "lvl",         },
-//{ TetrinetMessage::GMSG,         "gmsg"         },
-//{ TetrinetMessage::TEAM,         "team"         },
-  { TetrinetMessage::PLINE,        "pline"        },
-//{ TetrinetMessage::PAUSE,        "pause"        },
-  { TetrinetMessage::NEWGAME,      "newgame"      },
-  { TetrinetMessage::ENDGAME,      "endgame"      },
-//{ TetrinetMessage::WINLIST,      "winlist"      },
-  { TetrinetMessage::PLINEACT,     "plineact"     },
-//{ TetrinetMessage::PLAYERWON,    "playerwon"    },
-  { TetrinetMessage::PLAYERNUM,    "playernum"    },
-//{ TetrinetMessage::PLAYERLOST,   "playerlost"   },
-  { TetrinetMessage::PLAYERJOIN,   "playerjoin"   },
-  { TetrinetMessage::PLAYERLEAVE,  "playerleave"  },
-  { TetrinetMessage::NOCONNECTING, "noconnecting" }
+  unsigned startHeight, startLevel, lineLevel, levelIncr, lineSpecial, specialCount, specialCap, seed;
+  std::map<double, PieceShape> blockFrequency;
+  std::map<double, SpecialPiece> specialFrequency;
+  bool showAvgLevel, classic;
+
+  GameSettings(unsigned startHeight, unsigned startLevel, unsigned lineLevel, unsigned levelIncr,
+	       unsigned lineSpecial, unsigned specialCount, unsigned specialCap, std::string blockFrequency,
+	       std::string specialFrequency, bool showAvgLevel, bool classic, unsigned seed)
+    : startHeight(startHeight), startLevel(startLevel), lineLevel(lineLevel), levelIncr(levelIncr),
+      lineSpecial(lineSpecial), specialCount(specialCount), specialCap(specialCap), seed(seed),
+      blockFrequency(), specialFrequency(), showAvgLevel(showAvgLevel), classic(classic)
+  {
+    double blockSize = blockFrequency.size(),
+      specSize = specialFrequency.size(),
+      blockSum = 0, specSum = 0;
+
+    for (PieceShape shape : AllPieceShape)
+      this->blockFrequency.emplace(blockSum += (double(std::count(blockFrequency.begin(), blockFrequency.end(), char(shape))) / blockSize), shape);
+    
+    for (SpecialPiece special : AllSpecialPiece)
+      this->specialFrequency.emplace(specSum += (double(std::count(specialFrequency.begin(), specialFrequency.end(), char(special))) / specSize), special);
+  }
 };
-//GMSG,SB,PAUSE
+
 class TetrinetClient : private boost::noncopyable
 {
 public:
+  typedef boost::signals2::signal<void (const TetrinetClient&)> GenericSignal;
+  
   TetrinetClient(std::string nickname, log4cxx::LoggerPtr logger);
   virtual ~TetrinetClient();
   
@@ -97,6 +75,19 @@ public:
    * Gets player ID
    */
   int GetID() const;
+  const boost::signals2::connection AddOnComplete   (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnField      (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnSpecial    (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnMessage    (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnPause      (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnResume     (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnGameStart  (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnGameEnd    (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnConnect    (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnDisconnect (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnPlayerJoin (const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnPlayerLeave(const GenericSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnPieceReady (const GenericSignal::slot_type& slot) const;
 protected:
   /**
    * Send the given message with supplied params to the sever
@@ -117,10 +108,25 @@ private:
   
   std::shared_ptr<boost::asio::io_service> service;
   std::unique_ptr<boost::asio::ip::tcp::socket> socket;
-  std::map<unsigned, std::unique_ptr<Field> > playerFields;
+  std::map<unsigned, std::unique_ptr<TetrinetPlayer> > players;
   std::map<unsigned, std::string> playerNames;
   log4cxx::LoggerPtr logger;
   boost::optional<unsigned> playerNum;
+  boost::optional<GameSettings> gameData;
+  bool connected, inGame, paused;
+  
+  mutable GenericSignal onField;//
+  mutable GenericSignal onSpecial;
+  mutable GenericSignal onMessage;
+  mutable GenericSignal onPause;//
+  mutable GenericSignal onResume;//
+  mutable GenericSignal onGameStart;//
+  mutable GenericSignal onGameEnd;//
+  mutable GenericSignal onConnect;//
+  mutable GenericSignal onDisconnect;//
+  mutable GenericSignal onPlayerJoin;//
+  mutable GenericSignal onPlayerLeave;//
+  mutable GenericSignal onPieceReady;
 
   /** AI screen name */
   const std::string screenName;

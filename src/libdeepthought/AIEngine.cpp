@@ -49,7 +49,7 @@ void AIEngine::DoPlacing()
   }
 }
 
-void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
+void AIEngine::ProcessCommand(TetrinetMessage message, std::deque<std::string>& tokens)
 {
   try
   {
@@ -58,39 +58,18 @@ void AIEngine::ProcessCommand(TetrinetMessage message, deque<string>* tokens)
     {
     case TetrinetMessage::PLINEACT:
     case TetrinetMessage::PLINE:
-    {
-      stringstream msg;
-      for (long unsigned i = 1; i < tokens->size(); ++i)
-        msg << tokens->at(i) << " ";
-      LOG4CXX_INFO(logger, "MSG: " << msg.str());
-    }
-    break;
-
-    case TetrinetMessage::F:
-    if (atoi(tokens->at(0).c_str()) == *GetID())
-    {
-      fmtx.lock();
-      field.assign(tokens->at(1).begin(), tokens->at(1).end());
-      fmtx.unlock();
-    }
-    break;
+      {
+        stringstream msg;
+        for (long unsigned i = 1; i < tokens.size(); ++i)
+          msg << tokens.at(i) << " ";
+        LOG4CXX_INFO(logger, "MSG: " << msg.str());
+      }
+      break;
 
     case TetrinetMessage::NEWGAME:
-    {
-      string freqs = tokens->at(7);
-      string specs = tokens->at(8);
-      for (unsigned int i = 0; i < freqs.length(); ++i)
-        freqarr.insert(freqarr.end(), atoi(freqs.substr(i, 1).c_str()));
-      for (unsigned int i = 0; i < specs.length(); ++i)
-        specarr.insert(specarr.end(), atoi(specs.substr(i, 1).c_str()));
-      stringstream seedstr;
-      seedstr << dec << tokens->at(11);
-      srand(atoi(seedstr.str().c_str())); //TODO
-      fill(field.begin(), field.end(), '0');
       setState(AIState::RUNNING);
       placer = new thread(&AIEngine::DoPlacing, this);
-    }
-    break;
+      break;
 
     case TetrinetMessage::ENDGAME:
       setState(AIState::IDLE);

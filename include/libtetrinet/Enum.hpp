@@ -7,6 +7,44 @@
 #include <map>
 #include <array>
 
+unsigned long constexpr djb2(const char* c);
+
+unsigned long constexpr djb2(const char* c, unsigned long hash)
+{
+  return !*c ? hash : djb2(c + 1, ((hash << 5) + hash) + *c);
+}
+
+unsigned long constexpr djb2(const char* c)
+{
+  return djb2(c, 5381);
+}
+
+enum class SpecialPiece : char
+{
+  ADDLINE       = 'a',
+  CLEARLINE     = 'c',
+  NUKE          = 'n',
+  RANDOMCLEAR   = 'r',
+  SWITCH        = 's',
+  CLEARSPECIALS = 'b',
+  GRAVITY       = 'g',
+  QUAKE         = 'q',
+  BOMB          = 'o'
+};
+
+const std::vector<SpecialPiece> AllSpecialPiece
+{
+  SpecialPiece::ADDLINE,
+  SpecialPiece::CLEARLINE,
+  SpecialPiece::NUKE,
+  SpecialPiece::RANDOMCLEAR,
+  SpecialPiece::SWITCH,
+  SpecialPiece::CLEARSPECIALS,
+  SpecialPiece::GRAVITY,
+  SpecialPiece::QUAKE,
+  SpecialPiece::BOMB,
+};
+
 enum class FieldElement : char
 {
   BLUE          = '1',
@@ -39,6 +77,17 @@ enum class PieceShape : char
   S = 'S',
   Z = 'Z',
   T = 'T'
+};
+
+const std::vector<PieceShape> AllPieceShape
+{
+  PieceShape::I,
+  PieceShape::O,
+  PieceShape::J,
+  PieceShape::L,
+  PieceShape::S,
+  PieceShape::Z,
+  PieceShape::T
 };
 
 enum class PieceRotation : uint8_t
@@ -99,6 +148,71 @@ inline FieldElement GetColor(PieceShape shape)
     return ColorTuple(FieldElement::BLUE,   FieldElement::PURPLE, FieldElement::RED)();
   }
 }
+
+unsigned long constexpr
+  TOKEN_F            = djb2("f"           ),
+  TOKEN_SB           = djb2("sb"          ),
+  TOKEN_LVL          = djb2("lvl"         ),
+  TOKEN_GMSG         = djb2("gmsg"        ),
+  TOKEN_TEAM         = djb2("team"        ),
+  TOKEN_PLINE        = djb2("pline"       ),
+  TOKEN_PAUSE        = djb2("pause"       ),
+  TOKEN_INGAME       = djb2("ingame"      ),
+  TOKEN_NEWGAME      = djb2("newgame"     ),
+  TOKEN_ENDGAME      = djb2("endgame"     ),
+  TOKEN_WINLIST      = djb2("winlist"     ),
+  TOKEN_PLINEACT     = djb2("plineact"    ),
+  TOKEN_PLAYERWON    = djb2("playerwon"   ),
+  TOKEN_PLAYERNUM    = djb2("playernum"   ),
+  TOKEN_PLAYERLOST   = djb2("playerlost"  ),
+  TOKEN_PLAYERJOIN   = djb2("playerjoin"  ),
+  TOKEN_PLAYERLEAVE  = djb2("playerleave" ),
+  TOKEN_NOCONNECTING = djb2("noconnecting");
+
+enum class TetrinetMessage : unsigned long
+{
+  F            = TOKEN_F,
+  SB           = TOKEN_SB,
+  LVL          = TOKEN_LVL,
+  GMSG         = TOKEN_GMSG,
+  TEAM         = TOKEN_TEAM,
+  PLINE        = TOKEN_PLINE,
+  PAUSE        = TOKEN_PAUSE,
+  INGAME       = TOKEN_INGAME,
+  NEWGAME      = TOKEN_NEWGAME,
+  ENDGAME      = TOKEN_ENDGAME,
+  WINLIST      = TOKEN_WINLIST,
+  PLINEACT     = TOKEN_PLINEACT,
+  PLAYERWON    = TOKEN_PLAYERWON,
+  PLAYERNUM    = TOKEN_PLAYERNUM,
+  PLAYERLOST   = TOKEN_PLAYERLOST,
+  PLAYERJOIN   = TOKEN_PLAYERJOIN,
+  PLAYERLEAVE  = TOKEN_PLAYERLEAVE,
+  NOCONNECTING = TOKEN_NOCONNECTING
+};
+
+const std::map<TetrinetMessage, std::string> MessageMap =
+{
+  { TetrinetMessage::F,            "f"            },
+  { TetrinetMessage::SB,           "sb"           },
+  { TetrinetMessage::LVL,          "lvl",         },
+  { TetrinetMessage::GMSG,         "gmsg"         },
+  { TetrinetMessage::TEAM,         "team"         },
+  { TetrinetMessage::PLINE,        "pline"        },
+  { TetrinetMessage::PAUSE,        "pause"        },
+  { TetrinetMessage::INGAME,       "ingame"       },
+  { TetrinetMessage::NEWGAME,      "newgame"      },
+  { TetrinetMessage::ENDGAME,      "endgame"      },
+  { TetrinetMessage::WINLIST,      "winlist"      },
+  { TetrinetMessage::PLINEACT,     "plineact"     },
+  { TetrinetMessage::PLAYERWON,    "playerwon"    },
+  { TetrinetMessage::PLAYERNUM,    "playernum"    },
+  { TetrinetMessage::PLAYERLOST,   "playerlost"   },
+  { TetrinetMessage::PLAYERJOIN,   "playerjoin"   },
+  { TetrinetMessage::PLAYERLEAVE,  "playerleave"  },
+  { TetrinetMessage::NOCONNECTING, "noconnecting" }
+};
+//GMSG,SB,PAUSE
 
 static SRSKickMap srsmap_jlstz = SRSKickMap
 {

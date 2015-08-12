@@ -21,7 +21,7 @@ enum class AIState;
 /**
  * Core AI class.  Connects to server and responds to messages
  */
-class AIEngine : private boost::noncopyable, public TetrinetClient
+class AIEngine : public TetrinetClient
 {
 public:
   /**
@@ -54,7 +54,6 @@ private:
   /** Sets current state and fires handler */
   inline void setState(AIState state);
 
-  std::vector<int> freqarr, specarr;
   boost::thread* placer;
   /** Mutex for member field */
   boost::mutex fmtx;
@@ -62,4 +61,5 @@ private:
   log4cxx::LoggerPtr logger;
   AIState currentState;
 };
+
 #endif

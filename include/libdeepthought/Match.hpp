@@ -15,7 +15,7 @@ public:
   Match(Genome* a, Genome* b);
   virtual ~Match();
 
-  const boost::signals2::connection& AddOnComplete(const CompleteSignal::slot_type& slot) const;
+  const boost::signals2::connection AddOnComplete(const CompleteSignal::slot_type& slot) const;
 private:
   mutable CompleteSignal onComplete;
 };

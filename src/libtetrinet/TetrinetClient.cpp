@@ -15,9 +15,8 @@ using namespace boost::system;
 using namespace boost::asio;
 using namespace log4cxx;
 
-TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playernum(0)
+TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playerNum(0), connected(false), inGame(false), paused(false)
 {
-  plyrids.insert(pair<int, string>(0, "Server"));
 }
 
 inline string TetrinetClient::makeHex(int dec)
@@ -64,6 +63,8 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
       throw errorc;
     string startmsg = encode(screenName, socket->remote_endpoint().address().to_v4().to_string()) + "\n";
     write(*socket, buffer(startmsg, 1024));
+    connected = true;
+    onConnect(*this);
     for (;;)
     {
       boost::asio::streambuf response;
@@ -89,11 +90,14 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
   catch (boost::system::error_code& e)
   {
     LOG4CXX_FATAL(logger, "Fatal error in connect: " << e.message());
+    Stop();
   }
 }
 
 void TetrinetClient::Stop()
 {
+  connected = false;
+  onDisconnect(*this);
 }
 
 inline string TetrinetClient::cleanCodes(string orig)
@@ -110,7 +114,7 @@ void TetrinetClient::SendCommand(TetrinetMessage message, string param)
   switch(message)
   {
   case TetrinetMessage::F:
-    str << playernum << " " << param << " ";
+    str << playerNum.get() << " " << param << " ";
     break;
   default:
     str << param;
@@ -129,30 +133,65 @@ void TetrinetClient::ProcessCommand(TetrinetMessage message, deque<string>& toke
       playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
       setField(playerNum.get(), screenName);
       break;
+      
     case TetrinetMessage::PLAYERJOIN:
       if (playerNum)
 	LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  This will generate a field leak.  Please ignore, server is incorrect in its implementation");
       setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
+      onPlayerJoin(*this);
       break;
+      
     case TetrinetMessage::PLAYERLEAVE:
-      playerFields[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
+      players[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
+      onPlayerLeave(*this);
       break;
+      
     case TetrinetMessage::NOCONNECTING:
       LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
+      Stop();
+      break;
+
+    case TetrinetMessage::F:
+      players[lexical_cast<unsigned>(tokens.at(0))]->field.ApplyTransform(FieldTransform(tokens.at(1)));
+      onField(*this);
+      break;
+      
+    case TetrinetMessage::NEWGAME:
+      gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
+			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
+			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
+			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
+      inGame = true;
+      onGameStart(*this);
+      break;
+      
+    case TetrinetMessage::INGAME:
+      inGame = true;
+      break;
+
+    case TetrinetMessage::PAUSE:
+      if ((paused = lexical_cast<bool>(tokens.at(0))))
+	onPause(*this);
+      else
+	onResume(*this);
+      break;
+
+    case TetrinetMessage::ENDGAME:
+      gameData = none;
+      inGame = false;
+      onGameEnd(*this);
       break;
   }
 }
 
 void TetrinetClient::setField(unsigned num, const string& name)
 {
-  if (playerFields[num])
+  if (players[num])
   {
     LOG4CXX_WARN(logger, "Field leaked!");
-    playerFields[num].reset();
+    players[num].reset();
   }
-  playerFields[num].reset(new Field());
-
-  playerNames[num] = name;
+  players[num].reset(new TetrinetPlayer(name));
 }
 
 const string TetrinetClient::GetName() const

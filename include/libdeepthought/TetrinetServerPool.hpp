@@ -53,7 +53,7 @@ private:
     const std::string pidFile, startCmd, stopCmd;
     std::ifstream pidStream;
     boost::optional<const Match&> match;
-    boost::optional<const boost::signals2::connection&> onCompleteConnection;
+    boost::optional<boost::signals2::connection> onCompleteConnection;
   };
   
   const std::string poolName;

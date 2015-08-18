@@ -16,6 +16,13 @@ FieldTransform::FieldTransform(const FieldTransform& transform)
 {
 }
 
+FieldTransform::FieldTransform(const std::string& message)
+{
+  for (unsigned i = 0; i < message.size(); ++i)
+    if (message[i] != char(FieldElement::NONE))
+      (*this)(i) = FieldElement(message[i]);
+}
+
 FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
 {
   if(this == &rhs)

@@ -19,7 +19,7 @@ TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), s
 {
 }
 
-inline string TetrinetClient::makeHex(int dec)
+string makeHex(int dec)
 {
   stringstream decstr;
   decstr << setfill('0') << setw(2) << hex << dec;
@@ -62,10 +62,10 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
     if (errorc)
       throw errorc;
     string startmsg = encode(screenName, socket->remote_endpoint().address().to_v4().to_string()) + "\n";
-    write(*socket, buffer(startmsg, 1024));
+    write(*socket, buffer(startmsg, startmsg.length()));
     connected = true;
     onConnect(*this);
-    for (;;)
+    while (connected)
     {
       boost::asio::streambuf response;
       read_until(*socket, response, "\xFF");
@@ -77,13 +77,12 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
       for (unsigned int i = 0; i < mshbits.size(); ++i)
       {
         deque<string> tokens;
-        string clean = cleanCodes(mshbits[i]);
-        split(tokens, clean, is_any_of(" "));
+        split(tokens, mshbits[i], is_any_of(" "));
         if (tokens.size() == 0)
           break;
         TetrinetMessage hash = TetrinetMessage(djb2(tokens.front().c_str()));
         tokens.pop_front();
-        this->ProcessCommand(hash, tokens);
+        this->processCommand(hash, tokens);
       }
     }
   }
@@ -97,17 +96,25 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
 void TetrinetClient::Stop()
 {
   connected = false;
+  paused = false;
+  inGame = false;
   onDisconnect(*this);
 }
 
-inline string TetrinetClient::cleanCodes(string orig)
+void TetrinetClient::placer()
 {
-  vector<char> newV(orig.length()), oldV(orig.begin(), orig.end());
-  remove_copy_if(oldV.begin(), oldV.end(), newV.begin(), [](char c) { return iscntrl(c); });
-  return string(newV.begin(), newV.end());
+  if (!gameData)
+  {
+    // wait for data
+  }
+  while (inGame && !paused)
+  {
+    PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
+    players[playerNum.get()]->field.ApplyTransform(newPiece.GetTransform());
+  }
 }
 
-void TetrinetClient::SendCommand(TetrinetMessage message, string param)
+void TetrinetClient::sendCommand(TetrinetMessage message, string param)
 {
   stringstream str;
   str << MessageMap.at(message) << " ";
@@ -122,65 +129,92 @@ void TetrinetClient::SendCommand(TetrinetMessage message, string param)
   }
   str << "\xFF";
   string sstr = str.str();
-  write(*socket, buffer(string(sstr.begin(), sstr.end()), 1024));
+  write(*socket, buffer(string(sstr.begin(), sstr.end()), sstr.length()));
 }
 
-void TetrinetClient::ProcessCommand(TetrinetMessage message, deque<string>& tokens)
+void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& tokens)
 {
   switch(message)
   {
-    case TetrinetMessage::PLAYERNUM:
-      playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
-      setField(playerNum.get(), screenName);
-      break;
-      
-    case TetrinetMessage::PLAYERJOIN:
-      if (playerNum)
-	LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  This will generate a field leak.  Please ignore, server is incorrect in its implementation");
-      setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
-      onPlayerJoin(*this);
-      break;
-      
-    case TetrinetMessage::PLAYERLEAVE:
-      players[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
-      onPlayerLeave(*this);
-      break;
-      
-    case TetrinetMessage::NOCONNECTING:
-      LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
-      Stop();
-      break;
+  case TetrinetMessage::WINLIST:
+    break;
+    
+  case TetrinetMessage::PLAYERWON:
+    break;
+    
+  case TetrinetMessage::PLAYERLOST:
+    break;
+    
+  case TetrinetMessage::SB:
+    onSpecial(*this);
+    break;
+    
+  case TetrinetMessage::LVL:
+    players[lexical_cast<unsigned>(tokens.at(0))]->level = lexical_cast<unsigned>(tokens.at(1));
+    break;
 
-    case TetrinetMessage::F:
-      players[lexical_cast<unsigned>(tokens.at(0))]->field.ApplyTransform(FieldTransform(tokens.at(1)));
-      onField(*this);
-      break;
-      
-    case TetrinetMessage::NEWGAME:
-      gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
-			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
-			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
-			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
-      inGame = true;
-      onGameStart(*this);
-      break;
-      
-    case TetrinetMessage::INGAME:
-      inGame = true;
-      break;
+  case TetrinetMessage::TEAM:
+    players[lexical_cast<unsigned>(tokens.at(0))]->team = tokens.at(1);
+    break;
 
-    case TetrinetMessage::PAUSE:
-      if ((paused = lexical_cast<bool>(tokens.at(0))))
-	onPause(*this);
-      else
-	onResume(*this);
-      break;
+  case TetrinetMessage::GMSG:
+  case TetrinetMessage::PLINE:
+  case TetrinetMessage::PLINEACT:
+    onMessage(*this);
+    break;
+    
+  case TetrinetMessage::PLAYERNUM:
+    playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
+    setField(playerNum.get(), screenName);
+    break;
+      
+  case TetrinetMessage::PLAYERJOIN:
+    if (playerNum)
+      LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  Please report to server owner");
+    setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
+    onPlayerJoin(*this);
+    break;
+      
+  case TetrinetMessage::PLAYERLEAVE:
+    players[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
+    onPlayerLeave(*this);
+    break;
+      
+  case TetrinetMessage::NOCONNECTING:
+    LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
+    Stop();
+    break;
 
-    case TetrinetMessage::ENDGAME:
-      gameData = none;
-      inGame = false;
-      onGameEnd(*this);
-      break;
+  case TetrinetMessage::F:
+    players[lexical_cast<unsigned>(tokens.at(0))]->field.ApplyTransform(FieldTransform(tokens.at(1)));
+    onField(*this);
+    break;
+    
+  case TetrinetMessage::NEWGAME:
+    gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
+			    lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
+			    lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
+			    lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
+    inGame = true;
+    onGameStart(*this);
+    break;
+      
+  case TetrinetMessage::INGAME:
+    inGame = true;
+    break;
+    
+  case TetrinetMessage::PAUSE:
+    if ((paused = lexical_cast<bool>(tokens.at(0))))
+      onPause(*this);
+    else
+      onResume(*this);
+    break;
+
+  case TetrinetMessage::ENDGAME:
+    gameData = none;
+    inGame = false;
+    onGameEnd(*this);
+    break;
   }
 }
 
@@ -191,7 +225,7 @@ void TetrinetClient::setField(unsigned num, const string& name)
     LOG4CXX_WARN(logger, "Field leaked!");
     players[num].reset();
   }
-  players[num].reset(new TetrinetPlayer(name));
+  players[num].reset(new TetrinetPlayer(name, ""));
 }
 
 const string TetrinetClient::GetName() const

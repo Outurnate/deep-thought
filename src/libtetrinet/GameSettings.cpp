@@ -1,5 +1,7 @@
 #include "libtetrinet/GameSettings.hpp"
 
+GameSettings::NumberCache GameSettings::rngCache = GameSettings::NumberCache();
+
 GameSettings::GameSettings(unsigned startHeight, unsigned startLevel, unsigned lineLevel, unsigned levelIncr,
 			   unsigned lineSpecial, unsigned specialCount, unsigned specialCap, std::string blockFrequency,
 			   std::string specialFrequency, bool showAvgLevel, bool classic, unsigned seed)

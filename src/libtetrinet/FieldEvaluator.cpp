@@ -83,7 +83,13 @@ vector<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, Pie
   return finalTransforms;
 }
 
-bool FieldEvaluator::CanEscape(const Field& field, FieldTransform& paint, FieldTransform& escapeRegion, const PieceLocation start)
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start)
+{
+  FieldTransform paint;
+  return CanEscape(field, escapeRegion, start, paint);
+}
+
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)
 {
   paint += start.GetTransform();
   if (escapeRegion && start.GetTransform())
@@ -107,7 +113,7 @@ bool FieldEvaluator::CanEscape(const Field& field, FieldTransform& paint, FieldT
       {
 	if (!(escapeRegion && location.GetTransform())) // it's a new transform
 	{
-	  if (CanEscape(field, paint, escapeRegion, location))
+	  if (CanEscape(field, escapeRegion, location, paint))
 	    return true;
 	}
       }
@@ -118,13 +124,13 @@ bool FieldEvaluator::CanEscape(const Field& field, FieldTransform& paint, FieldT
   return false;
 }
 
-void FieldEvaluator::ValidateTransforms(const Field& field, vector<FieldTransform>& transforms)
+void FieldEvaluator::ValidateTransforms(const Field& field, vector<PieceLocation>& locations)
 {
   FieldTransform sheetTransform(GenerateSheetTransform(field));
-  for (const FieldTransform& transform : transforms)
-    if (transform && sheetTransform)
-    {
-    }
+  locations.erase(remove_if(locations.begin(), locations.end(), [sheetTransform, &field](const PieceLocation& location)
+			    {
+			      return location.GetTransform() && sheetTransform && !CanEscape(field, sheetTransform, location);
+			    }));
 }
 
 bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)

@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE(WallKickRotation)
 BOOST_AUTO_TEST_CASE(BlockEscapeNull)
 {
   Field field;
-  FieldTransform paint, escape;
-  BOOST_REQUIRE(FieldEvaluator::CanEscape(field, paint, escape, PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 5, 5)));
+  FieldTransform escape;
+  BOOST_REQUIRE(FieldEvaluator::CanEscape(field, escape, PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 5, 5)));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

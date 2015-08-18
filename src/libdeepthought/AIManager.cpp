@@ -52,3 +52,7 @@ AIManager::AIManagerConnection::AIManagerConnection(io_service& ioService)
   : socket(ioService)
 {
 }
+
+void AIManager::AIManagerConnection::handleWrite(const boost::system::error_code& error, size_t bytesTransferred)
+{
+}

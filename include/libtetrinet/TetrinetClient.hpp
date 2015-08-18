@@ -65,7 +65,8 @@ public:
   const boost::signals2::connection AddOnPlayerWin  (const GenericSignal::slot_type& slot) const;
   const boost::signals2::connection AddOnPlayerLost (const GenericSignal::slot_type& slot) const;
 protected:
-  virtual PieceLocation NewPiece(const Piece& piece);
+  virtual PieceLocation NewPiece(const Piece& piece) = 0;
+  const Field& GetField() const;
 private:
   /** Processes a command issued from the server */
   void processCommand(TetrinetMessage message, std::deque<std::string>& tokens);

@@ -19,6 +19,10 @@ TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), s
 {
 }
 
+TetrinetClient::~TetrinetClient()
+{
+}
+
 string makeHex(int dec)
 {
   stringstream decstr;
@@ -236,4 +240,9 @@ const string TetrinetClient::GetName() const
 int TetrinetClient::GetID() const
 {
   return playerNum.get();
+}
+
+const Field& TetrinetClient::GetField() const
+{
+  return players.at(playerNum.get())->field;
 }

@@ -22,8 +22,8 @@ class FieldTransform
   friend bool operator && (const FieldTransform& lhs, const FieldTransform& rhs);
 public:
   FieldTransform();
-  //FieldTransform(const PieceLocation& location, FieldElement element);
   FieldTransform(const FieldTransform& transform);
+  explicit FieldTransform(const std::string& message);
   FieldTransform& operator= (const FieldTransform& rhs);
   
   FieldElement& operator() (uCoord x, uCoord y);

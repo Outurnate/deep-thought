@@ -24,7 +24,6 @@ BOOST_AUTO_TEST_CASE(TransformCheck)
   Field field;
   {
     Piece piece = Piece::Get(PieceShape::I, PieceRotation::Z);
-    std::cout << piece << std::endl;
     BOOST_CHECK(piece(0, 1));
     BOOST_CHECK(piece(1, 1));
     BOOST_CHECK(piece(2, 1));
@@ -42,7 +41,6 @@ BOOST_AUTO_TEST_CASE(TransformCheck)
   BOOST_CHECK(piece(2, 3));
   BOOST_WARN_THROW(piece(5, 5), std::out_of_range);
   field.ApplyTransform(location.GetTransform());
-  std::cout << field << std::endl;
   BOOST_REQUIRE_EQUAL(field(2, 0), location.GetElement());
   BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
   BOOST_REQUIRE_EQUAL(field(2, 2), location.GetElement());
@@ -179,6 +177,11 @@ BOOST_AUTO_TEST_CASE(WallKickRotation)
     BOOST_REQUIRE_EQUAL(field(1, 1), location.GetElement());
     BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
   }
+}
+
+BOOST_AUTO_TEST_CASE(NullAmpTransform)
+{
+  BOOST_REQUIRE(!(FieldTransform() && PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 0, 0).GetTransform()));
 }
 
 BOOST_AUTO_TEST_CASE(BlockEscapeNull)

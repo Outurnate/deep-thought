@@ -18,10 +18,6 @@ Field::Field()
 {
 }
 
-Field::~Field()
-{
-}
-
 ostream& operator<< (ostream& os, const Field& field)
 {
   for (FieldElement& element : *field.field)
@@ -70,4 +66,13 @@ const FieldElementRange Field::row(uCoord y) const
 {
   const auto start = next(field->begin(), y * fieldWidth);
   return iterator_range<FieldType::const_iterator>(start, next(start, fieldWidth));
+}
+
+Field operator "" _fd(const char* definition, size_t size)
+{
+  assert(size == fieldSize);
+  Field field;
+  for (unsigned i = 0; i < size; ++i)
+    field.field->at(i) = static_cast<FieldElement>(definition[i]);
+  return field;
 }

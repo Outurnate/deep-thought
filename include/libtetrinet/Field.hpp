@@ -21,12 +21,14 @@ typedef boost::any_range<
   FieldElement,
   std::ptrdiff_t> FieldElementRange;
 
-class Field : private boost::noncopyable
+Field operator "" _fd(const char* definition, size_t size);
+
+class Field
 {
   friend std::ostream& operator<< (std::ostream& stream, const Field& field);
+  friend Field operator "" _fd(const char* definition, size_t size);
 public:
   Field();
-  ~Field();
 
   void ApplyTransform(const FieldTransform& transform);
   

@@ -45,7 +45,7 @@ PieceShape Piece::GetShape() const
 
 ostream& operator << (ostream& os, const Piece& piece)
 {
-  return os << piece.definition.to_string();
+  return os << std::string(piece);
 }
 
 Piece& Piece::operator = (const Piece& piece)
@@ -69,7 +69,9 @@ constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition
 
 Piece::operator std::string() const
 {
-  return lexical_cast<std::string>(int(rotation)) + lexical_cast<std::string>(int(shape)) + definition.to_string()
+  std::string def(definition.to_string());
+  std::reverse(def.begin(), def.end());
+  return lexical_cast<std::string>(int(rotation)) + lexical_cast<std::string>(int(shape)) + def
     + lexical_cast<std::string>(width) + lexical_cast<std::string>(height);
 }
 
@@ -84,42 +86,29 @@ constexpr bool isNumeric(char c)
   return c >= '0' && c <= '9';
 }
 
-constexpr unsigned _stoi(const char* string, unsigned base, unsigned count, unsigned val = 0)
+template <typename T>
+constexpr T fromChar(char num) // digit to number
 {
-  return count != 0 ?
-    isNumeric(*string) ?
-      _stoi(string - 1, base, count - 1, (*string - '0' + val * base)) : throw "invalid numeric string"
-    : val;
-}
-
-constexpr unsigned _bc(const char* string, unsigned base = 10, unsigned count = 0)
-{
-  return *string ? // string null or not
-    _bc(string + 1, base, count + 1) // recurse, counting
-    : _stoi(string - 1, base, count); // at the end of the string, trigger loop back
-}
-
-constexpr unsigned stoi(const char* string, unsigned base = 10)
-{
-  return _bc(string, base);
+  //assert(isNumeric(num));
+  return T(num - '0');
 }
 
 template <typename T>
-constexpr T numCharToNum(char num) // digit to number
+constexpr unsigned _stoi(const char* string, size_t length = sizeof(T), T val = 0)
 {
-//  assert(num >= '0' && num <= '9');
-  return T(num - '0');
+  return length == 0 ?                 (val * 2) + fromChar<T>(string[0])
+    : _stoi<T>(string - 1, length - 1, (val * 2) + fromChar<T>(string[0]));
 }
 // end dragons
 
 constexpr Piece operator "" _pd(const char* definition, size_t size)
 {
-//  assert(size == 20);
+  //assert(size == 20);
   return Piece(static_cast<PieceShape>(definition[0]),
-	       numCharToNum<PieceRotation>(definition[1]),
-	       Piece::PieceDefinition(stoi(&definition[4], 2)),
-	       numCharToNum<uCoord>(definition[2]),
-	       numCharToNum<uCoord>(definition[3]));
+	       fromChar<PieceRotation>(definition[1]),
+	       Piece::PieceDefinition(_stoi<uint16_t>(&definition[4 + 16])),
+	       fromChar<uCoord>(definition[2]),
+	       fromChar<uCoord>(definition[3]));
 }
 
 PieceDefinitionMap Piece::defs = PieceDefinitionMap

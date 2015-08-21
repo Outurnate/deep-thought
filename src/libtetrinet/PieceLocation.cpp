@@ -4,7 +4,7 @@ using namespace std;
 using namespace boost;
 
 PieceLocation::PieceLocation(const Piece& piece, sCoord x, sCoord y)
-  : x(x), y(y), piece(piece), element(GetColor(piece.GetShape())) {}
+  : x(x), y(y), piece(piece), element(GetColor(piece.GetShape())) { updateTransform(); }
 
 sCoord PieceLocation::GetX() const
 {
@@ -56,17 +56,20 @@ PieceLocation& PieceLocation::operator = (const PieceLocation& rhs)
   this->piece = rhs.piece;
   this->x = rhs.x;
   this->y = rhs.y;
+  updateTransform();
+
+  return *this;
 }
 
 void PieceLocation::updateTransform()
 {
-  FieldTransform transform;
+  FieldTransform newTransform;
   for (sCoord i = 0; i < numeric_cast<sCoord>(piece.GetWidth() * piece.GetHeight()); ++i)
   {
     uCoord x2 = numeric_cast<uCoord>(i % piece.GetWidth()),
            y2 = numeric_cast<uCoord>(i / piece.GetWidth());
     if (piece(x2, y2))
-      transform(x + x2, y + y2) = element;
+      newTransform(x + x2, y + y2) = element;
   }
-  this-> transform = transform;
+  this->transform = newTransform;
 }

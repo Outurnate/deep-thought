@@ -191,4 +191,64 @@ BOOST_AUTO_TEST_CASE(BlockEscapeNull)
   BOOST_REQUIRE(FieldEvaluator::CanEscape(field, escape, PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 5, 5)));
 }
 
+BOOST_AUTO_TEST_CASE(BlockEscape)
+{
+  {
+    Field field("000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"111100000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"_fd);
+    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    PieceLocation location(Piece::Get(PieceShape::O, PieceRotation::Z), 0, 19);
+    BOOST_REQUIRE(sheet && location.GetTransform());
+    BOOST_REQUIRE(!FieldEvaluator::CanEscape(field, sheet, location));
+  }
+  {
+    Field field("000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"111100000000"
+		"000010000000"
+		"000010000000"
+		"000010000000"
+		"000010000000"_fd);
+    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    PieceLocation location(Piece::Get(PieceShape::O, PieceRotation::Z), 0, 19);
+    BOOST_REQUIRE(sheet && location.GetTransform());
+    BOOST_REQUIRE(!FieldEvaluator::CanEscape(field, sheet, location));
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -94,7 +94,7 @@ constexpr T fromChar(char num) // digit to number
 }
 
 template <typename T>
-constexpr unsigned _stoi(const char* string, size_t length = sizeof(T), T val = 0)
+constexpr unsigned _stoi(const char* string, size_t length, T val = 0)
 {
   return length == 0 ?                 (val * 2) + fromChar<T>(string[0])
     : _stoi<T>(string - 1, length - 1, (val * 2) + fromChar<T>(string[0]));
@@ -106,7 +106,7 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
   //assert(size == 20);
   return Piece(static_cast<PieceShape>(definition[0]),
 	       fromChar<PieceRotation>(definition[1]),
-	       Piece::PieceDefinition(_stoi<uint16_t>(&definition[4 + 16])),
+	       Piece::PieceDefinition(_stoi<uint16_t>(&definition[4 + 16], 16)),
 	       fromChar<uCoord>(definition[2]),
 	       fromChar<uCoord>(definition[3]));
 }

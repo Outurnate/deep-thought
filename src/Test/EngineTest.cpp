@@ -35,27 +35,28 @@ BOOST_AUTO_TEST_CASE(TransformCheck)
     BOOST_REQUIRE_THROW(PieceLocation(piece, -1, -1).GetTransform(), std::out_of_range);
   }
   Piece piece = Piece::Get(PieceShape::I, PieceRotation::R);
+  PieceLocation location(piece, 0, 0);
   BOOST_CHECK(piece(2, 0));
   BOOST_CHECK(piece(2, 1));
   BOOST_CHECK(piece(2, 2));
   BOOST_CHECK(piece(2, 3));
   BOOST_WARN_THROW(piece(5, 5), std::out_of_range);
-  field.ApplyTransform(PieceLocation(piece, 0, 0).GetTransform());
+  field.ApplyTransform(location.GetTransform());
   std::cout << field << std::endl;
-  BOOST_REQUIRE_EQUAL(field(2, 0), piece.GetElement());
-  BOOST_REQUIRE_EQUAL(field(2, 1), piece.GetElement());
-  BOOST_REQUIRE_EQUAL(field(2, 2), piece.GetElement());
-  BOOST_REQUIRE_EQUAL(field(2, 3), piece.GetElement());
+  BOOST_REQUIRE_EQUAL(field(2, 0), location.GetElement());
+  BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
+  BOOST_REQUIRE_EQUAL(field(2, 2), location.GetElement());
+  BOOST_REQUIRE_EQUAL(field(2, 3), location.GetElement());
 }
 
 BOOST_AUTO_TEST_CASE(FieldExtents)
 {
   Field field;
   Piece piece = Piece::Get(PieceShape::O, PieceRotation::Z);
-  field.ApplyTransform(PieceLocation(piece, 0,                             0                              ).GetTransform());
-  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), 0                              ).GetTransform());
-  field.ApplyTransform(PieceLocation(piece, 0,                             fieldHeight - piece.GetHeight()).GetTransform());
-  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight()).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, 0,                             0,                               FieldElement::RED).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), 0,                               FieldElement::RED).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, 0,                             fieldHeight - piece.GetHeight(), FieldElement::RED).GetTransform());
+  field.ApplyTransform(PieceLocation(piece, fieldWidth - piece.GetWidth(), fieldHeight - piece.GetHeight(), FieldElement::RED).GetTransform());
   BOOST_REQUIRE_EQUAL(field(0,              0),               FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(fieldWidth - 1, 0),               FieldElement::RED);
   BOOST_REQUIRE_EQUAL(field(0,              fieldHeight - 1), FieldElement::RED);
@@ -97,11 +98,12 @@ BOOST_AUTO_TEST_CASE(FieldIterators)
 BOOST_AUTO_TEST_CASE(SheetTransformTrivial)
 {
   Field field;
-  field.ApplyTransform(PieceLocation(Piece::Get(PieceShape::I, PieceRotation::Z), 2, 9).GetTransform());
+  PieceLocation location(Piece::Get(PieceShape::I, PieceRotation::Z), 2, 9);
+  field.ApplyTransform(location.GetTransform());
   field.ApplyTransform(FieldEvaluator::GenerateSheetTransform(field));
   BOOST_REQUIRE_EQUAL(field(2, 11), FieldElement::UNDEFINED);
   BOOST_REQUIRE_EQUAL(field(1, 11), FieldElement::NONE);
-  BOOST_REQUIRE_EQUAL(field(2, 10), FieldElement::RED);
+  BOOST_REQUIRE_EQUAL(field(2, 10), location.GetElement());
 }
 
 BOOST_AUTO_TEST_CASE(GapExploreTrivial)
@@ -132,28 +134,28 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
   {
     Field field;
     field.ApplyTransform(location.GetTransform());
-    BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(2, 1), FieldElement::RED);
+    BOOST_REQUIRE_EQUAL(field(0, 0), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
   }
   {
     Field field;
     FieldEvaluator::Rotate(location, field, RotationDirection::CW);
     field.ApplyTransform(location.GetTransform());
-    BOOST_REQUIRE_EQUAL(field(1, 0), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(2, 0), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 2), FieldElement::RED);
+    BOOST_REQUIRE_EQUAL(field(1, 0), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(2, 0), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 2), location.GetElement());
   }
   {
     Field field;
     FieldEvaluator::Rotate(location, field, RotationDirection::CCW);
     field.ApplyTransform(location.GetTransform());
-    BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(2, 1), FieldElement::RED);
+    BOOST_REQUIRE_EQUAL(field(0, 0), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
   }
 }
 
@@ -163,19 +165,19 @@ BOOST_AUTO_TEST_CASE(WallKickRotation)
   {
     Field field;
     field.ApplyTransform(location.GetTransform());
-    BOOST_REQUIRE_EQUAL(field(0, 0), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(0, 2), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 2), FieldElement::RED);
+    BOOST_REQUIRE_EQUAL(field(0, 0), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(0, 2), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 2), location.GetElement());
   }
   {
     Field field;
     FieldEvaluator::Rotate(location, field, RotationDirection::CW);
     field.ApplyTransform(location.GetTransform());
-    BOOST_REQUIRE_EQUAL(field(0, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(0, 2), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(1, 1), FieldElement::RED);
-    BOOST_REQUIRE_EQUAL(field(2, 1), FieldElement::RED);
+    BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(0, 2), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(1, 1), location.GetElement());
+    BOOST_REQUIRE_EQUAL(field(2, 1), location.GetElement());
   }
 }
 

@@ -4,7 +4,10 @@ using namespace std;
 using namespace boost;
 
 PieceLocation::PieceLocation(const Piece& piece, sCoord x, sCoord y)
-  : x(x), y(y), piece(piece), element(GetColor(piece.GetShape())) { updateTransform(); }
+  : PieceLocation(piece, x, y, GetColor(piece.GetShape())) {}
+
+PieceLocation::PieceLocation(const Piece& piece, sCoord x, sCoord y, FieldElement element)
+  : x(x), y(y), piece(piece), element(element) { updateTransform(); }
 
 sCoord PieceLocation::GetX() const
 {
@@ -19,6 +22,11 @@ sCoord PieceLocation::GetY() const
 const Piece& PieceLocation::GetPiece() const
 {
   return piece;
+}
+
+const FieldElement& PieceLocation::GetElement() const
+{
+  return element;
 }
 
 void PieceLocation::SetX(sCoord x)

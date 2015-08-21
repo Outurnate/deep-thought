@@ -10,10 +10,12 @@ class PieceLocation
 {
 public:
   PieceLocation(const Piece& piece, sCoord x, sCoord y);
+  PieceLocation(const Piece& piece, sCoord x, sCoord y, FieldElement element);
 
   sCoord GetX() const;
   sCoord GetY() const;
   const Piece& GetPiece() const;
+  const FieldElement& GetElement() const;
   void SetX(sCoord x);
   void SetY(sCoord y);
   const FieldTransform& GetTransform() const;

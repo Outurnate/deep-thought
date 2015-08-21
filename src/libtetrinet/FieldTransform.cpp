@@ -94,6 +94,8 @@ const FieldTransform::TransformType::const_iterator FieldTransform::end() const
 
 bool operator && (const FieldTransform& lhs, const FieldTransform& rhs)
 {
+  if (lhs.transforms->size() == 0 || rhs.transforms->size())
+    return false;
   return all_of(lhs.transforms->begin(), lhs.transforms->end(), [rhs](const pair<uCoord, FieldElement>& element)
 		{
 		  return (*rhs.transforms)[element.first] != FieldElement::NONE;

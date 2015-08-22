@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <boost/cast.hpp>
 #include <unordered_set>
+#include <iostream>
 
 using namespace std;
 using namespace boost;
@@ -89,17 +90,24 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return CanEscape(field, escapeRegion, start, paint);
 }
 
+void TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
+{
+  if (((location.GetX() + dx) < static_cast<sCoord>(fieldWidth)) &&
+      ((location.GetX() + dx) >= 0) &&
+      ((location.GetY() + dy) < static_cast<sCoord>(fieldHeight)) &&
+      ((location.GetY() + dy) >= 0))
+    locations.push_back(PieceLocation(location.GetPiece(), location.GetX() + dx, location.GetY() + dy));
+}
+
 bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)
 {
   paint += start.GetTransform();
   if (escapeRegion && start.GetTransform())
   {
-    vector<PieceLocation> locations
-    {
-      PieceLocation(start.GetPiece(), start.GetX() + 1, start.GetY()),
-      PieceLocation(start.GetPiece(), start.GetX() - 1, start.GetY()),
-      PieceLocation(start.GetPiece(), start.GetX(),     start.GetY() - 1)
-    };
+    vector<PieceLocation> locations;
+    TryNewLocation(locations, start, 1,  0);
+    TryNewLocation(locations, start, -1, 0);
+    TryNewLocation(locations, start, 0, -1);
     PieceLocation pCW = PieceLocation(start);
     if (Rotate(pCW, field, RotationDirection::CW))
       locations.push_back(pCW);

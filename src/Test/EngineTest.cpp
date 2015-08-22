@@ -239,13 +239,13 @@ BOOST_AUTO_TEST_CASE(BlockEscape)
 		"000000000000"
 		"000000000000"
 		"000000000000"
-		"111100000000"
-		"000010000000"
-		"000010000000"
-		"000010000000"
-		"000010000000"_fd);
+		"011110000000"
+		"100001000000"
+		"100001000000"
+		"100001000000"
+		"100001000000"_fd);
     FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
-    PieceLocation location(Piece::Get(PieceShape::O, PieceRotation::Z), 0, 19);
+    PieceLocation location(Piece::Get(PieceShape::O, PieceRotation::Z), 1, 19);
     BOOST_REQUIRE(sheet && location.GetTransform());
     BOOST_REQUIRE(!FieldEvaluator::CanEscape(field, sheet, location));
   }

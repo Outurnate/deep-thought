@@ -18,6 +18,13 @@ Field::Field()
 {
 }
 
+Field::Field(const Field& field)
+  : field(new FieldType(fieldSize))
+{
+  for (unsigned i = 0; i < fieldSize; ++i)
+    (*this->field)[i] = (*field.field)[i];
+}
+
 ostream& operator<< (ostream& os, const Field& field)
 {
   for (FieldElement& element : *field.field)

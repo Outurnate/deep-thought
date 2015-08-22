@@ -22,6 +22,7 @@
 #include <string>
 #include <iostream>
 
+#include "libdeepthought/AIEngine.hpp"
 #include "libdeepthought/AIManager.hpp"
 
 using namespace log4cxx;
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
 {
   mutex::scoped_lock lock(killMutex);
 
-  options_description desc("Usage");
+  /*options_description desc("Usage");
 
   desc.add_options()
     ("help,h", "Display this message")
@@ -83,10 +84,10 @@ int main(int argc, char *argv[])
     cerr << "Invalid command line: " << e.what() << endl
 	 << "Use -h or --help for options" << endl;
     return 1;
-  }
+  }*/
   
   // Create logger
-  FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), opt["logfile"].as<string>(), false);
+  FileAppender* fileAppender = new FileAppender(LayoutPtr(new SimpleLayout()), "log"/*opt["logfile"].as<string>()*/, false);
 
   helpers::Pool p;
   fileAppender->activateOptions(p);
@@ -95,13 +96,17 @@ int main(int argc, char *argv[])
   Logger::getRootLogger()->setLevel(Level::getTrace());
 
   // Register signal handlers
-  struct sigaction winchSA, sigintSA;
+  struct sigaction sigintSA;
   sigintSA.sa_handler = sigintHandler;
   sigemptyset(&sigintSA.sa_mask);
   sigintSA.sa_flags = SA_RESTART;
   if (sigaction(SIGINT, &sigintSA, NULL) == -1) exit(1);
 
-  manager = new AIManager();
+  //manager = new AIManager();
+  AIEngine engine(Genome(-2.0, -1.0, -1.0, 20.0, "Test"), Logger::getRootLogger());;
+  std::shared_ptr<boost::asio::io_service> service(new boost::asio::io_service());
+  TetrinetConnection conn;
+  engine.Run(service, conn);
 
   killCondition.wait(lock); // release lock and wait for kill
 

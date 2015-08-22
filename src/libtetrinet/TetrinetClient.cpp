@@ -138,87 +138,96 @@ void TetrinetClient::sendCommand(TetrinetMessage message, string param)
 
 void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& tokens)
 {
-  switch(message)
+  try
   {
-  case TetrinetMessage::WINLIST:
-    break;
+    switch(message)
+    {
+    case TetrinetMessage::WINLIST:
+      break;
     
-  case TetrinetMessage::PLAYERWON:
-    break;
+    case TetrinetMessage::PLAYERWON:
+      break;
     
-  case TetrinetMessage::PLAYERLOST:
-    break;
+    case TetrinetMessage::PLAYERLOST:
+      break;
     
-  case TetrinetMessage::SB:
-    onSpecial(*this);
-    break;
+    case TetrinetMessage::SB:
+      onSpecial(*this);
+      break;
     
-  case TetrinetMessage::LVL:
-    players[lexical_cast<unsigned>(tokens.at(0))]->level = lexical_cast<unsigned>(tokens.at(1));
-    break;
+    case TetrinetMessage::LVL:
+      players[lexical_cast<unsigned>(tokens.at(0))]->level = lexical_cast<unsigned>(tokens.at(1));
+      break;
 
-  case TetrinetMessage::TEAM:
-    players[lexical_cast<unsigned>(tokens.at(0))]->team = tokens.at(1);
-    break;
+    case TetrinetMessage::TEAM:
+      players[lexical_cast<unsigned>(tokens.at(0))]->team = tokens.at(1);
+      break;
 
-  case TetrinetMessage::GMSG:
-  case TetrinetMessage::PLINE:
-  case TetrinetMessage::PLINEACT:
-    onMessage(*this);
-    break;
+    case TetrinetMessage::GMSG:
+    case TetrinetMessage::PLINE:
+    case TetrinetMessage::PLINEACT:
+      onMessage(*this);
+      break;
     
-  case TetrinetMessage::PLAYERNUM:
-    playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
-    setField(playerNum.get(), screenName);
-    break;
+    case TetrinetMessage::PLAYERNUM:
+      playerNum = lexical_cast<unsigned>(tokens.at(0).substr(0, 1));
+      setField(playerNum.get(), screenName);
+      break;
       
-  case TetrinetMessage::PLAYERJOIN:
-    if (playerNum)
-      LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  Please report to server owner");
-    setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
-    onPlayerJoin(*this);
-    break;
+    case TetrinetMessage::PLAYERJOIN:
+      if (playerNum)
+	LOG4CXX_WARN(logger, "Server sent playernum then playerjoin for us.  Please report to server owner");
+      setField(lexical_cast<unsigned>(tokens.at(0).substr(0, 1)), tokens.at(1));
+      onPlayerJoin(*this);
+      break;
       
-  case TetrinetMessage::PLAYERLEAVE:
-    players[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
-    onPlayerLeave(*this);
-    break;
+    case TetrinetMessage::PLAYERLEAVE:
+      players[lexical_cast<unsigned>(tokens.at(0).substr(0, 1))].reset();
+      onPlayerLeave(*this);
+      break;
       
-  case TetrinetMessage::NOCONNECTING:
-    LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
-    Stop();
-    break;
+    case TetrinetMessage::NOCONNECTING:
+      LOG4CXX_ERROR(logger, "Noconnect received: " << tokens.at(0));
+      Stop();
+      break;
 
-  case TetrinetMessage::F:
-    players[lexical_cast<unsigned>(tokens.at(0))]->field.ApplyTransform(FieldTransform(tokens.at(1)));
-    onField(*this);
-    break;
+    case TetrinetMessage::F:
+      players[lexical_cast<unsigned>(tokens.at(0))]->field.ApplyTransform(FieldTransform(tokens.at(1)));
+      onField(*this);
+      break;
     
-  case TetrinetMessage::NEWGAME:
-    gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
-			    lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
-			    lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
-			    lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
-    inGame = true;
-    onGameStart(*this);
-    break;
+    case TetrinetMessage::NEWGAME:
+      gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
+			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
+			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
+			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
+      inGame = true;
+      onGameStart(*this);
+      break;
       
-  case TetrinetMessage::INGAME:
-    inGame = true;
-    break;
+    case TetrinetMessage::INGAME:
+      inGame = true;
+      break;
     
-  case TetrinetMessage::PAUSE:
-    if ((paused = lexical_cast<bool>(tokens.at(0))))
-      onPause(*this);
-    else
-      onResume(*this);
-    break;
+    case TetrinetMessage::PAUSE:
+      if ((paused = lexical_cast<bool>(tokens.at(0))))
+	onPause(*this);
+      else
+	onResume(*this);
+      break;
 
-  case TetrinetMessage::ENDGAME:
-    gameData = none;
-    inGame = false;
-    onGameEnd(*this);
-    break;
+    case TetrinetMessage::ENDGAME:
+      gameData = none;
+      inGame = false;
+      onGameEnd(*this);
+      break;
+    }
+  }
+  catch (std::out_of_range)
+  {
+  }
+  catch (boost::bad_lexical_cast)
+  {
   }
 }
 

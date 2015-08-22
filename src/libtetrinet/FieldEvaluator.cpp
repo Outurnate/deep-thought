@@ -170,40 +170,27 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   return false;
 }
 
-/* TODO: port
-
-inline double rank(int piece, PieceLocation location)
+unsigned FieldEvaluator::ColumnHeight(const Field& field, unsigned x)
 {
-  vector<char> newfield = vector<char>(field);
-  place(newfield, piece, location, 1);
-  return
-      ((double)(clearCount   (&newfield)                        ) * _c)
-    + ((double)(blockadeCount(&newfield) - blockadeCount(&field)) * _b)
-    + ((double)(rowCount     (&newfield) - rowCount     (&field)) * _r)
-    + ((double)(gapCount     (&newfield) - gapCount     (&field)) * _g);
-}
-
-inline unsigned columnHeight(const vector<char>* _field, unsigned x)
-{
-  unsigned colHeight = FIELD_HEIGHT - 1;
-  for (unsigned int y = 0; y < FIELD_HEIGHT; ++y)  // Search this column top-down
-    if ((*_field)[FIELD_WIDTH * y + x] != '0') // block!
+  unsigned colHeight = fieldHeight - 1;
+  for (unsigned int y = 0; y < fieldHeight; ++y)  // Search this column top-down
+    if (field(x, y) != FieldElement::NONE) // block!
     {
       colHeight = y; // this is the top
       break;
     }
-  return FIELD_HEIGHT - colHeight;
+  return fieldHeight - colHeight;
 }
 
-inline int gapCount(const vector<char>* _field)
+unsigned FieldEvaluator::GapCount(const Field& field)
 {
   unsigned gapCount = 0;
-  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+  for (uCoord x = 0; x < fieldWidth; ++x)
   {
     bool foundBlock = false;
-    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    for (uCoord y = 0; y < fieldHeight; ++y) // Search this column top-down
     {
-      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
+      if (field(x, y) != FieldElement::NONE) // if there's a block
         foundBlock = true; // flag it
       else if (foundBlock) // if there's no block and we've flagged
         ++gapCount;
@@ -212,16 +199,16 @@ inline int gapCount(const vector<char>* _field)
   return gapCount;
 }
 
-inline int blockadeCount(const vector<char>* _field)
+unsigned FieldEvaluator::BlockadeCount(const Field& field)
 {
   unsigned totalBlock = 0;
-  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
+  for (uCoord x = 0; x < fieldWidth; ++x)
   {
     unsigned blockCount = 0;
     bool foundBlock = false;
-    for (unsigned y = 0; y < FIELD_HEIGHT; ++y) // Search this column top-down
+    for (uCoord y = 0; y < fieldHeight; ++y) // Search this column top-down
     {
-      if ((*_field)[FIELD_WIDTH * y + x] != '0') // if there's a block
+      if (field(x, y) != FieldElement::NONE) // if there's a block
       {
         foundBlock = true; // flag it
         blockCount++;
@@ -236,28 +223,28 @@ legitimateUseOfGoto:
   return totalBlock;
 }
 
-inline int rowCount(const vector<char>* _field)
+unsigned FieldEvaluator::RowCount(const Field& field)
 {
   vector<unsigned>* heights = new vector<unsigned>();
-  for (unsigned x = 0; x < FIELD_WIDTH; ++x)
-    heights->push_back(columnHeight(_field, x));
-  return FIELD_HEIGHT - *std::min_element(heights->begin(), heights->end()); // find the tallest column
+  for (unsigned x = 0; x < fieldWidth; ++x)
+    heights->push_back(ColumnHeight(field, x));
+  return fieldHeight - *std::min_element(heights->begin(), heights->end()); // find the tallest column
 }
 
-inline int clearCount(vector<char>* _field)
+unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans)
 {
   int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
-  for (long unsigned i = 0; i < _field->size(); ++i)
+  for (uCoord i = 0; i < fieldSize; ++i)
   {
-    if ((*_field)[i] != '0') ++crow;
-    if ((i % FIELD_WIDTH) == FIELD_WIDTH - 1)
+    if (field(i) != FieldElement::NONE) ++crow;
+    if ((i % fieldWidth) == fieldWidth - 1)
     {
-      if (crow == FIELD_WIDTH)
+      if (crow == fieldWidth)
       {
-        for (long unsigned s = (i / FIELD_WIDTH) * FIELD_WIDTH; s <= i; ++s)
-          (*_field)[s] = '0';
-        for (long unsigned s = i; s > 0; --s)
-          (*_field)[s] = s > FIELD_WIDTH ? (*_field)[s - FIELD_WIDTH] : '0';
+        for (uCoord s = (i / fieldWidth) * fieldWidth; s <= i; ++s)
+          clearTrans(s) = FieldElement::NONE;
+        for (uCoord s = i; s > 0; --s)
+          clearTrans(s) = s > fieldWidth ? field(s - fieldWidth) : FieldElement::NONE;
         clears++;
       }
       crow = 0;
@@ -265,5 +252,3 @@ inline int clearCount(vector<char>* _field)
   }
   return clears;
 }
-
-*/

@@ -29,6 +29,7 @@ class Field
   friend Field operator "" _fd(const char* definition, size_t size);
 public:
   Field();
+  Field(const Field& field);
 
   void ApplyTransform(const FieldTransform& transform);
   

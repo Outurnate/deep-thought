@@ -12,11 +12,12 @@ FieldTransform::FieldTransform()
 }
 
 FieldTransform::FieldTransform(const FieldTransform& transform)
-  : transforms(new TransformType(*transform.transforms))
+  : transforms(new TransformType(transform.transforms->begin(), transform.transforms->end()))
 {
 }
 
 FieldTransform::FieldTransform(const std::string& message)
+  : FieldTransform()
 {
   for (unsigned i = 0; i < message.size(); ++i)
     if (message[i] != char(FieldElement::NONE))
@@ -53,19 +54,23 @@ bool operator == (const FieldTransform& lhs, const FieldTransform& rhs)
 }
 
 FieldElement& FieldTransform::operator() (uCoord x, uCoord y)
-{ 
-  return const_cast<FieldElement&>(
-    static_cast<const FieldTransform&>(*this)(x, y));
+{
+  if (!(x < fieldWidth))
+    throw out_of_range("x = " + lexical_cast<string>(x));
+  if (!(y < fieldHeight))
+    throw out_of_range("y = " + lexical_cast<string>(y));
+  return (*this)((y * fieldWidth) + x);
 }
 
 
 FieldElement& FieldTransform::operator() (uCoord i)
 {
-  return const_cast<FieldElement&>(
-    static_cast<const FieldTransform&>(*this)(i));
+  if (!(i < fieldSize))
+    throw out_of_range("i = " + lexical_cast<string>(i));
+  return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
 }
 
-const FieldElement& FieldTransform::operator() (uCoord x, uCoord y) const
+/*const FieldElement& FieldTransform::operator() (uCoord x, uCoord y) const
 {
   if (!(x < fieldWidth))
     throw out_of_range("x = " + lexical_cast<string>(x));
@@ -80,7 +85,7 @@ const FieldElement& FieldTransform::operator() (uCoord i) const
   if (!(i < fieldSize))
     throw out_of_range("i = " + lexical_cast<string>(i));
   return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
-}
+}*/
 
 const FieldTransform::TransformType::const_iterator FieldTransform::begin() const
 {

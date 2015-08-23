@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
@@ -85,6 +86,7 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
         if (tokens.size() == 0)
           break;
         TetrinetMessage hash = TetrinetMessage(djb2(tokens.front().c_str()));
+	cout << tokens.at(0) << endl;
         tokens.pop_front();
         this->processCommand(hash, tokens);
       }
@@ -107,13 +109,16 @@ void TetrinetClient::Stop()
 
 void TetrinetClient::placer()
 {
+  cout << "aaaa" << endl;
   if (!gameData)
   {
     // wait for data
+    cout << "nnnn" << endl;
   }
   while (inGame && !paused)
   {
-    PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
+    cout << "aadsadsddssaadaasddsasdaasdssddaasadasdaaa" << endl;
+    PieceLocation newPiece(NewPiece(Piece::Get(PieceShape::I, PieceRotation::Z)/*gameData.get().GetPiece()*/));
     players[playerNum.get()]->field.ApplyTransform(newPiece.GetTransform());
   }
 }
@@ -197,10 +202,15 @@ void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& toke
       break;
     
     case TetrinetMessage::NEWGAME:
-      gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
+      cout << "aaaa" << endl;
+      /*gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
 			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
 			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
-			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO
+			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO*/
+      gameData = GameSettings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", 0, 0, 0);
+      cout << "aaaa" << endl;
+      if (!gameThread)
+	gameThread = thread(&TetrinetClient::placer, this);
       inGame = true;
       onGameStart(*this);
       break;

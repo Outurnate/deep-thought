@@ -28,8 +28,8 @@ FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
 {
   if(this == &rhs)
     return *this;
-  
-  this->transforms = unique_ptr<TransformType>(new TransformType(*rhs.transforms));
+
+  this->transforms.reset(new TransformType(rhs.transforms->begin(), rhs.transforms->end()));
 
   return *this;
 }

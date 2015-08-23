@@ -3,7 +3,6 @@
 #include <functional>
 #include <algorithm>
 #include <boost/cast.hpp>
-#include <unordered_set>
 #include <iostream>
 
 using namespace std;
@@ -38,7 +37,7 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-vector<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
+unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
   unordered_set<PieceLocation> transforms;
   vector<TransformPair> perches;
@@ -59,7 +58,7 @@ vector<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, Pie
     Piece piece = Piece::Get(pieceShape, rotation);
     
     vector<TransformPair> columnOffsets; // might want to cache these; could be done compile time for eff.
-    for (uCoord x = 0; x < fieldWidth; ++x)
+    for (uCoord x = 0; x < piece.GetWidth(); ++x)
     {
       // last found block
       sCoord ylast = -1; // will never be correct; used as a symbolic value
@@ -75,13 +74,15 @@ vector<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, Pie
 	transforms.emplace(piece, perch.first + offset.first, perch.second + offset.second);
   }
 
-  vector<PieceLocation> finalTransforms;
-  copy_if(transforms.begin(), transforms.end(), finalTransforms.begin(), [&field](const PieceLocation& piece)
-	  {
-	    return piece.GetTransform().CanApplyToField(field);
-	  });
+  for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
+  {
+    if(!it->GetTransform().CanApplyToField(field))
+      transforms.erase(it++);
+    else
+      ++it;
+  }
   
-  return finalTransforms;
+  return transforms;
 }
 
 bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start)
@@ -132,13 +133,16 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return false;
 }
 
-void FieldEvaluator::ValidateTransforms(const Field& field, vector<PieceLocation>& locations)
+void FieldEvaluator::ValidateTransforms(const Field& field, unordered_set<PieceLocation>& locations)
 {
   FieldTransform sheetTransform(GenerateSheetTransform(field));
-  locations.erase(remove_if(locations.begin(), locations.end(), [sheetTransform, &field](const PieceLocation& location)
-			    {
-			      return location.GetTransform() && sheetTransform && !CanEscape(field, sheetTransform, location);
-			    }));
+  for (unordered_set<PieceLocation>::iterator it = locations.begin(); it != locations.end(); )
+  {
+    if(it->GetTransform() && sheetTransform && !CanEscape(field, sheetTransform, *it))
+      locations.erase(it++);
+    else
+      ++it;
+  }
 }
 
 bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)

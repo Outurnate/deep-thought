@@ -9,6 +9,7 @@
 #include <boost/signals2.hpp>
 #include <boost/signals2/connection.hpp>
 #include <log4cxx/logger.h>
+#include <boost/thread/thread.hpp>
 
 #include "libtetrinet/Field.hpp"
 #include "libtetrinet/PieceLocation.hpp"
@@ -84,6 +85,7 @@ private:
   boost::optional<unsigned> playerNum;
   boost::optional<GameSettings> gameData;
   bool connected, inGame, paused;
+  boost::optional<boost::thread> gameThread;
   
   mutable GenericSignal onField;
   mutable GenericSignal onSpecial;

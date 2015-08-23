@@ -64,6 +64,7 @@ PieceLocation& PieceLocation::operator = (const PieceLocation& rhs)
   this->piece = rhs.piece;
   this->x = rhs.x;
   this->y = rhs.y;
+  this->element = rhs.element;
   updateTransform();
 
   return *this;

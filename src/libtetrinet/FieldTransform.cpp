@@ -13,14 +13,15 @@ FieldTransform::FieldTransform()
 }
 
 FieldTransform::FieldTransform(const FieldTransform& transform)
-  : transforms(new TransformType(transform.transforms->begin(), transform.transforms->end()))
+  : FieldTransform()
 {
+  for (const auto pair : transform)
+    (*this)(pair.first) = pair.second;
 }
 
 FieldTransform::FieldTransform(const std::string& message)
   : FieldTransform()
 {
-  cout << "copy" << endl;
   for (unsigned i = 0; i < message.size(); ++i)
     if (message[i] != char(FieldElement::NONE))
       (*this)(i) = FieldElement(message[i]);
@@ -31,34 +32,44 @@ FieldTransform::~FieldTransform()
   cout << "dtor" << endl;
 }
 
-FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
+FieldTransform& FieldTransform::operator= (const FieldTransform& rhs)
 {
-  cout << "assg" << endl;
   if(this == &rhs)
     return *this;
 
-  this->transforms.reset(new TransformType(rhs.transforms->begin(), rhs.transforms->end()));
+  Reset();
+  for (const auto pair : *this)
+    (*this)(pair.first) = pair.second;
 
   return *this;
 }
 
-ostream& operator << (ostream& os, const FieldTransform& fieldTransform)
+ostream& FieldTransform::operator<< (ostream& stream) const
 {
-  for (pair<const uCoord, FieldElement>& element : *fieldTransform.transforms)
-    os << (uCoord)element.first << " = " << element.second << endl;
-  return os;
+  for (pair<const uCoord, FieldElement>& element : *this->transforms)
+    stream << (uCoord)element.first << " = " << element.second << endl;
+  return stream;
 }
 
-FieldTransform& operator += (FieldTransform& destination, const FieldTransform& source)
+FieldTransform& FieldTransform::operator+= (const FieldTransform& rhs)
 {
-  for (const auto& element : source)
-    (*destination.transforms)[element.first] = element.second;
-  return destination;
+  for (const auto& element : *this->transforms)
+    (*rhs.transforms)[element.first] = element.second;
+  return *this;
 }
 
-bool operator == (const FieldTransform& lhs, const FieldTransform& rhs)
+bool FieldTransform::operator== (const FieldTransform& rhs) const
 {
-  return *lhs.transforms == *rhs.transforms;
+  return *this->transforms == *rhs.transforms;
+}
+
+bool FieldTransform::operator&& (const FieldTransform& rhs) const
+{
+  return !(this->transforms->size() == 0 || rhs.transforms->size() == 0) &&
+    all_of(this->transforms->begin(), this->transforms->end(), [&rhs](const pair<uCoord, FieldElement>& element)
+	   {
+	     return (*rhs.transforms)[element.first] != FieldElement::NONE;
+	   });
 }
 
 FieldElement& FieldTransform::operator() (uCoord x, uCoord y)
@@ -78,43 +89,7 @@ FieldElement& FieldTransform::operator() (uCoord i)
   return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
 }
 
-/*const FieldElement& FieldTransform::operator() (uCoord x, uCoord y) const
-{
-  if (!(x < fieldWidth))
-    throw out_of_range("x = " + lexical_cast<string>(x));
-  if (!(y < fieldHeight))
-    throw out_of_range("y = " + lexical_cast<string>(y));
-  return (*this)((y * fieldWidth) + x);
-}
-
-// TODO these violate const, fix
-const FieldElement& FieldTransform::operator() (uCoord i) const
-{
-  if (!(i < fieldSize))
-    throw out_of_range("i = " + lexical_cast<string>(i));
-  return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
-}*/
-
-const FieldTransform::TransformType::const_iterator FieldTransform::begin() const
-{
-  return transforms->begin();
-}
-
-const FieldTransform::TransformType::const_iterator FieldTransform::end() const
-{
-  return transforms->end();
-}
-
-bool operator && (const FieldTransform& lhs, const FieldTransform& rhs)
-{
-  return !(lhs.transforms->size() == 0 || rhs.transforms->size() == 0) &&
-    all_of(lhs.transforms->begin(), lhs.transforms->end(), [rhs](const pair<uCoord, FieldElement>& element)
-	   {
-	     return (*rhs.transforms)[element.first] != FieldElement::NONE;
-	   });
-}
-
-string FieldTransform::GetFullFieldString() const
+FieldTransform::operator string() const
 {
   string fstr(fieldSize, char(FieldElement::NONE));
   for (pair<uCoord, FieldElement> element : *transforms)
@@ -134,4 +109,14 @@ bool FieldTransform::CanApplyToField(const Field& field) const
 void FieldTransform::Reset()
 {
   transforms.reset(new TransformType());
+}
+
+const FieldTransform::const_iterator FieldTransform::begin() const
+{
+  return transforms->begin();
+}
+
+const FieldTransform::const_iterator FieldTransform::end() const
+{
+  return transforms->end();
 }

@@ -15,7 +15,6 @@ public:
   static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start);
   static void ValidateTransforms(const Field& field, std::unordered_set<PieceLocation>& locations);
   static bool Rotate(PieceLocation& location, const Field& field, RotationDirection direction);
-  static unsigned ColumnHeight(const Field& field, unsigned x);
   static unsigned GapCount(const Field& field);
   static unsigned BlockadeCount(const Field& field);
   static unsigned RowCount(const Field& field);

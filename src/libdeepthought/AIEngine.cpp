@@ -22,7 +22,7 @@ AIEngine::AIEngine(const Genome& genome, log4cxx::LoggerPtr logger)
 double Rank(Field field, PieceLocation piece, const Genome& genome)
 {
   FieldTransform clearTrans;
-  field.ApplyTransform(piece.GetTransform());
+  field.ApplyTransform(piece);
   auto c = FieldEvaluator::ClearCount(field, clearTrans);
   field.ApplyTransform(clearTrans);
   auto r = FieldEvaluator::RowCount(field);
@@ -43,8 +43,8 @@ PieceLocation AIEngine::NewPiece(const Piece& piece)
   vector<pair<PieceLocation, double> > ranked;
   for (const auto& transform : transforms)
     ranked.push_back(pair<PieceLocation, double>(transform, Rank(GetField(), transform, genome)));
-  return max(ranked.begin(), ranked.end(), [](const auto& a, const auto& b)
-	     {
-	       return a->second < b->second;
-	     })->first;
+  return max_element(ranked.begin(), ranked.end(), [](const auto& a, const auto& b)
+		     {
+		       return a.second < b.second;
+		     })->first;
 }

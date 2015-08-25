@@ -41,8 +41,15 @@ public:
 
   const FieldElementRange column(uCoord x) const;
   const FieldElementRange row(uCoord y) const;
+
+  uCoord GetHeightAt(uCoord x) const;
 private:
+  typedef std::array<uCoord, fieldWidth> HeightCacheType;
+  void updateHeightCache() const;
+
   std::unique_ptr<FieldType> field;
+  mutable bool heightCacheDirty;
+  mutable HeightCacheType heightCache;
 };
 
 #endif

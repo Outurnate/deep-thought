@@ -7,7 +7,22 @@ PieceLocation::PieceLocation(const Piece& piece, sCoord x, sCoord y)
   : PieceLocation(piece, x, y, GetColor(piece.GetShape())) {}
 
 PieceLocation::PieceLocation(const Piece& piece, sCoord x, sCoord y, FieldElement element)
-  : x(x), y(y), piece(piece), element(element) { updateTransform(); }
+  : FieldTransform(), x(x), y(y), piece(piece), element(element)
+{
+  updateTransform();
+}
+
+PieceLocation::PieceLocation(const PieceLocation& location)
+  : FieldTransform(location), piece(location.piece)
+{
+  this->x = location.x;
+  this->y = location.y;
+  this->element = location.element;
+}
+
+PieceLocation::~PieceLocation()
+{
+}
 
 sCoord PieceLocation::GetX() const
 {

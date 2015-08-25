@@ -11,6 +11,8 @@ class PieceLocation : public FieldTransform
 public:
   PieceLocation(const Piece& piece, sCoord x, sCoord y);
   PieceLocation(const Piece& piece, sCoord x, sCoord y, FieldElement element);
+  PieceLocation(const PieceLocation& location);
+  virtual ~PieceLocation() override;
 
   sCoord GetX() const;
   sCoord GetY() const;

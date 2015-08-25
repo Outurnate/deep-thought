@@ -40,18 +40,6 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
 unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
   unordered_set<PieceLocation> transforms;
-  vector<TransformPair> perches;
-
-  for (uCoord x = 0; x < fieldWidth; ++x)
-  {
-    bool prev = true;
-    for (uCoord y = fieldHeight - 1; y < fieldHeight; --y) // go up
-    {
-      if (prev && field(x, y) != FieldElement::NONE) // if last block and not current block
-	perches.push_back(TransformPair(x, y));
-      prev = field(x, y) != FieldElement::NONE;
-    }
-  }
   
   for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
   {
@@ -69,11 +57,11 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
 	columnOffsets.push_back(TransformPair(-numeric_cast<sCoord>(x), -ylast));
     }
 
-    for (TransformPair perch : perches)
+    for (uCoord x = 0; x < fieldWidth; ++x)
       for (TransformPair offset : columnOffsets)
-	transforms.emplace(piece, perch.first + offset.first, perch.second + offset.second);
+	transforms.emplace(piece, x + offset.first, field.GetHeightAt(x) + offset.second);
   }
-
+  
   for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
   {
     if(!it->CanApplyToField(field))
@@ -174,18 +162,6 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   return false;
 }
 
-unsigned FieldEvaluator::ColumnHeight(const Field& field, unsigned x)
-{
-  unsigned colHeight = fieldHeight - 1;
-  for (unsigned int y = 0; y < fieldHeight; ++y)  // Search this column top-down
-    if (field(x, y) != FieldElement::NONE) // block!
-    {
-      colHeight = y; // this is the top
-      break;
-    }
-  return fieldHeight - colHeight;
-}
-
 unsigned FieldEvaluator::GapCount(const Field& field)
 {
   unsigned gapCount = 0;
@@ -229,10 +205,10 @@ legitimateUseOfGoto:
 
 unsigned FieldEvaluator::RowCount(const Field& field)
 {
-  vector<unsigned>* heights = new vector<unsigned>();
+  vector<unsigned> heights;
   for (unsigned x = 0; x < fieldWidth; ++x)
-    heights->push_back(ColumnHeight(field, x));
-  return fieldHeight - *std::min_element(heights->begin(), heights->end()); // find the tallest column
+    heights.push_back(field.GetHeightAt(x));
+  return fieldHeight - *std::min_element(heights.begin(), heights.end()); // find the tallest column
 }
 
 unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans)

@@ -14,7 +14,7 @@ using namespace boost;
 using namespace boost::adaptors;
 
 Field::Field()
-  : field(new FieldType(fieldSize, FieldElement::NONE))
+  : field(new FieldType(fieldSize, FieldElement::NONE)), heightCacheDirty(true), heightCache()
 {
 }
 
@@ -82,4 +82,28 @@ Field operator "" _fd(const char* definition, size_t size)
   for (unsigned i = 0; i < size; ++i)
     field.field->at(i) = static_cast<FieldElement>(definition[i]);
   return field;
+}
+
+uCoord Field::GetHeightAt(uCoord x) const
+{
+  updateHeightCache();
+  return heightCache[x];
+}
+
+void Field::updateHeightCache() const
+{
+  if (!heightCacheDirty)
+    return;
+  
+  for (uCoord x = 0; x < fieldWidth; ++x)
+  {
+    bool prev = true;
+    for (uCoord y = fieldHeight - 1; y < fieldHeight; --y) // go up
+    {
+      if (prev && (*this)(x, y) != FieldElement::NONE) // if last block and not current block
+	heightCache[x] = y;
+      prev = (*this)(x, y) != FieldElement::NONE;
+    }
+  }
+  heightCacheDirty = false;
 }

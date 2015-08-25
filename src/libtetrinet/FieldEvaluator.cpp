@@ -59,9 +59,18 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
 
     for (uCoord x = 0; x < fieldWidth; ++x)
       for (TransformPair offset : columnOffsets)
-	transforms.emplace(piece, x + offset.first, field.GetHeightAt(x) + offset.second);
+      {
+	try
+	{
+	  transforms.emplace(piece, x + offset.first, field.GetHeightAt(x) + offset.second);
+	}
+	catch (out_of_range)
+	{
+	  // TODO: better way
+	}
+      }
   }
-  
+
   for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
   {
     if(!it->CanApplyToField(field))

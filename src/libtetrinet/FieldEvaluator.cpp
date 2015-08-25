@@ -76,7 +76,7 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
 
   for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
   {
-    if(!it->GetTransform().CanApplyToField(field))
+    if(!it->CanApplyToField(field))
       transforms.erase(it++);
     else
       ++it;
@@ -102,8 +102,8 @@ void TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& locat
 
 bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)
 {
-  paint += start.GetTransform();
-  if (escapeRegion && start.GetTransform())
+  paint += start;
+  if (escapeRegion && start)
   {
     vector<PieceLocation> locations;
     TryNewLocation(locations, start, 1,  0);
@@ -118,9 +118,9 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
     for (PieceLocation location : locations)
     {
       //FieldTransform tmpTrans(location, FieldElement::RED);
-      if (location.GetTransform().CanApplyToField(field))
+      if (location.CanApplyToField(field))
       {
-	if (!(escapeRegion && location.GetTransform())) // it's a new transform
+	if (!(escapeRegion && location)) // it's a new transform
 	{
 	  if (CanEscape(field, escapeRegion, location, paint))
 	    return true;
@@ -138,7 +138,7 @@ void FieldEvaluator::ValidateTransforms(const Field& field, unordered_set<PieceL
   FieldTransform sheetTransform(GenerateSheetTransform(field));
   for (unordered_set<PieceLocation>::iterator it = locations.begin(); it != locations.end(); )
   {
-    if(it->GetTransform() && sheetTransform && !CanEscape(field, sheetTransform, *it))
+    if(*it && sheetTransform && !CanEscape(field, sheetTransform, *it))
       locations.erase(it++);
     else
       ++it;
@@ -156,7 +156,7 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   {
     try
     {
-      FieldTransform ftransform(PieceLocation(newPiece, location.GetX() + transform.first, location.GetY() + transform.second).GetTransform());
+      FieldTransform ftransform(PieceLocation(newPiece, location.GetX() + transform.first, location.GetY() + transform.second));
       if (all_of(ftransform.begin(), ftransform.end(), [&field](pair<uCoord, FieldElement> element)
 		 {
 		   return element.second != FieldElement::NONE && field(element.first) == FieldElement::NONE;

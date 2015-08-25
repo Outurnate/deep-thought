@@ -41,11 +41,6 @@ void PieceLocation::SetY(sCoord y)
   updateTransform();
 }
 
-const FieldTransform& PieceLocation::GetTransform() const
-{
-  return transform;
-}
-
 PieceLocation::operator string() const
 {
   return lexical_cast<std::string>(x) + lexical_cast<std::string>(y) + string(piece);
@@ -72,13 +67,12 @@ PieceLocation& PieceLocation::operator = (const PieceLocation& rhs)
 
 void PieceLocation::updateTransform()
 {
-  FieldTransform newTransform;
+  Reset();
   for (sCoord i = 0; i < numeric_cast<sCoord>(piece.GetWidth() * piece.GetHeight()); ++i)
   {
     uCoord x2 = numeric_cast<uCoord>(i % piece.GetWidth()),
            y2 = numeric_cast<uCoord>(i / piece.GetWidth());
     if (piece(x2, y2))
-      newTransform(x + x2, y + y2) = element;
+      (*this)(x + x2, y + y2) = element;
   }
-  this->transform = newTransform;
 }

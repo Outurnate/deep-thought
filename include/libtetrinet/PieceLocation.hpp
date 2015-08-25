@@ -6,7 +6,7 @@ class PieceLocation;
 #include "libtetrinet/Piece.hpp"
 #include "libtetrinet/FieldTransform.hpp"
 
-class PieceLocation
+class PieceLocation : public FieldTransform
 {
 public:
   PieceLocation(const Piece& piece, sCoord x, sCoord y);
@@ -18,7 +18,6 @@ public:
   const FieldElement& GetElement() const;
   void SetX(sCoord x);
   void SetY(sCoord y);
-  const FieldTransform& GetTransform() const;
 
   operator std::string() const;
   
@@ -27,7 +26,6 @@ public:
 private:
   sCoord x;
   sCoord y;
-  FieldTransform transform;
   Piece piece;
   FieldElement element;
 

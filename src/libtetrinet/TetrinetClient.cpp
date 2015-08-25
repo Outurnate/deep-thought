@@ -119,7 +119,7 @@ void TetrinetClient::placer()
   {
     cout << "aadsadsddssaadaasddsasdaasdssddaasadasdaaa" << endl;
     PieceLocation newPiece(NewPiece(Piece::Get(PieceShape::I, PieceRotation::Z)/*gameData.get().GetPiece()*/));
-    players[playerNum.get()]->field.ApplyTransform(newPiece.GetTransform());
+    players[playerNum.get()]->field.ApplyTransform(newPiece);
   }
 }
 

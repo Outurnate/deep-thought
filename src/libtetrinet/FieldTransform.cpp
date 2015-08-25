@@ -2,6 +2,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/cast.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace boost;
@@ -19,13 +20,20 @@ FieldTransform::FieldTransform(const FieldTransform& transform)
 FieldTransform::FieldTransform(const std::string& message)
   : FieldTransform()
 {
+  cout << "copy" << endl;
   for (unsigned i = 0; i < message.size(); ++i)
     if (message[i] != char(FieldElement::NONE))
       (*this)(i) = FieldElement(message[i]);
 }
 
+FieldTransform::~FieldTransform()
+{
+  cout << "dtor" << endl;
+}
+
 FieldTransform& FieldTransform::operator = (const FieldTransform& rhs)
 {
+  cout << "assg" << endl;
   if(this == &rhs)
     return *this;
 
@@ -121,4 +129,9 @@ bool FieldTransform::CanApplyToField(const Field& field) const
 		  return (element.second != FieldElement::NONE || element.second != FieldElement::UNDEFINED)
 		    && field(element.first) == FieldElement::NONE;
 		});
+}
+
+void FieldTransform::Reset()
+{
+  transforms.reset(new TransformType());
 }

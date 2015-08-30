@@ -36,6 +36,8 @@ public:
   const FieldElement& operator()(uCoord x, uCoord y) const;
   const FieldElement& operator()(uCoord i) const;
 
+  operator std::string() const;
+
   const FieldType::const_iterator begin() const;
   const FieldType::const_iterator end() const;
 

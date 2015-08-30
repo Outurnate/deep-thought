@@ -29,7 +29,6 @@ FieldTransform::FieldTransform(const std::string& message)
 
 FieldTransform::~FieldTransform()
 {
-  cout << "dtor" << endl;
 }
 
 FieldTransform& FieldTransform::operator= (const FieldTransform& rhs)

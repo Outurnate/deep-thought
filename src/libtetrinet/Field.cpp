@@ -107,3 +107,11 @@ void Field::updateHeightCache() const
   }
   heightCacheDirty = false;
 }
+
+Field::operator string() const
+{
+  string f;
+  for (const auto& element : *field)
+    f += static_cast<char>(element); // TODO immute?
+  return f;
+}

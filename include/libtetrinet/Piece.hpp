@@ -26,12 +26,13 @@ class Piece
   friend std::ostream& operator << (std::ostream& stream, const Piece& piece);
 public:
   bool operator() (uCoord x, uCoord y) const;
-  Piece& operator= (const Piece& piece);
+//  Piece& operator= (const Piece& piece);
   
   uAxis GetWidth() const;
   uAxis GetHeight() const;
   PieceRotation GetRotation() const;
   PieceShape GetShape() const;
+  uCoord GetHeightAt(uCoord x) const;
 
   static Piece Get(PieceShape shape, PieceRotation rotation);
   
@@ -47,6 +48,7 @@ private:
   PieceShape shape;
   PieceDefinition definition;
   uAxis width, height; // apparent size, actual is always 4x4
+  std::array<uCoord, pieceWidth> pieceBottoms; // x is key, y is val
   
   static PieceDefinitionMap defs;
 };

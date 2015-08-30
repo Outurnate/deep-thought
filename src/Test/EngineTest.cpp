@@ -251,4 +251,11 @@ BOOST_AUTO_TEST_CASE(BlockEscape)
   }
 }
 
+BOOST_AUTO_TEST_CASE(DiscoverSanity)
+{
+  Field field;
+  auto set = FieldEvaluator::DiscoverTransforms(field, PieceShape::I);
+//gak  BOOST_REQUIRE(set.contains(PieceLocation(Piece::Get(
+}
+
 BOOST_AUTO_TEST_SUITE_END()

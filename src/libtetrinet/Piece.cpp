@@ -48,7 +48,7 @@ ostream& operator << (ostream& os, const Piece& piece)
   return os << std::string(piece);
 }
 
-Piece& Piece::operator = (const Piece& piece)
+/*Piece& Piece::operator = (const Piece& piece)
 {
   if(this == &piece)
     return *this;
@@ -60,11 +60,21 @@ Piece& Piece::operator = (const Piece& piece)
   this->height     = piece.height;
   
   return *this;
-}
+}*/
 
 constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height)
-  : rotation(rotation), shape(shape), definition(definition), width(width), height(height)
+  : rotation(rotation), shape(shape), definition(definition), width(width), height(height), pieceBottoms()
 {
+  for (uCoord x = 0; x < width; ++x)
+  {
+    // last found block
+    sCoord ylast = -1; // will never be correct; used as a symbolic value
+    for (uCoord y = 0; y < height; ++y)
+      if ((*this)(x, y))
+	ylast = y;
+    if (ylast != -1)
+      pieceBottoms[x] = numeric_cast<uCoord>(ylast);
+  }
 }
 
 Piece::operator std::string() const
@@ -78,6 +88,11 @@ Piece::operator std::string() const
 bool Piece::operator == (const Piece& rhs) const
 {
   return rotation == rhs.rotation && shape == rhs.shape && definition == rhs.definition && width == rhs.width && height == rhs.height;
+}
+
+uCoord Piece::GetHeightAt(uCoord x) const
+{
+  return pieceBottoms[x];
 }
 
 // here be dragons

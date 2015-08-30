@@ -9,7 +9,7 @@ using namespace std;
 using namespace boost;
 
 FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
-{
+{//TODO revist
   FieldTransform result;
   vector<bool> tripped = vector<bool>(fieldWidth, false); // will be set to true each column that has a block
   for (uCoord y = 0; y < fieldHeight; ++y)
@@ -44,25 +44,13 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
   for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
   {
     Piece piece = Piece::Get(pieceShape, rotation);
-    
-    vector<TransformPair> columnOffsets; // might want to cache these; could be done compile time for eff.
-    for (uCoord x = 0; x < piece.GetWidth(); ++x)
-    {
-      // last found block
-      sCoord ylast = -1; // will never be correct; used as a symbolic value
-      for (uCoord y = 0; y < piece.GetHeight(); ++y)
-	if (piece(x, y))
-	  ylast = y;
-      if (ylast != -1)
-	columnOffsets.push_back(TransformPair(-numeric_cast<sCoord>(x), -ylast));
-    }
 
-    for (uCoord x = 0; x < fieldWidth; ++x)
-      for (TransformPair offset : columnOffsets)
+    for (uCoord xf = 0; xf < fieldWidth; ++xf)
+      for (uCoord xp = 0; xp < piece.GetWidth(); ++xp)
       {
 	try
 	{
-	  transforms.emplace(piece, x + offset.first, field.GetHeightAt(x) + offset.second);
+	  transforms.emplace(piece, xf - xp, field.GetHeightAt(xf) - piece.GetHeightAt(xp));
 	}
 	catch (out_of_range)
 	{
@@ -71,6 +59,7 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
       }
   }
 
+  cout << transforms.size() << endl;
   for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
   {
     if(!it->CanApplyToField(field))
@@ -105,7 +94,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
     vector<PieceLocation> locations;
     TryNewLocation(locations, start, 1,  0);
     TryNewLocation(locations, start, -1, 0);
-    TryNewLocation(locations, start, 0, -1);
+    TryNewLocation(locations, start, 0,  1);
     PieceLocation pCW = PieceLocation(start);
     if (Rotate(pCW, field, RotationDirection::CW))
       locations.push_back(pCW);

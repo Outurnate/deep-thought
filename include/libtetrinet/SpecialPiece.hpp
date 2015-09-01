@@ -20,6 +20,6 @@ enum class SpecialPiece : char;
 /**
  * Convenience object.  Used for iterating over all pieces in enum
  */
-const std::vector<SpecialPiece> AllSpecialPiece;
+extern const std::vector<SpecialPiece> AllSpecialPiece;
 
 #endif

@@ -8,6 +8,11 @@
 #include "libtetrinet/Field.hpp"
 #include "libtetrinet/Piece.hpp"
 #include "libtetrinet/FieldEvaluator.hpp"
+#include "libtetrinet/FieldElement.hpp"
+#include "libtetrinet/PieceShape.hpp"
+#include "libtetrinet/PieceRotation.hpp"
+#include "libtetrinet/PieceLocation.hpp"
+#include "libtetrinet/RotationDirection.hpp"
 
 BOOST_AUTO_TEST_SUITE(EngineTest)
 

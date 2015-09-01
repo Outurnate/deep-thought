@@ -37,6 +37,6 @@ FieldElement GetColor(const PieceShape& shape);
 /**
  * FieldElement stream operator
  */
-inline std::ostream& operator<<(std::ostream& os, const FieldElement& element);
+std::ostream& operator<<(std::ostream& os, const FieldElement& element);
 
 #endif

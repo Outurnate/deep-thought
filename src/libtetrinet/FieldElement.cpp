@@ -23,7 +23,7 @@ FieldElement GetColor(const PieceShape& shape)
   return map[shape][0];
 }
 
-inline ostream& operator<<(ostream& os, const FieldElement& element)
+ostream& operator<<(ostream& os, const FieldElement& element)
 {
   return os << static_cast<char>(element);
 }

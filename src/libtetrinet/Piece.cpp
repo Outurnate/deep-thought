@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-#include "libtetrinet/Enum.hpp"
+#include "libtetrinet/PieceShape.hpp"
 
 using namespace std;
 using namespace boost;

@@ -6,10 +6,7 @@
 #include <string>
 #include <ostream>
 
-class FieldTransform;
-
-#include "libtetrinet/Enum.hpp"
-#include "libtetrinet/Field.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 
 /**
  * All field manipulation is handled through this class.  Specifies operators for generating,

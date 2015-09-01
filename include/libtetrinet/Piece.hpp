@@ -8,10 +8,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-class Piece;
-
-#include "libtetrinet/Field.hpp"
-#include "libtetrinet/Enum.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 
 typedef std::map<PieceShape, std::vector<Piece> > PieceDefinitionMap;
 

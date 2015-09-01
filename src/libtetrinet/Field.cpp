@@ -8,6 +8,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include "libtetrinet/Piece.hpp"
+#include "libtetrinet/FieldElement.hpp"
+#include "libtetrinet/FieldTransform.hpp"
 
 using namespace std;
 using namespace boost;

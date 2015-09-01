@@ -1,5 +1,7 @@
 #include "libtetrinet/GameSettings.hpp"
 
+#include "libtetrinet/Piece.hpp"
+
 GameSettings::NumberCache GameSettings::rngCache = GameSettings::NumberCache();
 
 GameSettings::GameSettings(unsigned startHeight, unsigned startLevel, unsigned lineLevel, unsigned levelIncr,

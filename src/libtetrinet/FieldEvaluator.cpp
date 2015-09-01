@@ -5,6 +5,14 @@
 #include <boost/cast.hpp>
 #include <iostream>
 
+#include "libtetrinet/FieldTransform.hpp"
+#include "libtetrinet/Field.hpp"
+#include "libtetrinet/FieldElement.hpp"
+#include "libtetrinet/PieceLocation.hpp"
+#include "libtetrinet/PieceShape.hpp"
+#include "libtetrinet/PieceRotation.hpp"
+#include "libtetrinet/RotationDirection.hpp"
+
 using namespace std;
 using namespace boost;
 
@@ -130,6 +138,172 @@ void FieldEvaluator::ValidateTransforms(const Field& field, unordered_set<PieceL
       ++it;
   }
 }
+
+static SRSKickMap srsmap_jlstz = SRSKickMap
+{
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( +1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( -1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( -1,  -1 ),
+      TransformPair(  0,  +2 ),
+      TransformPair( -1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( +1,  +1 ),
+      TransformPair(  0,  -2 ),
+      TransformPair( +1,  -2 )
+    }
+  },
+}, srsmap_i = SRSKickMap
+{
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  -1 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  +1 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::R, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  +2 ),
+      TransformPair( +2,  -1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::R),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  -2 ),
+      TransformPair( -2,  +1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::T, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  +1 ),
+      TransformPair( -1,  -2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::T),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  -1 ),
+      TransformPair( +1,  +2 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::L, PieceRotation::Z),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( +1,  0  ),
+      TransformPair( -2,  0  ),
+      TransformPair( +1,  -2 ),
+      TransformPair( -2,  +1 )
+    }
+  },
+  {
+    PieceRotationPair(PieceRotation::Z, PieceRotation::L),
+    {
+      TransformPair(  0,  0  ),
+      TransformPair( -1,  0  ),
+      TransformPair( +2,  0  ),
+      TransformPair( -1,  +2 ),
+      TransformPair( +2,  -1 )
+    }
+  },
+};
 
 bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)
 {

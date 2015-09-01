@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_set>
 
-#include "libtetrinet/PieceLocation.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 
 class FieldEvaluator
 {

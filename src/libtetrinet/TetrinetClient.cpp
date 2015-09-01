@@ -123,7 +123,7 @@ void TetrinetClient::placer()
   while (inGame && !paused)
   {
     cout << "aadsadsddssaadaasddsasdaasdssddaasadasdaaa" << endl;
-    PieceLocation newPiece(NewPiece(Piece::Get(PieceShape::I, PieceRotation::Z)/*gameData.get().GetPiece()*/));
+    PieceLocation newPiece(NewPiece(Piece(PieceShape::I, PieceRotation::Z)/*gameData.get().GetPiece()*/));
     cout << "x=" << newPiece.GetX() << ",y=" << newPiece.GetY() << endl;
     players[playerNum.get()]->field.ApplyTransform(newPiece);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);

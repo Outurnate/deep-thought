@@ -51,7 +51,7 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
   
   for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
   {
-    Piece piece = Piece::Get(pieceShape, rotation);
+    Piece piece = Piece(pieceShape, rotation);
 
     for (uCoord xf = 0; xf < fieldWidth; ++xf)
       for (uCoord xp = 0; xp < piece.GetWidth(); ++xp)
@@ -311,7 +311,7 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
     return true;
   
   PieceRotation rotation = PieceRotation(uint8_t(location.GetPiece().GetRotation()) + (bool(direction) ? -1 : 1));
-  Piece newPiece = Piece::Get(location.GetPiece().GetShape(), rotation);
+  Piece newPiece = Piece(location.GetPiece().GetShape(), rotation);
   for (TransformPair& transform : (location.GetPiece().GetShape() == PieceShape::I ? srsmap_i : srsmap_jlstz)[PieceRotationPair(location.GetPiece().GetRotation(), rotation)])
   {
     try

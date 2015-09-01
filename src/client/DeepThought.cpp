@@ -22,6 +22,8 @@
 #include <string>
 #include <iostream>
 
+#include "libtetrinet/Tetrinet.hpp"
+
 #include "libdeepthought/AIEngine.hpp"
 #include "libdeepthought/AIManager.hpp"
 

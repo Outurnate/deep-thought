@@ -22,6 +22,6 @@ enum class PieceShape : char { PIECESHAPES };
 /**
  * Convenience object for iterating over all piece shapes
  */
-static const std::vector<PieceShape> AllPieceShape;
+extern const std::vector<PieceShape> AllPieceShape;
 
 #endif

@@ -133,7 +133,7 @@ void TetrinetClient::placer()
 void TetrinetClient::sendCommand(TetrinetMessage message, string param)
 {
   stringstream str;
-  str << MessageMap.at(message) << " ";
+  str << GetMessageString(message) << " ";
   switch(message)
   {
   case TetrinetMessage::F:

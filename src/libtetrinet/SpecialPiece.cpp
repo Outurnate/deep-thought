@@ -13,5 +13,5 @@ enum class SpecialPiece : char { SPECIALPIECES };
 /**
  * Convenience object.  Used for iterating over all pieces in enum
  */
-AllSpecialPiece = { SPECIALPIECES };
+const std::vector<SpecialPiece> AllSpecialPiece = { SPECIALPIECES };
 #undef X

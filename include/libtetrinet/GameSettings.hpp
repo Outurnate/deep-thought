@@ -4,7 +4,7 @@
 #include <map>
 #include <deque>
 
-#include "libtetrinet/Piece.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 
 class GameSettings
 {

@@ -4,6 +4,9 @@
 #include <boost/cast.hpp>
 #include <iostream>
 
+#include "libtetrinet/FieldElement.hpp"
+#include "libtetrinet/Field.hpp"
+
 using namespace std;
 using namespace boost;
 

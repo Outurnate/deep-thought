@@ -1,10 +1,9 @@
 #ifndef PIECELOCATION_HPP
 #define PIECELOCATION_HPP
 
-class PieceLocation;
-
-#include "libtetrinet/Piece.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 #include "libtetrinet/FieldTransform.hpp"
+#include "libtetrinet/Piece.hpp"
 
 class PieceLocation : public FieldTransform
 {

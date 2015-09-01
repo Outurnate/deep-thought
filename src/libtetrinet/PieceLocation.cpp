@@ -1,5 +1,7 @@
 #include "libtetrinet/PieceLocation.hpp"
 
+#include "libtetrinet/FieldElement.hpp"
+
 using namespace std;
 using namespace boost;
 
@@ -58,7 +60,7 @@ void PieceLocation::SetY(sCoord y)
 
 PieceLocation::operator string() const
 {
-  return lexical_cast<std::string>(x) + lexical_cast<std::string>(y) + string(piece);
+  return lexical_cast<string>(x) + lexical_cast<string>(y) + string(piece);
 }
 
 bool PieceLocation::operator == (const PieceLocation& rhs) const

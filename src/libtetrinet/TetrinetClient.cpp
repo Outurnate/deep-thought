@@ -7,6 +7,11 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
+#include "CompilerMagic.hpp"
+#include "libtetrinet/PieceShape.hpp" // TODO REMOVE
+#include "libtetrinet/PieceRotation.hpp" // TODO REMOVE
+#include "libtetrinet/TetrinetMessage.hpp"
+
 using boost::asio::ip::tcp;
 
 using namespace std;

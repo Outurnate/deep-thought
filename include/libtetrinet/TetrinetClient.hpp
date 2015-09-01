@@ -8,23 +8,14 @@
 #include <boost/functional/hash.hpp>
 #include <boost/signals2.hpp>
 #include <boost/signals2/connection.hpp>
-#include <log4cxx/logger.h>
 #include <boost/thread/thread.hpp>
+#include <log4cxx/logger.h>
 
+#include "libtetrinet/TetrinetForward.hpp"
 #include "libtetrinet/Field.hpp"
+#include "libtetrinet/Piece.hpp"
 #include "libtetrinet/PieceLocation.hpp"
-#include "libtetrinet/TetrinetConnection.hpp"
 #include "libtetrinet/GameSettings.hpp"
-
-struct TetrinetPlayer
-{
-  Field field;
-  std::string name, team;
-  unsigned level;
-  bool playing;
-
-  TetrinetPlayer(std::string name, std::string team) : field(), name(name), team(team), level(0), playing(false) {}
-};
 
 class TetrinetClient : private boost::noncopyable
 {
@@ -69,6 +60,16 @@ protected:
   virtual PieceLocation NewPiece(const Piece& piece) = 0;
   const Field& GetField() const;
 private:
+  struct TetrinetPlayer
+  {
+    Field field;
+    std::string name, team;
+    unsigned level;
+    bool playing;
+    
+    TetrinetPlayer(std::string name, std::string team) : field(), name(name), team(team), level(0), playing(false) {}
+  };
+  
   /** Processes a command issued from the server */
   void processCommand(TetrinetMessage message, std::deque<std::string>& tokens);
   /** Send the given message with supplied params to the sever */

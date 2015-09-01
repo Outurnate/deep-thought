@@ -5,15 +5,7 @@
 #include <boost/range/any_range.hpp>
 #include <memory>
 
-class Field;
-
-#include "libtetrinet/Enum.hpp"
-
-const uAxis fieldWidth = 12;
-const uAxis fieldHeight = 22;
-const uAxis fieldSize = fieldWidth * fieldHeight;
-
-#include "libtetrinet/FieldTransform.hpp"
+#include "libtetrinet/TetrinetForward.hpp"
 
 typedef boost::any_range<
   FieldElement,

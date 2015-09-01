@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include <array>
-#include <iosfwd>
 
 enum class FieldElement : char;
 enum class PieceRotation : uint8_t;
@@ -31,9 +30,14 @@ typedef std::pair<PieceRotation, PieceRotation> PieceRotationPair;
 typedef std::pair<sCoord, sCoord> TransformPair;
 typedef std::vector<FieldElement> FieldType; // origin top left, row-major
 typedef std::map<PieceRotationPair, std::array<TransformPair, 5> > SRSKickMap;
+typedef std::map<PieceShape, std::vector<Piece> > PieceDefinitionMap;
 
 static const uAxis fieldWidth = 12;
 static const uAxis fieldHeight = 22;
 static const uAxis fieldSize = fieldWidth * fieldHeight;
+
+static const uAxis pieceWidth = 4;
+static const uAxis pieceHeight = 4;
+static const uAxis pieceSize = pieceWidth * pieceHeight;
 
 #endif

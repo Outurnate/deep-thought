@@ -5,39 +5,31 @@
 #include <vector>
 #include <map>
 #include <bitset>
-#include <iostream>
+#include <iosfwd>
 #include <boost/lexical_cast.hpp>
 
 #include "libtetrinet/TetrinetForward.hpp"
 
-typedef std::map<PieceShape, std::vector<Piece> > PieceDefinitionMap;
-
-constexpr Piece operator "" _pd(const char* definition, size_t size);
-
 class Piece
 {
-  // Takes form "I2411111000000000000"
-  // "[shape][state][width][height][16 bit definition]"
-  constexpr Piece friend operator "" _pd(const char* definition, size_t size); // size must always be 20 (turn this off for release) TODO
-
-  friend std::ostream& operator << (std::ostream& stream, const Piece& piece);
 public:
+  Piece(PieceShape shape, PieceRotation rotation);
+  
+  bool operator== (const Piece& rhs) const;
   bool operator() (uCoord x, uCoord y) const;
-//  Piece& operator= (const Piece& piece);
+  operator std::string() const;
   
   uAxis GetWidth() const;
   uAxis GetHeight() const;
   PieceRotation GetRotation() const;
   PieceShape GetShape() const;
   uCoord GetHeightAt(uCoord x) const;
-
-  static Piece Get(PieceShape shape, PieceRotation rotation);
   
-  operator std::string() const;
-  bool operator == (const Piece& rhs) const;
+  friend constexpr Piece operator "" _pd(const char* definition, size_t size);
 private:
-  static const uAxis pieceWidth = 4, pieceHeight = 4, pieceSize = pieceWidth * pieceHeight;
   typedef std::bitset<pieceSize> PieceDefinition;
+  
+  static PieceDefinitionMap defs;
   
   constexpr Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height);
   
@@ -46,8 +38,12 @@ private:
   PieceDefinition definition;
   uAxis width, height; // apparent size, actual is always 4x4
   std::array<uCoord, pieceWidth> pieceBottoms; // x is key, y is val
-  
-  static PieceDefinitionMap defs;
 };
+
+std::ostream& operator<< (std::ostream& stream, const Piece& piece);
+
+// Takes form "I2411111000000000000"
+// "[shape][state][width][height][16 bit definition]"
+constexpr Piece operator "" _pd(const char* definition, size_t size);
 
 #endif

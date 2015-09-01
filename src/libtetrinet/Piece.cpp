@@ -2,16 +2,21 @@
 
 #include <assert.h>
 #include <string>
-#include <iostream>
+#include <ostream>
 
 #include "libtetrinet/PieceShape.hpp"
 
 using namespace std;
 using namespace boost;
 
-Piece Piece::Get(PieceShape shape, PieceRotation rotation)
+Piece::Piece(PieceShape shape, PieceRotation rotation)
+  : Piece(defs[shape][uint8_t(rotation)])
 {
-  return defs[shape][uint8_t(rotation)];
+}
+
+bool Piece::operator== (const Piece& rhs) const
+{
+  return rotation == rhs.rotation && shape == rhs.shape && definition == rhs.definition && width == rhs.width && height == rhs.height;
 }
 
 bool Piece::operator() (uCoord x, uCoord y) const
@@ -21,6 +26,14 @@ bool Piece::operator() (uCoord x, uCoord y) const
   if (y >= GetHeight())
     throw out_of_range("y");
   return definition[(y * pieceWidth) + x];
+}
+
+Piece::operator std::string() const
+{
+  std::string def(definition.to_string());
+  std::reverse(def.begin(), def.end());
+  return lexical_cast<std::string>(int(rotation)) + lexical_cast<std::string>(int(shape)) + def
+    + lexical_cast<std::string>(width) + lexical_cast<std::string>(height);
 }
 
 uAxis Piece::GetWidth() const
@@ -43,24 +56,10 @@ PieceShape Piece::GetShape() const
   return shape;
 }
 
-ostream& operator << (ostream& os, const Piece& piece)
+uCoord Piece::GetHeightAt(uCoord x) const
 {
-  return os << std::string(piece);
+  return pieceBottoms[x];
 }
-
-/*Piece& Piece::operator = (const Piece& piece)
-{
-  if(this == &piece)
-    return *this;
-
-  this->rotation   = piece.rotation;
-  this->shape      = piece.shape;
-  this->definition = piece.definition;
-  this->width      = piece.width;
-  this->height     = piece.height;
-  
-  return *this;
-}*/
 
 constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height), pieceBottoms()
@@ -77,24 +76,7 @@ constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition
   }
 }
 
-Piece::operator std::string() const
-{
-  std::string def(definition.to_string());
-  std::reverse(def.begin(), def.end());
-  return lexical_cast<std::string>(int(rotation)) + lexical_cast<std::string>(int(shape)) + def
-    + lexical_cast<std::string>(width) + lexical_cast<std::string>(height);
-}
-
-bool Piece::operator == (const Piece& rhs) const
-{
-  return rotation == rhs.rotation && shape == rhs.shape && definition == rhs.definition && width == rhs.width && height == rhs.height;
-}
-
-uCoord Piece::GetHeightAt(uCoord x) const
-{
-  return pieceBottoms[x];
-}
-
+//TODO ALL THIS
 // here be dragons
 constexpr bool isNumeric(char c)
 {
@@ -124,6 +106,11 @@ constexpr Piece operator "" _pd(const char* definition, size_t size)
 	       Piece::PieceDefinition(_stoi<uint16_t>(&definition[4 + 16], 16)),
 	       fromChar<uCoord>(definition[2]),
 	       fromChar<uCoord>(definition[3]));
+}
+
+ostream& operator<< (ostream& os, const Piece& piece)
+{
+  return os << std::string(piece);
 }
 
 PieceDefinitionMap Piece::defs = PieceDefinitionMap

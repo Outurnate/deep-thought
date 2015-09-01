@@ -17,8 +17,8 @@ GameSettings::GameSettings(unsigned startHeight, unsigned startLevel, unsigned l
 Piece GameSettings::GetPiece()
 {
   size_t num = pieceNum++;
-  return Piece::Get(PieceShape(blockFrequency[rng(seed, num) % blockFrequency.size()]),
-		    PieceRotation(rng(seed, num) % 4));
+  return Piece(PieceShape(blockFrequency[rng(seed, num) % blockFrequency.size()]),
+	       PieceRotation(rng(seed, num) % 4));
 }
 
 uint32_t GameSettings::mcg(uint32_t prev)

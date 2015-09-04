@@ -134,6 +134,7 @@ void TetrinetClient::sendCommand(TetrinetMessage message, string param)
 {
   stringstream str;
   str << GetMessageString(message) << " ";
+  cout << str.str() << endl;
   switch(message)
   {
   case TetrinetMessage::F:

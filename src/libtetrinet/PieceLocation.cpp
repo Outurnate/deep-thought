@@ -20,6 +20,7 @@ PieceLocation::PieceLocation(const PieceLocation& location)
   this->x = location.x;
   this->y = location.y;
   this->element = location.element;
+  updateTransform(); //maybe?
 }
 
 PieceLocation::~PieceLocation()
@@ -63,10 +64,10 @@ PieceLocation::operator string() const
   return lexical_cast<string>(x) + lexical_cast<string>(y) + string(piece);
 }
 
-bool PieceLocation::operator == (const PieceLocation& rhs) const
+/*bool PieceLocation::operator == (const PieceLocation& rhs) const
 {
   return x == rhs.x && y == rhs.y && piece == rhs.piece;
-}
+  }*/
 
 PieceLocation& PieceLocation::operator = (const PieceLocation& rhs)
 {

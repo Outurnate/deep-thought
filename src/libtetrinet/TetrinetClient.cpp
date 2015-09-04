@@ -90,7 +90,7 @@ void TetrinetClient::Run(std::shared_ptr<boost::asio::io_service> service, Tetri
         split(tokens, mshbits[i], is_any_of(" "));
         if (tokens.size() == 0)
           break;
-        TetrinetMessage hash = TetrinetMessage(djb2(tokens.front().c_str()));
+        TetrinetMessage hash = TetrinetMessage(djb2(stringToUpper(tokens.front()).c_str()));
 	cout << tokens.at(0) << endl;
         tokens.pop_front();
         this->processCommand(hash, tokens);

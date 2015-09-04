@@ -22,7 +22,7 @@ public:
 
   operator std::string() const;
   
-  bool operator == (const PieceLocation& rhs) const;
+  //bool operator == (const PieceLocation& rhs) const;
   PieceLocation& operator = (const PieceLocation& rhs);
 private:
   sCoord x;

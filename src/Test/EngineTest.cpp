@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(DiscoverSanity)
 {
   Field field;
   auto set = FieldEvaluator::DiscoverTransforms(field, PieceShape::I);
-//gak  BOOST_REQUIRE(set.contains(PieceLocation(Piece(
+  BOOST_REQUIRE_EQUAL(set.size(), (fieldWidth * 2) - 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

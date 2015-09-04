@@ -45,9 +45,9 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
+FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
-  unordered_set<PieceLocation> transforms;
+  PieceLocationTransformSet transforms;
   
   for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
   {
@@ -58,7 +58,7 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
       {
 	try
 	{
-	  transforms.emplace(piece, xf - xp, field.GetHeightAt(xf) - piece.GetHeightAt(xp));
+	  transforms.emplace(piece, xf - xp, (fieldHeight - 1) - field.GetHeightAt(xf) - piece.GetHeightAt(xp));
 	}
 	catch (out_of_range)
 	{
@@ -67,8 +67,7 @@ unordered_set<PieceLocation> FieldEvaluator::DiscoverTransforms(const Field& fie
       }
   }
 
-  cout << transforms.size() << endl;
-  for (unordered_set<PieceLocation>::iterator it = transforms.begin(); it != transforms.end(); )
+  for (PieceLocationTransformSet::iterator it = transforms.begin(); it != transforms.end(); )
   {
     if(!it->CanApplyToField(field))
       transforms.erase(it++);
@@ -127,7 +126,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return false;
 }
 
-void FieldEvaluator::ValidateTransforms(const Field& field, unordered_set<PieceLocation>& locations)
+void FieldEvaluator::ValidateTransforms(const Field& field, PieceLocationTransformSet& locations)
 {
   FieldTransform sheetTransform(GenerateSheetTransform(field));
   for (unordered_set<PieceLocation>::iterator it = locations.begin(); it != locations.end(); )

@@ -35,4 +35,7 @@ enum class TetrinetMessage : unsigned long { TETRINETMESSAGES };
  */
 const std::string GetMessageString(const TetrinetMessage& message);
 
+const std::string stringToUpper(const std::string& str);
+const std::string stringToLower(const std::string& str);
+
 #endif

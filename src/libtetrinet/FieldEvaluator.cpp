@@ -118,7 +118,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
     if (Rotate(pCW, field, RotationDirection::CW))
       locations.push_back(pCW);
     PieceLocation pCCW = PieceLocation(start);
-    if (Rotate(pCW, field, RotationDirection::CCW))
+    if (Rotate(pCCW, field, RotationDirection::CCW))
       locations.push_back(pCCW);
     for (PieceLocation location : locations)
     {

@@ -207,7 +207,7 @@ PieceDefinitionMap Piece::defs = PieceDefinitionMap
         "1110"
         "1000"
         "0000"_pd,
-      "L332"
+      "L333"
         "1100"
         "0100"
         "0100"

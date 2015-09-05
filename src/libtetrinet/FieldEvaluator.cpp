@@ -61,11 +61,11 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
 	  try
 	  {
 	    transforms.emplace(piece, xf - xp, fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1);
-	    cout << "Accepted x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf) << endl;
+	    LOG4CXX_TRACE(logger, "Accepted x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf));
 	  }
 	  catch (out_of_range)
 	  {
-	    cout << "Rejected x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf) << endl;
+	    LOG4CXX_TRACE(logger, "Rejected x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf));
 	  }
 	}
       }
@@ -88,7 +88,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return CanEscape(field, escapeRegion, start, paint);
 }
 
-bool TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
+void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
 {
   try
   {
@@ -100,9 +100,9 @@ bool TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& locat
   }
   catch (out_of_range)
   {
-    return false; //TODO
+    LOG4CXX_TRACE(logger, "Rejected location: x=" << (location.GetX() + dx) << ",y=" << (location.GetY() + dy)); //TODO
+    return;
   }
-  return true;
 }
 
 bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)

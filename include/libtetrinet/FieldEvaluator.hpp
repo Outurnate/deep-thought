@@ -18,7 +18,6 @@ public:
   static void FillGap(const Field& field, const uCoord start, FieldTransform& result);
   static PieceLocationTransformSet DiscoverTransforms(const Field& field, PieceShape pieceShape);
   static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start);
-  static void ValidateTransforms(const Field& field, PieceLocationTransformSet& locations);
   static bool Rotate(PieceLocation& location, const Field& field, RotationDirection direction);
   static unsigned GapCount(const Field& field);
   static unsigned BlockadeCount(const Field& field);
@@ -27,6 +26,7 @@ public:
 private:
   static log4cxx::LoggerPtr logger;
 
+  static bool ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location); // TODO inline
   static void TryNewLocation(std::vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy);
   static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint);
 };

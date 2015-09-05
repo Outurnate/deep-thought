@@ -1,6 +1,10 @@
 #include "libtetrinet/GameSettings.hpp"
 
 #include "libtetrinet/Piece.hpp"
+#include "libtetrinet/PieceShape.hpp"
+
+using namespace std;
+using namespace boost;
 
 GameSettings::NumberCache GameSettings::rngCache = GameSettings::NumberCache();
 
@@ -17,7 +21,7 @@ GameSettings::GameSettings(unsigned startHeight, unsigned startLevel, unsigned l
 Piece GameSettings::GetPiece()
 {
   size_t num = pieceNum++;
-  return Piece(PieceShape(blockFrequency[rng(seed, num) % blockFrequency.size()]),
+  return Piece(AllPieceShape[lexical_cast<size_t>(blockFrequency[rng(seed, num) % blockFrequency.size()]) - 1],
 	       PieceRotation(rng(seed, num) % 4));
 }
 

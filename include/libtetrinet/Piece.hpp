@@ -7,6 +7,7 @@
 #include <bitset>
 #include <iosfwd>
 #include <boost/lexical_cast.hpp>
+#include <experimental/optional>
 
 #include "libtetrinet/TetrinetForward.hpp"
 
@@ -23,7 +24,7 @@ public:
   uAxis GetHeight() const;
   PieceRotation GetRotation() const;
   PieceShape GetShape() const;
-  uCoord GetHeightAt(uCoord x) const;
+  std::experimental::optional<uCoord> GetHeightAt(uCoord x) const;
   
   friend constexpr Piece operator "" _pd(const char* definition, size_t size);
 private:
@@ -37,7 +38,7 @@ private:
   PieceShape shape;
   PieceDefinition definition;
   uAxis width, height; // apparent size, actual is always 4x4
-  std::array<uCoord, pieceWidth> pieceBottoms; // x is key, y is val
+  std::array<std::experimental::optional<uCoord>, pieceWidth> pieceBottoms; // x is key, y is val
 };
 
 std::ostream& operator<< (std::ostream& stream, const Piece& piece);

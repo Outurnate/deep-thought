@@ -7,6 +7,7 @@
 #include "libtetrinet/PieceShape.hpp"
 
 using namespace std;
+using namespace std::experimental;
 using namespace boost;
 
 Piece::Piece(PieceShape shape, PieceRotation rotation)
@@ -56,7 +57,7 @@ PieceShape Piece::GetShape() const
   return shape;
 }
 
-uCoord Piece::GetHeightAt(uCoord x) const
+std::experimental::optional<uCoord> Piece::GetHeightAt(uCoord x) const
 {
   return pieceBottoms[x];
 }
@@ -64,15 +65,13 @@ uCoord Piece::GetHeightAt(uCoord x) const
 constexpr Piece::Piece(PieceShape shape, PieceRotation rotation, PieceDefinition definition, uCoord width, uCoord height)
   : rotation(rotation), shape(shape), definition(definition), width(width), height(height), pieceBottoms()
 {
-  for (uCoord x = 0; x < width; ++x)
+  for (uCoord x = 0; x < pieceWidth; ++x)
   {
-    // last found block
-    sCoord ylast = -1; // will never be correct; used as a symbolic value
-    for (uCoord y = 0; y < height; ++y)
-      if ((*this)(x, y))
-	ylast = y;
-    if (ylast != -1)
-      pieceBottoms[x] = numeric_cast<uCoord>(ylast);
+    pieceBottoms[x] = nullopt;
+    if (x < width)
+      for (uCoord y = 0; y < height; ++y)
+	if ((*this)(x, y))
+	  pieceBottoms[x] = y;
   }
 }
 
@@ -144,6 +143,21 @@ PieceDefinitionMap Piece::defs = PieceDefinitionMap
     PieceShape::O,
     {
       "O022"
+        "1100"
+        "1100"
+        "0000"
+        "0000"_pd,
+      "O122"
+        "1100"
+        "1100"
+        "0000"
+        "0000"_pd,
+      "O222"
+        "1100"
+        "1100"
+        "0000"
+        "0000"_pd,
+      "O322"
         "1100"
         "1100"
         "0000"

@@ -56,13 +56,17 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
     for (uCoord xf = 0; xf < fieldWidth; ++xf)
       for (uCoord xp = 0; xp < piece.GetWidth(); ++xp)
       {
-	try
+	if (piece.GetHeightAt(xp))
 	{
-	  transforms.emplace(piece, xf - xp, (fieldHeight - 1) - field.GetHeightAt(xf) - piece.GetHeightAt(xp));
-	}
-	catch (out_of_range)
-	{
-	  // TODO: better way
+	  try
+	  {
+	    transforms.emplace(piece, xf - xp, fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1);
+	    cout << "Accepted x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf) << endl;
+	  }
+	  catch (out_of_range)
+	  {
+	    cout << "Rejected x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf) << endl;
+	  }
 	}
       }
   }
@@ -84,13 +88,21 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return CanEscape(field, escapeRegion, start, paint);
 }
 
-void TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
+bool TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
 {
-  if (((location.GetX() + dx) < static_cast<sCoord>(fieldWidth)) &&
-      ((location.GetX() + dx) >= 0) &&
-      ((location.GetY() + dy) < static_cast<sCoord>(fieldHeight)) &&
-      ((location.GetY() + dy) >= 0))
-    locations.push_back(PieceLocation(location.GetPiece(), location.GetX() + dx, location.GetY() + dy));
+  try
+  {
+    if (((location.GetX() + dx) < static_cast<sCoord>(fieldWidth)) &&
+	((location.GetX() + dx) >= 0) &&
+	((location.GetY() + dy) < static_cast<sCoord>(fieldHeight)) &&
+	((location.GetY() + dy) >= 0))
+      locations.push_back(PieceLocation(location.GetPiece(), location.GetX() + dx, location.GetY() + dy));
+  }
+  catch (out_of_range)
+  {
+    return false; //TODO
+  }
+  return true;
 }
 
 bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)

@@ -114,7 +114,6 @@ void TetrinetClient::Stop()
 
 void TetrinetClient::placer()
 {
-  cout << "aaaa" << endl;
   if (!gameData)
   {
     // wait for data
@@ -122,8 +121,7 @@ void TetrinetClient::placer()
   }
   while (inGame && !paused)
   {
-    cout << "aadsadsddssaadaasddsasdaasdssddaasadasdaaa" << endl;
-    PieceLocation newPiece(NewPiece(Piece(PieceShape::I, PieceRotation::Z)/*gameData.get().GetPiece()*/));
+    PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
     cout << "x=" << newPiece.GetX() << ",y=" << newPiece.GetY() << endl;
     players[playerNum.get()]->field.ApplyTransform(newPiece);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);
@@ -211,11 +209,12 @@ void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& toke
     
     case TetrinetMessage::NEWGAME:
       cout << "aaaa" << endl;
-      /*gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
+      cout << tokens.size() << endl;
+      gameData = GameSettings(lexical_cast<unsigned>(tokens.at(0)), lexical_cast<unsigned>(tokens.at(1)), lexical_cast<unsigned>(tokens.at(2)),
 			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
 			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
-			      lexical_cast<bool>(tokens.at(10)), lexical_cast<unsigned>(tokens.at(11))); // last param is 1.14 only TODO*/
-      gameData = GameSettings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", 0, 0, 0);
+			      lexical_cast<bool>(tokens.at(10)), stol(tokens.at(11), 0, 16)); // last param is 1.14 only TODO
+//      gameData = GameSettings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", 0, 0, 0);
       cout << "aaaa" << endl;
       if (!gameThread)
 	gameThread = thread(&TetrinetClient::placer, this);
@@ -244,8 +243,9 @@ void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& toke
   catch (std::out_of_range)
   {
   }
-  catch (boost::bad_lexical_cast)
+  catch (boost::bad_lexical_cast& e)
   {
+    cout << e.what() << endl;
   }
 }
 

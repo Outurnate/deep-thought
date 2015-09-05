@@ -38,6 +38,7 @@ void Field::ApplyTransform(const FieldTransform& transform)
 {
   for (const pair<const uCoord, FieldElement>& element : transform)
     (*field)[element.first] = element.second;
+  heightCacheDirty = true;
 }
 
 const FieldElement& Field::operator()(uCoord x, uCoord y) const
@@ -94,18 +95,18 @@ uCoord Field::GetHeightAt(uCoord x) const
 
 void Field::updateHeightCache() const
 {
-  if (!heightCacheDirty)
-    return;
+//  if (!heightCacheDirty) TODO
+//    return;
   
   for (uCoord x = 0; x < fieldWidth; ++x)
   {
-    bool prev = true;
-    for (uCoord y = fieldHeight - 1; y < fieldHeight; --y) // go up
-    {
-      if (prev && (*this)(x, y) != FieldElement::NONE) // if last block and not current block
-	heightCache[x] = y;
-      prev = (*this)(x, y) != FieldElement::NONE;
-    }
+    heightCache[x] = 0;
+    for (uCoord y = 0; y < fieldHeight; ++y) // go to down
+      if ((*this)(x, y) != FieldElement::NONE) // if we hit a block
+      {
+	heightCache[x] = fieldHeight - y;
+	break;
+      }
   }
   heightCacheDirty = false;
 }

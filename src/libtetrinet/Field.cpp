@@ -37,7 +37,11 @@ ostream& operator<< (ostream& os, const Field& field)
 void Field::ApplyTransform(const FieldTransform& transform)
 {
   for (const pair<const uCoord, FieldElement>& element : transform)
+  {
+    if (element.second == FieldElement::UNDEFINED)
+      throw runtime_error("Attempted to apply transform containing undefined operations");
     (*field)[element.first] = element.second;
+  }
   heightCacheDirty = true;
 }
 
@@ -117,4 +121,10 @@ Field::operator string() const
   for (const auto& element : *field)
     f += static_cast<char>(element); // TODO immute?
   return f;
+}
+
+void Field::Reset()
+{
+  for (auto& e : *field)
+    e = FieldElement::NONE;
 }

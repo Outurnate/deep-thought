@@ -37,6 +37,7 @@ public:
   const FieldElementRange row(uCoord y) const;
 
   uCoord GetHeightAt(uCoord x) const;
+  void Reset();
 private:
   typedef std::array<uCoord, fieldWidth> HeightCacheType;
   void updateHeightCache() const;

@@ -16,6 +16,7 @@ using boost::asio::ip::tcp;
 
 using namespace std;
 using namespace boost;
+using namespace boost::chrono;
 using namespace boost::algorithm;
 using namespace boost::system;
 using namespace boost::asio;
@@ -121,6 +122,7 @@ void TetrinetClient::placer()
   }
   while (inGame && !paused)
   {
+    this_thread::sleep_for(seconds(1));
     PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
     cout << "x=" << newPiece.GetX() << ",y=" << newPiece.GetY() << endl;
     players[playerNum.get()]->field.ApplyTransform(newPiece);
@@ -214,8 +216,8 @@ void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& toke
 			      lexical_cast<unsigned>(tokens.at(3)), lexical_cast<unsigned>(tokens.at(4)), lexical_cast<unsigned>(tokens.at(5)),
 			      lexical_cast<unsigned>(tokens.at(6)), tokens.at(7), tokens.at(8), lexical_cast<bool>(tokens.at(9)),
 			      lexical_cast<bool>(tokens.at(10)), stol(tokens.at(11), 0, 16)); // last param is 1.14 only TODO
-//      gameData = GameSettings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", 0, 0, 0);
-      cout << "aaaa" << endl;
+      LOG4CXX_INFO(logger, "Game started");
+      players[playerNum.get()]->field.Reset();
       if (!gameThread)
 	gameThread = thread(&TetrinetClient::placer, this);
       inGame = true;

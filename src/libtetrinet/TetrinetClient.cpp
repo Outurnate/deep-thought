@@ -124,7 +124,7 @@ void TetrinetClient::placer()
   {
     this_thread::sleep_for(seconds(1));
     PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
-    cout << "x=" << newPiece.GetX() << ",y=" << newPiece.GetY() << endl;
+    LOG4CXX_TRACE(logger, "Placing x=" << newPiece.GetX() << ",y=" << newPiece.GetY());
     players[playerNum.get()]->field.ApplyTransform(newPiece);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);
   }

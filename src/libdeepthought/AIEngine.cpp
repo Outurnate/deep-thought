@@ -40,8 +40,6 @@ PieceLocation AIEngine::NewPiece(const Piece& piece)
 {
   auto transforms = FieldEvaluator::DiscoverTransforms(GetField(), piece.GetShape());
   if (transforms.size() == 0) throw 42;
-  FieldEvaluator::ValidateTransforms(GetField(), transforms);
-  if (transforms.size() == 0) throw 43;
   vector<pair<PieceLocation, double> > ranked;
   for (const auto& transform : transforms)
     ranked.push_back(pair<PieceLocation, double>(transform, Rank(GetField(), transform, genome)));

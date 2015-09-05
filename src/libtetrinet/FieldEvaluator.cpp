@@ -48,6 +48,7 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
 FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
   PieceLocationTransformSet transforms;
+  FieldTransform sheet(GenerateSheetTransform(field));
   
   for (PieceRotation rotation : { PieceRotation::Z, PieceRotation::R, PieceRotation::T, PieceRotation::L })
   {
@@ -55,28 +56,43 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
 
     for (uCoord xf = 0; xf < fieldWidth; ++xf)
       for (uCoord xp = 0; xp < piece.GetWidth(); ++xp)
-      {
 	if (piece.GetHeightAt(xp))
 	{
 	  try
 	  {
-	    transforms.emplace(piece, xf - xp, fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1);
-	    LOG4CXX_TRACE(logger, "Accepted x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf));
+	    PieceLocation tmp(piece, xf - xp, fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1);
+	    if (ValidateTransform(field, sheet, tmp))
+	    {
+	      if (tmp.CanApplyToField(field))
+	      {
+		LOG4CXX_TRACE(logger,
+			      "Accepted x=" << xf - xp <<
+			      ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 <<
+			      ",fh=" << field.GetHeightAt(xf));
+		transforms.insert(tmp);
+	      }
+	      else
+		LOG4CXX_TRACE(logger,
+			      "Rejected (off field) x=" << tmp.GetX() <<
+			      ",y=" << tmp.GetY() <<
+			      ",p=" << char(tmp.GetPiece().GetShape()) <<
+			      ",r=" << uint8_t(tmp.GetPiece().GetRotation()));
+	    }
+	    else
+	      LOG4CXX_TRACE(logger,
+			    "Invalidated x=" << tmp.GetX() <<
+			    ",y=" << tmp.GetY() <<
+			    ",p=" << char(tmp.GetPiece().GetShape()) <<
+			    ",r=" << uint8_t(tmp.GetPiece().GetRotation()));
 	  }
-	  catch (out_of_range)
+	  catch (out_of_range) // TODO remove case
 	  {
-	    LOG4CXX_TRACE(logger, "Rejected x=" << xf - xp << ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 << ",fh=" << field.GetHeightAt(xf));
+	    LOG4CXX_TRACE(logger,
+			  "Rejected (invalid) x=" << xf - xp <<
+			  ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 <<
+			  ",fh=" << field.GetHeightAt(xf));
 	  }
 	}
-      }
-  }
-
-  for (PieceLocationTransformSet::iterator it = transforms.begin(); it != transforms.end(); )
-  {
-    if(!it->CanApplyToField(field))
-      transforms.erase(it++);
-    else
-      ++it;
   }
   
   return transforms;
@@ -100,7 +116,7 @@ void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const Piec
   }
   catch (out_of_range)
   {
-    LOG4CXX_TRACE(logger, "Rejected location: x=" << (location.GetX() + dx) << ",y=" << (location.GetY() + dy)); //TODO
+    LOG4CXX_TRACE(logger, "Rejected (translation) x=" << (location.GetX() + dx) << ",y=" << (location.GetY() + dy)); //TODO
     return;
   }
 }
@@ -138,16 +154,9 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return false;
 }
 
-void FieldEvaluator::ValidateTransforms(const Field& field, PieceLocationTransformSet& locations)
+bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location)
 {
-  FieldTransform sheetTransform(GenerateSheetTransform(field));
-  for (unordered_set<PieceLocation>::iterator it = locations.begin(); it != locations.end(); )
-  {
-    if(*it && sheetTransform && !CanEscape(field, sheetTransform, *it))
-      locations.erase(it++);
-    else
-      ++it;
-  }
+  return !(location && sheetTransform && !CanEscape(field, sheetTransform, location));
 }
 
 static SRSKickMap srsmap_jlstz = SRSKickMap

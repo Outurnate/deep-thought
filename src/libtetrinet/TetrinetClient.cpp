@@ -11,6 +11,7 @@
 #include "libtetrinet/PieceShape.hpp" // TODO REMOVE
 #include "libtetrinet/PieceRotation.hpp" // TODO REMOVE
 #include "libtetrinet/TetrinetMessage.hpp"
+#include "libtetrinet/FieldEvaluator.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -126,6 +127,9 @@ void TetrinetClient::placer()
     PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
     LOG4CXX_TRACE(logger, "Placing x=" << newPiece.GetX() << ",y=" << newPiece.GetY());
     players[playerNum.get()]->field.ApplyTransform(newPiece);
+    FieldTransform clear;
+    FieldEvaluator::ClearCount(GetField(), clear);
+    players[playerNum.get()]->field.ApplyTransform(clear);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);
   }
 }

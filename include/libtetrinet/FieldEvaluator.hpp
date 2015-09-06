@@ -24,13 +24,13 @@ public:
   static unsigned RowCount(const Field& field);
   static unsigned ClearCount(const Field& field, FieldTransform& clearTrans);
 private:
-  static log4cxx::LoggerPtr logger;
+  static const log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger("eval");
 
   static bool ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location); // TODO inline
   static void TryNewLocation(std::vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy);
   static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint);
 };
 
-log4cxx::LoggerPtr FieldEvaluator::logger = log4cxx::Logger::getLogger("eval");
+//log4cxx::LoggerPtr FieldEvaluator::logger = 
 
 #endif

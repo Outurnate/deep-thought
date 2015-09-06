@@ -76,14 +76,14 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
 			      "Rejected (off field) x=" << tmp.GetX() <<
 			      ",y=" << tmp.GetY() <<
 			      ",p=" << char(tmp.GetPiece().GetShape()) <<
-			      ",r=" << uint8_t(tmp.GetPiece().GetRotation()));
+			      ",r=" << char('0' + char(tmp.GetPiece().GetRotation())));
 	    }
 	    else
 	      LOG4CXX_TRACE(logger,
 			    "Invalidated x=" << tmp.GetX() <<
 			    ",y=" << tmp.GetY() <<
 			    ",p=" << char(tmp.GetPiece().GetShape()) <<
-			    ",r=" << uint8_t(tmp.GetPiece().GetRotation()));
+			    ",r=" << char('0' + char(tmp.GetPiece().GetRotation())));
 	  }
 	  catch (out_of_range) // TODO remove case
 	  {
@@ -130,12 +130,15 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
     TryNewLocation(locations, start, 1,  0);
     TryNewLocation(locations, start, -1, 0);
     TryNewLocation(locations, start, 0,  1);
-    PieceLocation pCW = PieceLocation(start);
-    if (Rotate(pCW, field, RotationDirection::CW))
-      locations.push_back(pCW);
-    PieceLocation pCCW = PieceLocation(start);
-    if (Rotate(pCCW, field, RotationDirection::CCW))
-      locations.push_back(pCCW);
+    if (start.GetPiece().GetShape() != PieceShape::O)
+    {
+      PieceLocation pCW = PieceLocation(start);
+      if (Rotate(pCW, field, RotationDirection::CW))
+	locations.push_back(pCW);
+      PieceLocation pCCW = PieceLocation(start);
+      if (Rotate(pCCW, field, RotationDirection::CCW))
+	locations.push_back(pCCW);
+    }
     for (PieceLocation location : locations)
     {
       //FieldTransform tmpTrans(location, FieldElement::RED);
@@ -156,7 +159,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
 
 bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location)
 {
-  return !(location && sheetTransform && !CanEscape(field, sheetTransform, location));
+  return true;//!((location && sheetTransform) && !CanEscape(field, sheetTransform, location));
 }
 
 static SRSKickMap srsmap_jlstz = SRSKickMap

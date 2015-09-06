@@ -256,6 +256,38 @@ BOOST_AUTO_TEST_CASE(BlockEscape)
   }
 }
 
+BOOST_AUTO_TEST_CASE(CanEscapeHook)
+{
+  {
+    Field field("000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000000000000"
+		"000110000000"
+		"001100000000"_fd);
+    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    PieceLocation location(Piece(PieceShape::J, PieceRotation::L), 4, 18);
+    BOOST_REQUIRE(sheet && location);
+    BOOST_REQUIRE(FieldEvaluator::CanEscape(field, sheet, location));
+  }
+}
+
 BOOST_AUTO_TEST_CASE(DiscoverSanity)
 {
   Field field;

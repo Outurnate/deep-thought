@@ -1,7 +1,7 @@
 #include "libdeepthought/Genome.hpp"
 
 Genome::Genome()
-  : Genome(0.0, 0.0, 0.0, 0.0, "Kevin")
+  : Genome(0.0, 0.0, 0.0, 0.0, "Charles?")
 {
 }
 

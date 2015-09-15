@@ -11,7 +11,6 @@
 #include "libtetrinet/PieceShape.hpp" // TODO REMOVE
 #include "libtetrinet/PieceRotation.hpp" // TODO REMOVE
 #include "libtetrinet/TetrinetMessage.hpp"
-#include "libtetrinet/FieldEvaluator.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -23,7 +22,7 @@ using namespace boost::system;
 using namespace boost::asio;
 using namespace log4cxx;
 
-TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playerNum(0), connected(false), inGame(false), paused(false)
+TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playerNum(0), connected(false), inGame(false), paused(false), eval(logger)
 {
 }
 
@@ -128,7 +127,7 @@ void TetrinetClient::placer()
     LOG4CXX_TRACE(logger, "Placing x=" << newPiece.GetX() << ",y=" << newPiece.GetY());
     players[playerNum.get()]->field.ApplyTransform(newPiece);
     FieldTransform clear;
-    FieldEvaluator::ClearCount(GetField(), clear);
+    GetEvaluator().ClearCount(GetField(), clear);
     players[playerNum.get()]->field.ApplyTransform(clear);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);
   }
@@ -278,4 +277,9 @@ int TetrinetClient::GetID() const
 const Field& TetrinetClient::GetField() const
 {
   return players.at(playerNum.get())->field;
+}
+
+const FieldEvaluator& TetrinetClient::GetEvaluator() const
+{
+  return eval;
 }

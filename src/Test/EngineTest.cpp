@@ -16,6 +16,9 @@
 
 BOOST_AUTO_TEST_SUITE(EngineTest)
 
+auto logger = log4cxx::Logger::getLogger("eval");
+FieldEvaluator eval(logger);
+
 BOOST_AUTO_TEST_CASE(FieldMemCheck)
 {
   Field field;
@@ -103,7 +106,7 @@ BOOST_AUTO_TEST_CASE(SheetTransformTrivial)
   Field field;
   PieceLocation location(Piece(PieceShape::I, PieceRotation::Z), 2, 9);
   field.ApplyTransform(location);
-  field.ApplyTransform(FieldEvaluator::GenerateSheetTransform(field));
+  field.ApplyTransform(eval.GenerateSheetTransform(field));
   BOOST_REQUIRE_EQUAL(field(2, 11), FieldElement::UNDEFINED);
   BOOST_REQUIRE_EQUAL(field(1, 11), FieldElement::NONE);
   BOOST_REQUIRE_EQUAL(field(2, 10), location.GetElement());
@@ -121,7 +124,7 @@ BOOST_AUTO_TEST_CASE(GapExploreTrivial)
   field.ApplyTransform(PieceLocation(Piece(PieceShape::O, PieceRotation::Z), 4, 6));
   field.ApplyTransform(PieceLocation(Piece(PieceShape::O, PieceRotation::Z), 6, 6));
   FieldTransform gaps;
-  FieldEvaluator::FillGap(field, (fieldWidth * 8) + 4, gaps);
+  eval.FillGap(field, (fieldWidth * 8) + 4, gaps);
   field.ApplyTransform(gaps);
   BOOST_REQUIRE_EQUAL(field(4, 8), FieldElement::UNDEFINED);
   BOOST_REQUIRE_EQUAL(field(4, 9), FieldElement::UNDEFINED);
@@ -144,7 +147,7 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
   }
   {
     Field field;
-    FieldEvaluator::Rotate(location, field, RotationDirection::CW);
+    eval.Rotate(location, field, RotationDirection::CW);
     field.ApplyTransform(location);
     BOOST_REQUIRE_EQUAL(field(1, 0), location.GetElement());
     BOOST_REQUIRE_EQUAL(field(2, 0), location.GetElement());
@@ -153,7 +156,7 @@ BOOST_AUTO_TEST_CASE(SimpleRotation)
   }
   {
     Field field;
-    FieldEvaluator::Rotate(location, field, RotationDirection::CCW);
+    eval.Rotate(location, field, RotationDirection::CCW);
     field.ApplyTransform(location);
     BOOST_REQUIRE_EQUAL(field(0, 0), location.GetElement());
     BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
@@ -175,7 +178,7 @@ BOOST_AUTO_TEST_CASE(WallKickRotation)
   }
   {
     Field field;
-    FieldEvaluator::Rotate(location, field, RotationDirection::CW);
+    eval.Rotate(location, field, RotationDirection::CW);
     field.ApplyTransform(location);
     BOOST_REQUIRE_EQUAL(field(0, 1), location.GetElement());
     BOOST_REQUIRE_EQUAL(field(0, 2), location.GetElement());
@@ -193,7 +196,7 @@ BOOST_AUTO_TEST_CASE(BlockEscapeNull)
 {
   Field field;
   FieldTransform escape;
-  BOOST_REQUIRE(FieldEvaluator::CanEscape(field, escape, PieceLocation(Piece(PieceShape::I, PieceRotation::Z), 5, 5)));
+  BOOST_REQUIRE(eval.CanEscape(field, escape, PieceLocation(Piece(PieceShape::I, PieceRotation::Z), 5, 5)));
 }
 
 BOOST_AUTO_TEST_CASE(BlockEscape)
@@ -221,10 +224,10 @@ BOOST_AUTO_TEST_CASE(BlockEscape)
 		"000000000000"
 		"000000000000"
 		"000000000000"_fd);
-    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    FieldTransform sheet(eval.GenerateSheetTransform(field));
     PieceLocation location(Piece(PieceShape::O, PieceRotation::Z), 0, 19);
     BOOST_REQUIRE(sheet && location);
-    BOOST_REQUIRE(!FieldEvaluator::CanEscape(field, sheet, location));
+    BOOST_REQUIRE(!eval.CanEscape(field, sheet, location));
   }
   {
     Field field("000000000000"
@@ -249,10 +252,10 @@ BOOST_AUTO_TEST_CASE(BlockEscape)
 		"100001000000"
 		"100001000000"
 		"100001000000"_fd);
-    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    FieldTransform sheet(eval.GenerateSheetTransform(field));
     PieceLocation location(Piece(PieceShape::O, PieceRotation::Z), 1, 19);
     BOOST_REQUIRE(sheet && location);
-    BOOST_REQUIRE(!FieldEvaluator::CanEscape(field, sheet, location));
+    BOOST_REQUIRE(!eval.CanEscape(field, sheet, location));
   }
 }
 
@@ -281,17 +284,17 @@ BOOST_AUTO_TEST_CASE(CanEscapeHook)
 		"000000000000"
 		"000110000000"
 		"001100000000"_fd);
-    FieldTransform sheet(FieldEvaluator::GenerateSheetTransform(field));
+    FieldTransform sheet(eval.GenerateSheetTransform(field));
     PieceLocation location(Piece(PieceShape::J, PieceRotation::L), 4, 18);
     BOOST_REQUIRE(sheet && location);
-    BOOST_REQUIRE(FieldEvaluator::CanEscape(field, sheet, location));
+    BOOST_REQUIRE(eval.CanEscape(field, sheet, location));
   }
 }
 
 BOOST_AUTO_TEST_CASE(DiscoverSanity)
 {
   Field field;
-  auto set = FieldEvaluator::DiscoverTransforms(field, PieceShape::I);
+  auto set = eval.DiscoverTransforms(field, PieceShape::I);
   BOOST_REQUIRE_EQUAL(set.size(), (fieldWidth * 2) - 3);
 }
 

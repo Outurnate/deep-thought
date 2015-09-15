@@ -16,6 +16,7 @@
 #include "libtetrinet/Piece.hpp"
 #include "libtetrinet/PieceLocation.hpp"
 #include "libtetrinet/GameSettings.hpp"
+#include "libtetrinet/FieldEvaluator.hpp"
 
 class TetrinetClient : private boost::noncopyable
 {
@@ -59,6 +60,7 @@ public:
 protected:
   virtual PieceLocation NewPiece(const Piece& piece) = 0;
   const Field& GetField() const;
+  const FieldEvaluator& GetEvaluator() const;
 private:
   struct TetrinetPlayer
   {
@@ -87,6 +89,7 @@ private:
   boost::optional<GameSettings> gameData;
   bool connected, inGame, paused;
   boost::optional<boost::thread> gameThread;
+  const FieldEvaluator eval;
   
   mutable GenericSignal onField;
   mutable GenericSignal onSpecial;

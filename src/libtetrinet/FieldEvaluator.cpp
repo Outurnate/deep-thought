@@ -15,8 +15,13 @@
 
 using namespace std;
 using namespace boost;
+using namespace log4cxx;
 
-FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
+FieldEvaluator::FieldEvaluator(LoggerPtr logger) : logger(logger)
+{
+}
+
+FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field) const
 {//TODO revist
   FieldTransform result;
   vector<bool> tripped = vector<bool>(fieldWidth, false); // will be set to true each column that has a block
@@ -34,7 +39,7 @@ FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
   return result;
 }
 
-void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result) // TODO maybe return?
+void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result) const // TODO maybe return?
 {
   if (field(start) != FieldElement::NONE)
     throw runtime_error("cannot fill gap, start block exists");
@@ -45,7 +50,7 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
+FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape) const
 {
   PieceLocationTransformSet transforms;
   FieldTransform sheet(GenerateSheetTransform(field));
@@ -98,13 +103,13 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
   return transforms;
 }
 
-bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start)
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start) const
 {
   FieldTransform paint;
   return CanEscape(field, escapeRegion, start, paint);
 }
 
-void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
+void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy) const
 {
   try
   {
@@ -121,7 +126,7 @@ void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const Piec
   }
 }
 
-bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint) const
 {
   paint += start;
   if (escapeRegion && start)
@@ -157,7 +162,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return false;
 }
 
-bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location)
+bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location) const
 {
   return true;//!((location && sheetTransform) && !CanEscape(field, sheetTransform, location));
 }
@@ -328,7 +333,7 @@ static SRSKickMap srsmap_jlstz = SRSKickMap
   },
 };
 
-bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)
+bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction) const
 {
   if (location.GetPiece().GetShape() == PieceShape::O)
     return true;
@@ -357,7 +362,7 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   return false;
 }
 
-unsigned FieldEvaluator::GapCount(const Field& field)
+unsigned FieldEvaluator::GapCount(const Field& field) const
 {
   unsigned gapCount = 0;
   for (uCoord x = 0; x < fieldWidth; ++x)
@@ -374,7 +379,7 @@ unsigned FieldEvaluator::GapCount(const Field& field)
   return gapCount;
 }
 
-unsigned FieldEvaluator::BlockadeCount(const Field& field)
+unsigned FieldEvaluator::BlockadeCount(const Field& field) const
 {
   unsigned totalBlock = 0;
   for (uCoord x = 0; x < fieldWidth; ++x)
@@ -398,15 +403,15 @@ legitimateUseOfGoto:
   return totalBlock;
 }
 
-unsigned FieldEvaluator::RowCount(const Field& field)
+unsigned FieldEvaluator::RowCount(const Field& field) const
 {
   vector<unsigned> heights;
   for (unsigned x = 0; x < fieldWidth; ++x)
     heights.push_back(field.GetHeightAt(x));
-  return fieldHeight - *std::min_element(heights.begin(), heights.end()); // find the tallest column
+  return *std::max_element(heights.begin(), heights.end()); // find the tallest column
 }
 
-unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans)
+unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans) const
 {
   int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
   for (uCoord i = 0; i < fieldSize; ++i)

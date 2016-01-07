@@ -18,14 +18,13 @@ public:
    * Will create the database if it does not exist
    */
   explicit Population(const std::string name);
-  virtual ~Population();
 
   /**
    * Retrieve a list of loaded generations
    */
-  std::list<Generation> const* GetGenerations() const;
+  const std::shared_ptr<std::list<Generation>> GetGenerations() const;
   
-  Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > generations;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Generation>> generations;
   
   template<typename Action>
   void persist(Action& a)

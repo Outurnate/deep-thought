@@ -1,27 +1,34 @@
 #ifndef GENERATION_HPP
 #define GENERATION_HPP
 
+#include <Wt/Dbo/Dbo>
 #include <string>
 #include <vector>
 
+#include "Population.hpp"
 #include "Genome.hpp"
 #include "Match.hpp"
 
 class Generation
 {
 public:
-  explicit Generation();
-  
   /**
    * Retrieve a list of loaded genomes in this generation
    */
-  const std::shared_ptr<std::vector<Genome>> GetGenomes() const;
+  const Wt::Dbo::ptr<Wt::Dbo::collection<Wt::Dbo::ptr<Genome>>> GetGenomes() const;
   /**
    * Creates matches for training
    */
   std::vector<Match> GetTrainingMatches() const;
+
+  template<typename Action>
+  void persist(Action& a)
+  {
+    Wt::Dbo::belongsTo(a, owner, "population");
+  }
 private:
-  std::shared_ptr<std::vector<Genome>> genomes;
+  Wt::Dbo::ptr<Population> owner;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Genome>> genomes;
 };
 
 #endif

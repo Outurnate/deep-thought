@@ -1,12 +1,8 @@
 #include "libdeepthought/Population.hpp"
 
 using namespace std;
-using namespace boost;
+using namespace Wt::Dbo;
 
-Population::Population(const string name)
-{
-}
-
-const std::shared_ptr<std::list<Generation>> Population::GetGenerations() const
+const ptr<collection<ptr<Generation>>> Population::GetGenerations() const
 {
 }

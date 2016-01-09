@@ -1,58 +1,27 @@
 #include "libdeepthought/AIManager.hpp"
 
-#include <boost/bind.hpp>
-#include <log4cxx/logger.h>
+#include <Wt/Dbo/backend/Sqlite3>
 
-using boost::asio::ip::tcp;
+#include "libdeepthought/Population.hpp"
+#include "libdeepthought/Generation.hpp"
+#include "libdeepthought/Genome.hpp"
 
-using namespace boost;
-using namespace boost::asio;
-using namespace log4cxx;
+using namespace std;
+using namespace Wt::Dbo;
+using namespace Wt::Dbo::backend;
 
 AIManager::AIManager()
-  : service(), tcpAcceptor(service, tcp::endpoint(tcp::v4(), 1300))
+  : backend(make_unique<FixedSqlConnectionPool>(new Sqlite3("test.db"), 1))
 {
 }
 
-void AIManager::Run()
+std::shared_ptr<Session> AIManager::PrepareSession()
 {
-  service.run();
-}
-
-void AIManager::startAccept()
-{
-  AIManagerConnection::Pointer newConnection = AIManagerConnection::Create(service);
-  tcpAcceptor.async_accept(newConnection->Socket(), bind(&AIManager::handleAccept, this, newConnection, placeholders::error));
-}
-
-void AIManager::handleAccept(AIManagerConnection::Pointer newConnection, const boost::system::error_code& error)
-{
-  if (!error)
-    newConnection->Start();
-
-  startAccept();
-}
-
-AIManager::AIManagerConnection::Pointer AIManager::AIManagerConnection::Create(io_service& ioService)
-{
-  return AIManagerConnection::Pointer(new AIManagerConnection(ioService));
-}
-
-tcp::socket& AIManager::AIManagerConnection::Socket()
-{
-  return socket;
-}
-
-void AIManager::AIManagerConnection::Start()
-{
-  async_write(socket, buffer("asdf"), bind(&AIManagerConnection::handleWrite, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-}
-
-AIManager::AIManagerConnection::AIManagerConnection(io_service& ioService)
-  : socket(ioService)
-{
-}
-
-void AIManager::AIManagerConnection::handleWrite(const boost::system::error_code& error, size_t bytesTransferred)
-{
+  std::shared_ptr<Session> session(make_shared<Session>());
+  session->setConnectionPool(*backend);
+  session->mapClass<Population>("population");
+  session->mapClass<Generation>("generation");
+  session->mapClass<Genome>("genome");
+  session->createTables();
+  return session;
 }

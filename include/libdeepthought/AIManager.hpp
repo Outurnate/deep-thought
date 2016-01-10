@@ -6,15 +6,25 @@
 #include <Wt/Dbo/FixedSqlConnectionPool>
 #include <Wt/Dbo/Session>
 
+class AIManager;
+
+#include "Population.hpp"
+#include "Configuration.hpp"
+
 class AIManager : private boost::noncopyable
 {
-public:
-  AIManager();
+  friend class Population;
   
-  std::shared_ptr<Wt::Dbo::Session> PrepareSession();
+public:
+  AIManager(const Configuration& config);
+  
+  std::unique_ptr<Wt::Dbo::Transaction> InitiateTransaction();
+  Wt::Dbo::collection<Wt::Dbo::ptr<Population>> GetPopulations();
 private:
+  Wt::Dbo::ptr<Population> RegisterPopulation(Population* population);
+  
   std::unique_ptr<Wt::Dbo::FixedSqlConnectionPool> backend;
-  Wt::Dbo::Session session;
+  std::unique_ptr<Wt::Dbo::Session> session;
 };
 
 #endif

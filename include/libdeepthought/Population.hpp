@@ -4,6 +4,11 @@
 #include <Wt/Dbo/Dbo>
 #include <string>
 
+class Population;
+
+#include "AIManager.hpp"
+#include "Configuration.hpp"
+
 class Generation;
 
 /**
@@ -12,18 +17,22 @@ class Generation;
 class Population
 {
 public:
+  static Wt::Dbo::ptr<Population> CreatePopulation(AIManager& manager, const std::string& name);
   /**
    * Retrieve a list of loaded generations
    */
-  const Wt::Dbo::ptr<Wt::Dbo::collection<Wt::Dbo::ptr<Generation>>> GetGenerations() const;
+  const Wt::Dbo::collection<Wt::Dbo::ptr<Generation>> GetGenerations() const;
   
   template<typename Action>
   void persist(Action& a)
   {
     Wt::Dbo::hasMany(a, generations, Wt::Dbo::ManyToOne, "population");
+    Wt::Dbo::field(a, name, "name");
   }
 private:
   Wt::Dbo::collection<Wt::Dbo::ptr<Generation>> generations;
+
+  std::string name;
 };
 
 #endif

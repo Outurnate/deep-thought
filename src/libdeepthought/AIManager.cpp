@@ -10,18 +10,36 @@ using namespace std;
 using namespace Wt::Dbo;
 using namespace Wt::Dbo::backend;
 
-AIManager::AIManager()
-  : backend(make_unique<FixedSqlConnectionPool>(new Sqlite3("test.db"), 1))
+AIManager::AIManager(const Configuration& config)
+  : backend(make_unique<FixedSqlConnectionPool>(new Sqlite3(config.connectionString), 10)),
+    session(make_unique<Session>())
 {
-}
-
-std::shared_ptr<Session> AIManager::PrepareSession()
-{
-  std::shared_ptr<Session> session(make_shared<Session>());
   session->setConnectionPool(*backend);
   session->mapClass<Population>("population");
   session->mapClass<Generation>("generation");
   session->mapClass<Genome>("genome");
-  session->createTables();
-  return session;
+  try
+  {
+    session->createTables();
+  }
+  catch (Exception& e)
+  {
+    // table exists
+  }
+}
+
+unique_ptr<Transaction> AIManager::InitiateTransaction()
+{
+  return make_unique<Transaction>(*session);
+}
+
+ptr<Population> AIManager::RegisterPopulation(Population* population)
+{
+  return session->add(population);
+}
+
+collection<ptr<Population>> AIManager::GetPopulations()
+{
+  Transaction transaction(*session);
+  return session->find<Population>();
 }

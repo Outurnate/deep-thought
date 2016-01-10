@@ -1,5 +1,7 @@
 FILE(GLOB project_tests *.cpp)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 FOREACH(testFile ${project_tests})
     INCLUDE_DIRECTORIES(${MAINFOLDER}/src)
     GET_FILENAME_COMPONENT(testExecutable ${testFile} NAME_WE)

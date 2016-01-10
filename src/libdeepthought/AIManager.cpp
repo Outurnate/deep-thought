@@ -12,7 +12,8 @@ using namespace Wt::Dbo::backend;
 
 AIManager::AIManager(const Configuration& config)
   : backend(make_unique<FixedSqlConnectionPool>(new Sqlite3(config.connectionString), 10)),
-    session(make_unique<Session>())
+    session(make_unique<Session>()),
+    config(config)
 {
   session->setConnectionPool(*backend);
   session->mapClass<Population>("population");
@@ -42,4 +43,9 @@ collection<ptr<Population>> AIManager::GetPopulations()
 {
   Transaction transaction(*session);
   return session->find<Population>();
+}
+
+const Configuration& AIManager::GetConfig() const
+{
+  return config;
 }

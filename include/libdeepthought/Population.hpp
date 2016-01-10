@@ -18,10 +18,8 @@ class Population
 {
 public:
   static Wt::Dbo::ptr<Population> CreatePopulation(AIManager& manager, const std::string& name);
-  /**
-   * Retrieve a list of loaded generations
-   */
   const Wt::Dbo::collection<Wt::Dbo::ptr<Generation>> GetGenerations() const;
+  void InitializeGenerations(AIManager& manager);
   
   template<typename Action>
   void persist(Action& a)

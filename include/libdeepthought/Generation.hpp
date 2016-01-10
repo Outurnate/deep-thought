@@ -12,13 +12,9 @@
 class Generation
 {
 public:
-  /**
-   * Retrieve a list of loaded genomes in this generation
-   */
+  static CreateGeneration(AIManager& manager);
+  
   const Wt::Dbo::ptr<Wt::Dbo::collection<Wt::Dbo::ptr<Genome>>> GetGenomes() const;
-  /**
-   * Creates matches for training
-   */
   std::vector<Match> GetTrainingMatches() const;
 
   template<typename Action>

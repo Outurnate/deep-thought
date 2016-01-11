@@ -4,6 +4,8 @@
 #include <Wt/Dbo/Dbo>
 #include <string>
 
+#include "DeepThoughtForward.hpp"
+
 class Genome
 {
 public:
@@ -21,8 +23,10 @@ public:
     Wt::Dbo::field(a, G, "g");
     Wt::Dbo::field(a, R, "r");
     Wt::Dbo::field(a, C, "c");
+    Wt::Dbo::belongsTo(a, owner, "generation");
   }
 private:
+  Wt::Dbo::ptr<Generation> owner;
 };
 
 #endif

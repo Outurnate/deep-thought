@@ -1,10 +1,13 @@
 #include "libdeepthought/AIManager.hpp"
 
+#include <Wt/Dbo/Exception>
+#include <Wt/Dbo/collection>
 #include <Wt/Dbo/backend/Sqlite3>
 
 #include "libdeepthought/Population.hpp"
 #include "libdeepthought/Generation.hpp"
 #include "libdeepthought/Genome.hpp"
+#include "libdeepthought/Configuration.hpp"
 
 using namespace std;
 using namespace Wt::Dbo;

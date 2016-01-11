@@ -8,8 +8,9 @@
 #ifndef AIENGINE_H
 #define AIENGINE_H
 
-#include "libdeepthought/Genome.hpp"
 #include "libtetrinet/TetrinetClient.hpp"
+
+#include "DeepThoughtForward.hpp"
 
 /**
  * Core AI class.  Connects to server and responds to messages

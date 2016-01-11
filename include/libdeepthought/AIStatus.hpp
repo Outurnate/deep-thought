@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "DeepThoughtForward.hpp"
+
 struct AIStatus
 {
   std::string name;

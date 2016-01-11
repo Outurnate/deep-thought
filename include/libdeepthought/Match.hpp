@@ -5,7 +5,7 @@
 #include <boost/signals2.hpp>
 #include <boost/signals2/connection.hpp>
 
-#include "Genome.hpp"
+#include "DeepThoughtForward.hpp"
 
 class Match
 {

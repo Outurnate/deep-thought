@@ -8,6 +8,8 @@
 #include <cctype> // lolwhy
 
 #include "libdeepthought/AIEngine.hpp"
+
+#include "libdeepthought/Genome.hpp"
 #include "libtetrinet/FieldEvaluator.hpp"
 
 using namespace std;

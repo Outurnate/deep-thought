@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <stdexcept>
 
+#include "libdeepthought/Match.hpp"
+
 using namespace std;
 using namespace boost;
 using namespace boost::filesystem;

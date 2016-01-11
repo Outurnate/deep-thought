@@ -1,6 +1,6 @@
 #include "libdeepthought/Population.hpp"
 
-#include "libdeepthought/Generation.hpp"
+#include "libdeepthought/AIManager.hpp"
 
 using namespace std;
 using namespace Wt::Dbo;
@@ -22,5 +22,5 @@ const collection<ptr<Generation>> Population::GetGenerations() const
 
 void Population::InitializeGenerations(AIManager& manager)
 {
-  Generation::CreateGeneration(manager);
+  //Generation::CreateGeneration(manager);
 }

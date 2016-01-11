@@ -4,12 +4,9 @@
 #include <Wt/Dbo/Dbo>
 #include <string>
 
-class Population;
+#include "DeepThoughtForward.hpp"
 
-#include "AIManager.hpp"
-#include "Configuration.hpp"
-
-class Generation;
+#include "Generation.hpp"
 
 /**
  * Represents a set of generations and their members

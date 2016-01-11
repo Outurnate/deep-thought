@@ -5,14 +5,15 @@
 #include <string>
 #include <vector>
 
+#include "DeepThoughtForward.hpp"
+
 #include "Population.hpp"
 #include "Genome.hpp"
-#include "Match.hpp"
 
 class Generation
 {
 public:
-  static CreateGeneration(AIManager& manager);
+  static Wt::Dbo::ptr<Generation> CreateGeneration(AIManager& manager);
   
   const Wt::Dbo::ptr<Wt::Dbo::collection<Wt::Dbo::ptr<Genome>>> GetGenomes() const;
   std::vector<Match> GetTrainingMatches() const;

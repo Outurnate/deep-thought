@@ -6,10 +6,7 @@
 #include <Wt/Dbo/FixedSqlConnectionPool>
 #include <Wt/Dbo/Session>
 
-class AIManager;
-
-#include "Population.hpp"
-#include "Configuration.hpp"
+#include "DeepThoughtForward.hpp"
 
 class AIManager : private boost::noncopyable
 {

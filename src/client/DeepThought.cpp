@@ -24,8 +24,7 @@
 
 #include "libtetrinet/Tetrinet.hpp"
 
-#include "libdeepthought/AIEngine.hpp"
-#include "libdeepthought/AIManager.hpp"
+#include "libdeepthought/DeepThought.hpp"
 
 using namespace log4cxx;
 using namespace std;

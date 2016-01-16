@@ -9,12 +9,8 @@
 class Genome
 {
 public:
-  explicit Genome();
-  explicit Genome(double B, double G, double R, double C, std::string name);
+  Genome() = default;
   
-  double B, G, R, C;
-  std::string Name;
-
   template<typename Action>
   void persist(Action& a)
   {
@@ -25,8 +21,11 @@ public:
     Wt::Dbo::field(a, C, "c");
     Wt::Dbo::belongsTo(a, owner, "generation");
   }
-private:
+
+  // DBO fields
   Wt::Dbo::ptr<Generation> owner;
+  double B, G, R, C;
+  std::string Name;
 };
 
 #endif

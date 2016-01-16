@@ -37,14 +37,27 @@ unique_ptr<Transaction> AIManager::InitiateTransaction()
   return make_unique<Transaction>(*session);
 }
 
-ptr<Population> AIManager::RegisterPopulation(Population* population)
+ptr<Population> AIManager::CreatePopulation(const string& name)
 {
+  auto population = new Population();
+  population->name = name;
+  
   return session->add(population);
+}
+
+ptr<Generation> AIManager::CreateGeneration(ptr<Population> population)
+{
+  Generation* generation = new Generation();
+  generation->order = population->generations.size();
+
+  auto generationPtr = session->add(generation);
+  population.modify()->generations.insert(generationPtr);
+  
+  return generationPtr;
 }
 
 collection<ptr<Population>> AIManager::GetPopulations()
 {
-  Transaction transaction(*session);
   return session->find<Population>();
 }
 

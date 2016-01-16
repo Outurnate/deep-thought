@@ -13,19 +13,19 @@
 class Generation
 {
 public:
-  static Wt::Dbo::ptr<Generation> CreateGeneration(AIManager& manager);
+  Generation() = default;
   
-  const Wt::Dbo::ptr<Wt::Dbo::collection<Wt::Dbo::ptr<Genome>>> GetGenomes() const;
-  std::vector<Match> GetTrainingMatches() const;
-
   template<typename Action>
   void persist(Action& a)
   {
+    Wt::Dbo::field(a, order, "order");
     Wt::Dbo::belongsTo(a, owner, "population");
   }
-private:
+
+  // DBO fields
   Wt::Dbo::ptr<Population> owner;
-  Wt::Dbo::collection<Wt::Dbo::ptr<Genome>> genomes;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Genome> > genomes;
+  int order; // TODO
 };
 
 #endif

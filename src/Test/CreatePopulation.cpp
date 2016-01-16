@@ -11,27 +11,18 @@ BOOST_AUTO_TEST_SUITE(PopulationTest)
 
 BOOST_AUTO_TEST_CASE(createNewPopulation)
 {
-/*  Configuration config;
+  Configuration config;
   config.connectionString = "";
   AIManager manager(config);
-  unique_ptr<Transaction> transaction(manager.InitiateTransaction());
-  {
-    ptr<Population> population(Population::CreatePopulation(manager, "test"));
-    auto populations = manager.GetPopulations();
-    BOOST_REQUIRE_EQUAL(populations.size(), 1);
-    }*/
-}
 
-BOOST_AUTO_TEST_CASE(initializePopulation)
-{
-  /*Configuration config;
-  config.connectionString = "";
-  AIManager manager(config);
-  unique_ptr<Transaction> transaction(manager.InitiateTransaction());
+  ptr<Population> population(manager.CreatePopulation("test"));
+  auto populations = manager.GetPopulations();
+  BOOST_REQUIRE_EQUAL(populations.size(), 1);
   {
-    ptr<Population> population(Population::CreatePopulation(manager, "test"));
-    population.modify()->InitializeGenerations(manager);
-    }*/
+    auto t(manager.InitiateTransaction());
+    auto generations = (*populations.begin())->GetGenerations();
+    BOOST_REQUIRE_EQUAL(generations.size(), 1);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

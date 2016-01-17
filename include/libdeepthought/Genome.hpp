@@ -19,11 +19,11 @@ public:
     Wt::Dbo::field(a, G, "g");
     Wt::Dbo::field(a, R, "r");
     Wt::Dbo::field(a, C, "c");
-    Wt::Dbo::belongsTo(a, owner, "generation");
+    Wt::Dbo::hasMany(a, owners, Wt::Dbo::ManyToMany, "generation");
   }
 
   // DBO fields
-  Wt::Dbo::ptr<Generation> owner;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > owners;
   double B, G, R, C;
   std::string Name;
 };

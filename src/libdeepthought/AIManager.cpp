@@ -7,6 +7,7 @@
 #include "libdeepthought/Population.hpp"
 #include "libdeepthought/Generation.hpp"
 #include "libdeepthought/Genome.hpp"
+#include "libdeepthought/Match.hpp"
 #include "libdeepthought/Configuration.hpp"
 
 using namespace std;
@@ -19,17 +20,12 @@ AIManager::AIManager(const Configuration& config)
     config(config)
 {
   session->setConnectionPool(*backend);
+  auto t(InitiateTransaction());
   session->mapClass<Population>("population");
   session->mapClass<Generation>("generation");
   session->mapClass<Genome>("genome");
-  try
-  {
-    session->createTables();
-  }
-  catch (Exception& e)
-  {
-    // table exists
-  }
+  session->mapClass<Match>("match");
+  session->createTables();
 }
 
 unique_ptr<Transaction> AIManager::InitiateTransaction()
@@ -39,10 +35,9 @@ unique_ptr<Transaction> AIManager::InitiateTransaction()
 
 ptr<Population> AIManager::CreatePopulation(const string& name)
 {
-  auto population = new Population();
-  population->name = name;
-  
-  return session->add(population);
+  auto population = session->add(new Population());
+  population.modify()->name.assign(name);
+  return population;
 }
 
 ptr<Generation> AIManager::CreateGeneration(ptr<Population> population)

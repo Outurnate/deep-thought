@@ -5,4 +5,11 @@
 
 #include "DeepThoughtForward.hpp"
 
+class GenomePtr : private Wt::Dbo::ptr<Genome>
+{
+public:
+  GenomePtr(AIManager& manager, GenerationPtr& generation);
+  GenomePtr(const Wt::Dbo::ptr<Genome>& genome);
+};
+
 #endif

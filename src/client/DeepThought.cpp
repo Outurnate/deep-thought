@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   if (sigaction(SIGINT, &sigintSA, NULL) == -1) exit(1);
 
   //manager = new AIManager();
-  AIEngine engine(Genome(-10.0, -10.0, -10.0, 200.0, "Test"), Logger::getRootLogger());;
+  AIEngine engine(Genome(/*-10.0, -10.0, -10.0, 200.0, "Test"*/), Logger::getRootLogger());;
   std::shared_ptr<boost::asio::io_service> service(new boost::asio::io_service());
   TetrinetConnection conn;
   engine.Run(service, conn);

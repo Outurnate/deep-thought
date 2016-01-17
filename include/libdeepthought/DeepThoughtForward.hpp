@@ -6,6 +6,7 @@ class AIManager;
 class Generation;
 class GenerationPtr;
 class Genome;
+class GenomePtr;
 class Match;
 class Population;
 class PopulationPtr;

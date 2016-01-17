@@ -1,23 +1,36 @@
 #ifndef MATCH_HPP
 #define MATCH_HPP
 
+#include <Wt/Dbo/Dbo>
 #include <string>
-#include <boost/signals2.hpp>
-#include <boost/signals2/connection.hpp>
 
 #include "DeepThoughtForward.hpp"
 
 class Match
 {
 public:
-  typedef boost::signals2::signal<void (const Match&)> CompleteSignal;
-  
-  Match(Genome* a, Genome* b);
-  virtual ~Match();
+  Match() = default;
 
-  const boost::signals2::connection AddOnComplete(const CompleteSignal::slot_type& slot) const;
-private:
-  mutable CompleteSignal onComplete;
+  template<typename Action>
+  void persist(Action& a)
+  {
+    Wt::Dbo::belongsTo(a, owner, "generation");
+    Wt::Dbo::field(a, genomeA, "a");
+    Wt::Dbo::field(a, genomeB, "b");
+    Wt::Dbo::field(a, isGenomeAWinner, "a_won");
+    Wt::Dbo::field(a, complete, "complete");
+    Wt::Dbo::field(a, scoreA, "a_score");
+    Wt::Dbo::field(a, scoreB, "b_score");
+  }
+
+  // DBO Fields
+  Wt::Dbo::ptr<Generation> owner;
+  Wt::Dbo::ptr<Genome> genomeA;
+  Wt::Dbo::ptr<Genome> genomeB;
+  bool isGenomeAWinner;
+  bool complete;
+  int scoreA;
+  int scoreB;
 };
 
 #endif

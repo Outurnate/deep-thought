@@ -30,27 +30,27 @@ TetrinetServerPool::~TetrinetServerPool()
     delete server;
 }
 
-const unsigned TetrinetServerPool::GetServerCapacity() const
+unsigned TetrinetServerPool::GetServerCapacity() const
 {
   return poolSize;
 }
 
-const unsigned TetrinetServerPool::GetStartedServers() const
+unsigned TetrinetServerPool::GetStartedServers() const
 {
   return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->GetState() != TetrinetServerState::STOPPED; });
 }
 
-const unsigned TetrinetServerPool::GetActiveServers() const
+unsigned TetrinetServerPool::GetActiveServers() const
 {
   return count_if(servers.begin(), servers.end(), [](const TetrinetServer* i) { return i->GetState() == TetrinetServerState::OCCUPIED; });
 }
 
-const bool TetrinetServerPool::IsServerAvailable() const
+bool TetrinetServerPool::IsServerAvailable() const
 {
   return GetServerCapacity() != GetActiveServers();
 }
 
-const uint32_t TetrinetServerPool::GetIPv4Address() const
+uint32_t TetrinetServerPool::GetIPv4Address() const
 {
   return ipv4;
 }
@@ -90,12 +90,12 @@ TetrinetServerPool::TetrinetServer::~TetrinetServer()
     Stop();
 }
 
-const uint16_t TetrinetServerPool::TetrinetServer::GetPort() const
+uint16_t TetrinetServerPool::TetrinetServer::GetPort() const
 {
   return port;
 }
 
-const TetrinetServerState TetrinetServerPool::TetrinetServer::GetState() const
+TetrinetServerState TetrinetServerPool::TetrinetServer::GetState() const
 {
   if (!exists(pidFile))
     return TetrinetServerState::STOPPED;
@@ -114,7 +114,7 @@ void TetrinetServerPool::TetrinetServer::SetMatch(const Match& match)
   
   this->match = match;
   state = TetrinetServerState::OCCUPIED;
-  onCompleteConnection = match.AddOnComplete(Match::CompleteSignal::slot_type(bind(&TetrinetServerPool::TetrinetServer::ClearMatch, this, _1)));
+  //onCompleteConnection = match.AddOnComplete(Match::CompleteSignal::slot_type(bind(&TetrinetServerPool::TetrinetServer::ClearMatch, this, _1)));
 }
 
 void TetrinetServerPool::TetrinetServer::ClearMatch(const Match& match)

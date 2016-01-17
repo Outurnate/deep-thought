@@ -20,11 +20,14 @@ public:
   {
     Wt::Dbo::field(a, order, "order");
     Wt::Dbo::belongsTo(a, owner, "population");
+    Wt::Dbo::hasMany(a, genomes, Wt::Dbo::ManyToMany, "genome");
+    Wt::Dbo::hasMany(a, matches, Wt::Dbo::ManyToOne, "generation");
   }
 
   // DBO fields
   Wt::Dbo::ptr<Population> owner;
   Wt::Dbo::collection<Wt::Dbo::ptr<Genome> > genomes;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Match> > matches;
   int order; // TODO
 };
 

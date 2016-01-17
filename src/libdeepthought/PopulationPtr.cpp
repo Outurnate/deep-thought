@@ -29,17 +29,41 @@ void PopulationPtr::SetName(const string& name)
 
 size_t PopulationPtr::GenerationCount() const
 {
-  return (*this)->generations.size();
+  updateGenerations();
+  return generationPtrs->size();
 }
 
-const unique_ptr<const GenerationPtr> PopulationPtr::Top() const
+PopulationPtr::iterator PopulationPtr::begin()
 {
-  return make_unique<const GenerationPtr>((*this)->generations
-                                          .find().orderBy("order descending").limit(1).resultValue());
+  updateGenerations();
+  return generationPtrs->begin();
 }
 
-const unique_ptr<GenerationPtr> PopulationPtr::Top()
+PopulationPtr::iterator PopulationPtr::end()
 {
-  return make_unique<const GenerationPtr>((*this).modify()->generations
-                                          .find().orderBy("order descending").limit(1).resultValue());
+  updateGenerations();
+  return generationPtrs->end();
+}
+
+PopulationPtr::const_iterator PopulationPtr::cbegin() const
+{
+  updateGenerations();
+  return generationPtrs->cbegin();
+}
+
+PopulationPtr::const_iterator PopulationPtr::cend() const
+{
+  updateGenerations();
+  return generationPtrs->cend();
+}
+
+void PopulationPtr::updateGenerations() const
+{
+  if (!generationPtrs)
+  {
+    generationPtrs = vector<GenerationPtr>();
+    auto gens = (*this)->generations.find().orderBy("order ascending").resultList();
+    for (ptr<Generation> gen : gens)
+      generationPtrs->emplace(generationPtrs->end(), gen);
+  }
 }

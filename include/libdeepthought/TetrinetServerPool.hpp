@@ -23,11 +23,11 @@ public:
   explicit TetrinetServerPool(const std::string poolName, const unsigned poolSize, const uint32_t ipv4, const uint16_t portStart, const std::string pidFileExpr, const std::string startCmdExpr, const std::string stopCmdExpr);
   ~TetrinetServerPool();
 
-  const unsigned GetServerCapacity() const;
-  const unsigned GetStartedServers() const;
-  const unsigned GetActiveServers() const;
-  const bool IsServerAvailable() const;
-  const uint32_t GetIPv4Address() const;
+  unsigned GetServerCapacity() const;
+  unsigned GetStartedServers() const;
+  unsigned GetActiveServers() const;
+  bool IsServerAvailable() const;
+  uint32_t GetIPv4Address() const;
 
   void RunMatch(Match& match);
   void StartServers();
@@ -38,8 +38,8 @@ private:
     TetrinetServer(const uint16_t port, const std::string pidFile, const std::string startCmd, const std::string stopCmd);
     ~TetrinetServer();
 
-    const uint16_t GetPort() const;
-    const TetrinetServerState GetState() const;
+    uint16_t GetPort() const;
+    TetrinetServerState GetState() const;
     const boost::optional<const Match&> GetMatch() const;
 
     void SetMatch(const Match& match);

@@ -7,6 +7,7 @@
 #include "DeepThoughtForward.hpp"
 
 #include "Generation.hpp"
+#include "Match.hpp"
 
 /**
  * Core ORM class for a population
@@ -24,8 +25,8 @@ public:
   }
   
   // DBO Fields
-  Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > generations;
   std::string name;
+  Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > generations;
 };
 
 #endif

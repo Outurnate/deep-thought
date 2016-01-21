@@ -20,7 +20,7 @@ public:
   {
     Wt::Dbo::field(a, order, "order");
     Wt::Dbo::belongsTo(a, owner, "population");
-    Wt::Dbo::hasMany(a, genomes, Wt::Dbo::ManyToMany, "genome");
+    Wt::Dbo::hasMany(a, genomes, Wt::Dbo::ManyToMany, "generation_genomes");
     Wt::Dbo::hasMany(a, matches, Wt::Dbo::ManyToOne, "generation");
   }
 

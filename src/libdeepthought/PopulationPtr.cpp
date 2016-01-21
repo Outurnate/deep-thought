@@ -7,9 +7,15 @@
 using namespace std;
 using namespace Wt::Dbo;
 
-PopulationPtr::PopulationPtr(AIManager& manager, const string& name)
+PopulationPtr::PopulationPtr(AIManager& manager, const string& name, int generationSize, int elitists, int crossovers, int mutants)
   : PopulationPtr(manager.CreatePopulation(name))
 {
+  this->modify()->E = elitists;
+  this->modify()->C = crossovers;
+  this->modify()->M = mutants;
+  this->modify()->GenerationSize = generationSize;
+  GenerationPtr generation(*this); // create initial generation
+  generation.CreateInitialGeneration();
 }
 
 PopulationPtr::PopulationPtr(const ptr<Population>& population)
@@ -29,41 +35,10 @@ void PopulationPtr::SetName(const string& name)
 
 size_t PopulationPtr::GenerationCount() const
 {
-  updateGenerations();
-  return generationPtrs->size();
+  return (*this)->generations.size();
 }
 
-PopulationPtr::iterator PopulationPtr::begin()
+const unique_ptr<GenerationPtr> PopulationPtr::GetCurrentGeneration() const
 {
-  updateGenerations();
-  return generationPtrs->begin();
-}
-
-PopulationPtr::iterator PopulationPtr::end()
-{
-  updateGenerations();
-  return generationPtrs->end();
-}
-
-PopulationPtr::const_iterator PopulationPtr::cbegin() const
-{
-  updateGenerations();
-  return generationPtrs->cbegin();
-}
-
-PopulationPtr::const_iterator PopulationPtr::cend() const
-{
-  updateGenerations();
-  return generationPtrs->cend();
-}
-
-void PopulationPtr::updateGenerations() const
-{
-  if (!generationPtrs)
-  {
-    generationPtrs = vector<GenerationPtr>();
-    auto gens = (*this)->generations.find().orderBy("order ascending").resultList();
-    for (ptr<Generation> gen : gens)
-      generationPtrs->emplace(generationPtrs->end(), gen);
-  }
+  return make_unique<GenerationPtr>((*this)->generations.find().orderBy("\"order\"").limit(1).resultValue());
 }

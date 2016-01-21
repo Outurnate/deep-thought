@@ -22,11 +22,19 @@ public:
   {
     Wt::Dbo::hasMany(a, generations, Wt::Dbo::ManyToOne, "population");
     Wt::Dbo::field(a, name, "name");
+    Wt::Dbo::field(a, GenerationSize, "size");
+    Wt::Dbo::field(a, E, "e");
+    Wt::Dbo::field(a, C, "c");
+    Wt::Dbo::field(a, M, "m");
   }
   
   // DBO Fields
   std::string name;
   Wt::Dbo::collection<Wt::Dbo::ptr<Generation> > generations;
+  int GenerationSize;
+  int E;
+  int C;
+  int M;
 };
 
 #endif

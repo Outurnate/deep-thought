@@ -12,14 +12,26 @@ BOOST_AUTO_TEST_SUITE(PopulationTest)
 BOOST_AUTO_TEST_CASE(createNewPopulation)
 {
   Configuration config;
-  config.connectionString = "test";
+  config.connectionString = "";
   AIManager manager(config);
 
   auto t(manager.InitiateTransaction());
-  PopulationPtr population(manager, "test");
+  PopulationPtr population(manager, "test", 100, 25, 25, 50);
   BOOST_WARN_EQUAL(population.GetName(), std::string("test"));
   auto populations = manager.GetPopulations();
   BOOST_REQUIRE_EQUAL(populations.size(), 1);
+  BOOST_REQUIRE_EQUAL(population.GenerationCount(), 1);
+  BOOST_REQUIRE_EQUAL(population.GetCurrentGeneration()->GenomeCount(), 100);
+}
+
+BOOST_AUTO_TEST_CASE(smallPopTest)
+{
+  Configuration config;
+  config.connectionString = "";
+  AIManager manager(config);
+  
+  auto t(manager.InitiateTransaction());
+  PopulationPtr population(manager, "test", 100, 25, 25, 50);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

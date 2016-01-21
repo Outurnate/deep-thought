@@ -9,23 +9,16 @@
 
 class GenerationPtr : private Wt::Dbo::ptr<Generation>
 {
-  typedef std::vector<GenomePtr>::iterator iterator;
-  typedef std::vector<GenomePtr>::const_iterator const_iterator;
+  friend class PopulationPtr;
 public:
-  GenerationPtr(AIManager& manager, PopulationPtr& population);
+  GenerationPtr(PopulationPtr& population);
   GenerationPtr(const Wt::Dbo::ptr<Generation>& generation);
   
   size_t GenomeCount() const;
-
-  iterator begin();
-  iterator end();
-
-  const_iterator cbegin() const;
-  const_iterator cend() const;
+  GenerationPtr CreateNextGeneration() const;
+  void CreateInitialGeneration();
 private:
-  void updateGenomes();
-  
-  std::vector<GenomePtr> genomePtrs;
+  void buildMatches();
 };
 
 #endif

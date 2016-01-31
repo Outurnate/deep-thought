@@ -11,6 +11,8 @@
 #include "GenomePtr.hpp"
 #include "Match.hpp"
 #include "MatchPtr.hpp"
+#include "NullSolver.hpp"
 #include "Population.hpp"
 #include "PopulationPtr.hpp"
+#include "SolverBase.hpp"
 #include "TetrinetServerPool.hpp"

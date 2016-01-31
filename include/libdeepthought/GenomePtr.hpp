@@ -7,6 +7,7 @@
 
 class GenomePtr : private Wt::Dbo::ptr<Genome>
 {
+  friend class MatchPtr;
 public:
   GenomePtr(AIManager& manager, GenerationPtr& generation);
   GenomePtr(const Wt::Dbo::ptr<Genome>& genome);

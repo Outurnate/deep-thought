@@ -13,8 +13,6 @@ GenerationPtr::GenerationPtr(PopulationPtr& population)
 {
   (*this).modify()->order = 0;
   (*this).modify()->owner = population;
-
-  buildMatches();
 }
 
 GenerationPtr::GenerationPtr(const ptr<Generation>& generation)
@@ -95,14 +93,27 @@ void GenerationPtr::CreateInitialGeneration()
     (*this)->owner.session()->add(gen);
     gen.modify()->owners.insert(*this);
   }
+  
+  buildMatches();
 }
 
-//  for (ptr<Match> match : (*this)->matches.find().where("complete = ?").bind(false).resultList())
+vector<MatchPtr> GenerationPtr::GetMatches()
+{
+  vector<MatchPtr> matches;
+  // do a reserve
+  for (const ptr<Match>& match : (*this)->matches.find().where("complete = ?").bind(false).resultList())
+    matches.emplace(matches.begin(), match);
+  return matches;
+}
 
 void GenerationPtr::buildMatches()
 {
-  for (const ptr<Genome>& genomeA : (*this)->genomes)
-    for (const ptr<Genome>& genomeB : (*this)->genomes)
+  vector<ptr<Genome> > genomes;
+  //genomes.reserve((*this)->genomes.size());
+  for (const ptr<Genome>& genome : (*this)->genomes)
+    genomes.push_back(genome);
+  for (const ptr<Genome>& genomeA : genomes)
+    for (const ptr<Genome>& genomeB : genomes)
       if (genomeA != genomeB)
         (*this).modify()->matches.insert(ptr<Match>(new Match(genomeA, genomeB)));
 }

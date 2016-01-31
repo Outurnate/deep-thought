@@ -1,0 +1,123 @@
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:06:04]
+[12/12] Creating executable symlink ../bin/deep-thought
+Running 2 test cases...
+CreatePopulation: ../nptl/pthread_mutex_lock.c:353: __pthread_mutex_lock_full: Assertion `(-(e)) != 3 || !robust' failed.
+^C
+FAIL: 130
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:01]
+[12/12] Creating executable symlink ../bin/deep-thought
+Running 2 test cases...
+unknown location(0): fatal error: in "PopulationTest/smallPopTest": memory access violation at address: 0x00000000: no mapping at fault address
+../src/Test/CreatePopulation.cpp(27): last checkpoint: "smallPopTest" entry.
+
+*** 1 failure is detected in the test module "PopulationTest"
+FAIL: 201
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:27]
+ninja: no work to do.
+Running 2 test cases...
+^C
+FAIL: 130
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:42]
+ninja: no work to do.
+Running 2 test cases...
+CreatePopulation: ../nptl/pthread_mutex_lock.c:353: __pthread_mutex_lock_full: Assertion `(-(e)) != 3 || !robust' failed.
+../bin/CreatePopulation: symbol lookup error: /usr/lib/libgcc_s.so.1: undefined symbol: ��Ru�, version GCC_3.0
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:43]
+ninja: no work to do.
+Running 2 test cases...
+unknown location(0): fatal error: in "PopulationTest/smallPopTest": memory access violation at address: 0x00000030: no mapping at fault address
+../src/Test/CreatePopulation.cpp(27): last checkpoint: "smallPopTest" entry.
+
+*** 1 failure is[1]    4160 segmentation fault (core dumped)  ../bin/CreatePopulation
+FAIL: 139
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:47]
+ninja: no work to do.
+Running 2 test cases...
+unknown location(0): fatal error: in "PopulationTest/smallPopTest": signal: SIGSEGV, si_code: 0 (memory access violation at address: 0x96cf4fd4)
+../src/Test/CreatePopulation.cpp(27): last checkpoint: "smallPopTest" entry.
+
+*** 1 failure is detected in the test module "PopulationTest"
+FAIL: 201
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:49]
+ninja: no work to do.
+Running 2 test cases...
+unknown location(0): fatal error: in "PopulationTest/smallPopTest": memory access violation at address: 0x00000000: no mapping at fault address
+../src/Test/CreatePopulation.cpp(27): last checkpoint: "smallPopTest" entry.
+
+*** 1 failure is detected in the test module "PopulationTest"
+FAIL: 201
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:51]
+ninja: no work to do.
+Running 2 test cases...
+CreatePopulation: ../sysdeps/unix/sysv/linux/createthread.c:120: create_thread: Assertion `stopped_start' failed.
+../bin/CreatePopulation: relocation error: /usr/lib/libgcc_s.so.1: symbol strlen, version GLIBC_2.2.5 not defined in file libc.so.6 with link time reference
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:52]
+ninja: no work to do.
+Running 2 test cases...
+../bin/CreatePopulation: relocation error: /usr/lib/libgcc_s.so.1: symbutex_loc��[@O@����x�S@O��[@Oh����?]:@Ox�S@O
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:54]
+ninja: no work to do.
+Running 2 test cases...
+../bin/CreatePopulation: symbol lookup error: /usr/lib/libgcc_s.so.1: undefined symbol: _Unwind_Find_FDE, version GCC_3.0
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:10:56]
+ninja: no work to do.
+Running 2 test cases...
+^C
+FAIL: 130
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:11:23]
+ninja: no work to do.
+Running 2 test cases...
+../bin/CreatePopulation: symbol lookup error: /usr/lib/libgcc_s.so.1: ��}���5<��5<��
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:11:24]
+ninja: no work to do.
+Running 2 test cases...
+../bin/CreatePopulation: relocation error: /usr/lib/libgcc_s.so.1: symbutex_loc��}ȓ���B�x�uȓ��}ȓ���B�?�[ȓx�uȓ
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:11:25]
+ninja: no work to do.
+Running 2 test cases...
+../bin/CreatePopulation: relocation error: /usr/lib/libgcc_s.so.1: symbutex_loc�,����78t�xV����)����78t�?ݨ��xV���
+FAIL: 127
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$ touch test && ninja && rm test && ../bin/CreatePopulation                                                                                                  [21:11:26]
+ninja: no work to do.
+Running 2 test cases...
+CreatePopulation: ../nptl/pthread_mutex_lock.c:353: __pthread_mutex_lock_full: Assertion `(-(e)) != 3 || !robust' failed.
+^C
+FAIL: 130
+
+joseph@optocoupler: ~/workspace/DeepThought/build master ⚡
+$                                                                                                                                                            [21:11:28]

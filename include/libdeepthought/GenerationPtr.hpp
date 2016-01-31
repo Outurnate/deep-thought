@@ -2,6 +2,7 @@
 #define GENERATIONPTR_HPP
 
 #include <Wt/Dbo/Dbo>
+#include <stack>
 
 #include "DeepThoughtForward.hpp"
 
@@ -17,6 +18,7 @@ public:
   size_t GenomeCount() const;
   GenerationPtr CreateNextGeneration() const;
   void CreateInitialGeneration();
+  std::vector<MatchPtr> GetMatches();
 private:
   void buildMatches();
 };

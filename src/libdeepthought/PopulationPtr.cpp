@@ -40,5 +40,5 @@ size_t PopulationPtr::GenerationCount() const
 
 const unique_ptr<GenerationPtr> PopulationPtr::GetCurrentGeneration() const
 {
-  return make_unique<GenerationPtr>((*this)->generations.find().orderBy("\"order\"").limit(1).resultValue());
+  return make_unique<GenerationPtr>((*this)->generations.find().orderBy("\"order descending\"").limit(1).resultValue());
 }

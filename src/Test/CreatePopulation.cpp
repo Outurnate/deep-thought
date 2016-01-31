@@ -27,11 +27,16 @@ BOOST_AUTO_TEST_CASE(createNewPopulation)
 BOOST_AUTO_TEST_CASE(smallPopTest)
 {
   Configuration config;
-  config.connectionString = "";
+  config.connectionString = "test";
   AIManager manager(config);
   
   auto t(manager.InitiateTransaction());
   PopulationPtr population(manager, "test", 100, 25, 25, 50);
+  population.GetCurrentGeneration()->CreateInitialGeneration();
+  auto matches = population.GetCurrentGeneration()->GetMatches();
+  BOOST_REQUIRE(!matches.empty());
+  NullSolver solver(matches);
+  solver.Run();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

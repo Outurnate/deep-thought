@@ -9,7 +9,12 @@ NullSolver::NullSolver(vector<MatchPtr> matches)
 {
 }
 
-void NullSolver::RunMatch(MatchPtr& match)
+MatchResult NullSolver::RunMatch(const Genome& a, const Genome& b, unsigned matchId)
 {
-  match.SetResult(true, 1000, 0);
+  MatchResult result;
+  result.winnerIsGenomeA = true;
+  result.scoreA = 0;
+  result.scoreB = 10;
+  result.matchId = matchId;
+  return result;
 }

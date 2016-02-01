@@ -1,6 +1,7 @@
 #include "libdeepthought/MatchPtr.hpp"
 
 #include "libdeepthought/Match.hpp"
+#include "libdeepthought/MatchResult.hpp"
 #include "libdeepthought/GenomePtr.hpp"
 
 using namespace Wt::Dbo;
@@ -17,10 +18,10 @@ MatchPtr::MatchPtr(const ptr<Match>& match)
 {
 }
 
-void MatchPtr::SetResult(bool winnerIsGenomeA, int scoreA, int scoreB)
+void MatchPtr::SetResult(const MatchResult& result)
 {
-  this->modify()->winner = winnerIsGenomeA ? (*this)->genomeA : (*this)->genomeB;
-  this->modify()->scoreA = scoreA;
-  this->modify()->scoreB = scoreB;
+  this->modify()->winner = result.winnerIsGenomeA ? (*this)->genomeA : (*this)->genomeB;
+  this->modify()->scoreA = result.scoreA;
+  this->modify()->scoreB = result.scoreB;
   this->modify()->complete = true;
 }

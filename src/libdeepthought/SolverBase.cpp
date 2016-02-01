@@ -1,54 +1,73 @@
 #include "libdeepthought/SolverBase.hpp"
 
 #include <boost/thread/mutex.hpp>
+#include <boost/asio/io_service.hpp>
 
+#include "libdeepthought/Genome.hpp"
+#include "libdeepthought/Match.hpp"
 #include "libdeepthought/MatchPtr.hpp"
 
 using namespace std;
 using namespace boost;
+using namespace boost::asio;
 
 SolverBase::SolverBase(vector<MatchPtr> matches)
-  : matches(matches)
+  : matches(matches), dataReady(false)
 {
 }
 
 void SolverBase::Run()
 {
+  thread_group threads;
+  io_service service;
+  
+  unsigned matchId = 0;
+  for (const MatchPtr& match : matches)
+    service.post(bind(&SolverBase::RunMatchDispatch, this, match, matchId++));
+  
   for (unsigned i = 0; i < 100; ++i)
-    threads.add_thread(new thread(&SolverBase::operator(), this));
+    threads.create_thread([&]()
+                          {
+                            service.run();
+                          });
+  bool isPoolClosed = false;
+  thread poolMonitor([&]()
+                     {
+                       threads.join_all();
+                       dataReady = true;
+                       isPoolClosed = true;
+                       condition.notify_all();
+                     });
+
+//  while (!all_of(matches.begin(), matches.end(), [](const MatchPtr& match)
+//                 {
+//                   return match->complete;
+//                 }))
+  while(!isPoolClosed)
+  {
+    unique_lock<mutex> lock(mute);
+    while(!dataReady)
+      condition.wait(lock);
+    while(!resultQueue.empty())
+    {
+      auto res = resultQueue.front();
+      resultQueue.pop();
+      res.winnerIsGenomeA = true;
+      matches[res.matchId].SetResult(res);
+    }
+    dataReady = false;
+  }
+  
   threads.join_all();
 }
 
-optional<MatchPtr> SolverBase::removeFromStack()
+void SolverBase::RunMatchDispatch(const MatchPtr& match, unsigned matchId)
 {
-  unique_lock<mutex> lock(mute);
-  if (matches.empty())
-    return none;
-  else
+  auto res = RunMatch(*match->genomeA, *match->genomeB, matchId);
   {
-    auto m(matches.top());
-    matches.pop();
-    return m;
+    lock_guard<mutex> lock(mute);
+    dataReady = true;
+    resultQueue.push(res);
   }
-}
-
-void SolverBase::operator() ()
-{
-  while (true)
-  {
-    auto m = removeFromStack();
-    if (m)
-    {
-      try
-      {
-        RunMatch(m.get());
-      }
-      catch (Wt::Dbo::Exception& e)
-      {
-        std::cout << e.what() << std::endl;
-      }
-    }
-    else
-      break;
-  }
+  condition.notify_one();
 }

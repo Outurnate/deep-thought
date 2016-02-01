@@ -9,7 +9,7 @@ class NullSolver : public SolverBase
 {
 public:
   NullSolver(std::vector<MatchPtr> matches);
-  virtual void RunMatch(MatchPtr& match);
+  virtual MatchResult RunMatch(const Genome& a, const Genome& b, unsigned matchId) override;
 };
 
 #endif

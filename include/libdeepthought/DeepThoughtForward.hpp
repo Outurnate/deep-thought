@@ -16,5 +16,6 @@ class SolverBase;
 
 struct AIStatus;
 struct Configuration;
+struct MatchResult;
 
 #endif

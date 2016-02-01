@@ -3,23 +3,28 @@
 
 #include "DeepThoughtForward.hpp"
 
+#include "MatchResult.hpp"
+
 #include <boost/optional.hpp>
 #include <boost/thread/thread.hpp>
-#include <stack>
+#include <queue>
 
 class SolverBase : private boost::noncopyable
 {
 public:
   SolverBase(std::vector<MatchPtr> matches);
-  virtual void RunMatch(MatchPtr& match) = 0;
   void Run(); // run threadpool and joinall
+protected:
+  virtual MatchResult RunMatch(const Genome& a, const Genome& b, unsigned matchId) = 0;
 private:
-  boost::optional<MatchPtr> removeFromStack();
-  void operator() ();
+  void RunMatchDispatch(const MatchPtr& match, unsigned matchId);
+
+  std::vector<MatchPtr> matches;
+  std::queue<MatchResult> resultQueue;
   
+  boost::condition_variable condition;
   boost::mutex mute;
-  boost::thread_group threads;
-  std::stack<MatchPtr, std::vector<MatchPtr> > matches;
+  bool dataReady;
 };
 
 #endif

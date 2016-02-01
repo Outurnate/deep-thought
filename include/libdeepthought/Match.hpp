@@ -9,9 +9,9 @@
 class Match
 {
 public:
-  Match() = default;
+  Match() : complete(false), scoreA(0), scoreB(0) {}
   Match(const Wt::Dbo::ptr<Genome>& a, const Wt::Dbo::ptr<Genome>& b)
-    : genomeA(a), genomeB(b) {}
+    : genomeA(a), genomeB(b), complete(false), scoreA(0), scoreB(0) {}
 
   template<typename Action>
   void persist(Action& a)

@@ -25,3 +25,13 @@ void MatchPtr::SetResult(const MatchResult& result)
   this->modify()->scoreB = result.scoreB;
   this->modify()->complete = true;
 }
+
+const GenomePtr MatchPtr::GetA() const
+{
+  return GenomePtr((*this)->genomeA);
+}
+
+const GenomePtr MatchPtr::GetB() const
+{
+  return GenomePtr((*this)->genomeB);
+}

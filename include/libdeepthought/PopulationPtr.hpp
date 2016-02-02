@@ -8,7 +8,6 @@
 class PopulationPtr : private Wt::Dbo::ptr<Population>
 {
   friend class GenerationPtr;
-  
 public:
   PopulationPtr(AIManager& manager, const std::string& name, int generationSize, int elitists, int crossovers, int mutants);
   PopulationPtr(const Wt::Dbo::ptr<Population>& population);

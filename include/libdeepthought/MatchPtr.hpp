@@ -7,12 +7,13 @@
 
 class MatchPtr : private Wt::Dbo::ptr<Match>
 {
-  friend class SolverBase;
 public:
   MatchPtr(AIManager& manager, GenerationPtr& generation, GenomePtr& genomeA, GenomePtr& genomeB);
   MatchPtr(const Wt::Dbo::ptr<Match>& match);
 
   void SetResult(const MatchResult& result);
+  const GenomePtr GetA() const;
+  const GenomePtr GetB() const;
 };
 
 #endif

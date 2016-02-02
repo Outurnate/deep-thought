@@ -4,6 +4,7 @@
 #include <boost/asio/io_service.hpp>
 
 #include "libdeepthought/Genome.hpp"
+#include "libdeepthought/GenomePtr.hpp"
 #include "libdeepthought/Match.hpp"
 #include "libdeepthought/MatchPtr.hpp"
 
@@ -63,7 +64,7 @@ void SolverBase::Run()
 
 void SolverBase::RunMatchDispatch(const MatchPtr& match, unsigned matchId)
 {
-  auto res = RunMatch(*match->genomeA, *match->genomeB, matchId);
+  auto res = RunMatch(match.GetA(), match.GetB(), matchId);
   {
     lock_guard<mutex> lock(mute);
     dataReady = true;

@@ -10,7 +10,6 @@
 
 class GenerationPtr : private Wt::Dbo::ptr<Generation>
 {
-  friend class PopulationPtr;
 public:
   GenerationPtr(PopulationPtr& population);
   GenerationPtr(const Wt::Dbo::ptr<Generation>& generation);

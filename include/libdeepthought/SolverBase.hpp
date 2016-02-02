@@ -15,7 +15,7 @@ public:
   SolverBase(std::vector<MatchPtr> matches);
   void Run(); // run threadpool and joinall
 protected:
-  virtual MatchResult RunMatch(const Genome& a, const Genome& b, unsigned matchId) = 0;
+  virtual MatchResult RunMatch(const GenomePtr& a, const GenomePtr& b, unsigned matchId) = 0;
 private:
   void RunMatchDispatch(const MatchPtr& match, unsigned matchId);
 

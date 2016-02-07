@@ -26,10 +26,6 @@ TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), s
 {
 }
 
-TetrinetClient::~TetrinetClient()
-{
-}
-
 string makeHex(int dec)
 {
   stringstream decstr;
@@ -162,9 +158,11 @@ void TetrinetClient::processCommand(TetrinetMessage message, deque<string>& toke
       break;
     
     case TetrinetMessage::PLAYERWON:
+      onPlayerWin(*this);
       break;
     
     case TetrinetMessage::PLAYERLOST:
+      onPlayerLost(*this);
       break;
     
     case TetrinetMessage::SB:

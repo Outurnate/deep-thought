@@ -24,7 +24,6 @@ public:
   typedef boost::signals2::signal<void (const TetrinetClient&)> GenericSignal;
   
   TetrinetClient(std::string nickname, log4cxx::LoggerPtr logger);
-  virtual ~TetrinetClient();
   
   /**
    * Connect to the given server

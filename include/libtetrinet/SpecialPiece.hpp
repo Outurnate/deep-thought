@@ -10,16 +10,21 @@
   X(QUAKE, q)		\
   X(BOMB, o)
 
-#include <vector>
+#include <set>
+#include "CompilerMagic.hpp"
 
+#define X(a, b) a=TOCHAR(b),
 /**
  * Represents all special pieces.  Subset of FieldElement
  */
-enum class SpecialPiece : char;
+enum class SpecialPiece : char { SPECIALPIECES };
+#undef X
 
+#define X(a, b) SpecialPiece::a,
 /**
  * Convenience object.  Used for iterating over all pieces in enum
  */
-extern const std::vector<SpecialPiece> AllSpecialPiece;
+const std::set<SpecialPiece> AllSpecialPiece = { SPECIALPIECES };
+#undef X
 
 #endif

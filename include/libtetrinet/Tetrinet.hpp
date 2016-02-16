@@ -15,6 +15,7 @@
 #include "libtetrinet/ProtocolVersion.hpp"
 #include "libtetrinet/RotationDirection.hpp"
 #include "libtetrinet/SpecialPiece.hpp"
+#include "libtetrinet/SpecialTransform.hpp"
 #include "libtetrinet/TetrinetClient.hpp"
 #include "libtetrinet/TetrinetConnection.hpp"
 #include "libtetrinet/TetrinetMessage.hpp"

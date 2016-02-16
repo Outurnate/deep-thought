@@ -2,6 +2,7 @@
 
 #include "libtetrinet/Piece.hpp"
 #include "libtetrinet/PieceShape.hpp"
+#include "libtetrinet/FieldElement.hpp"
 
 using namespace std;
 using namespace boost;
@@ -14,7 +15,7 @@ GameSettings::GameSettings(unsigned startHeight, unsigned startLevel, unsigned l
     : startHeight(startHeight), startLevel(startLevel), lineLevel(lineLevel), levelIncr(levelIncr),
       lineSpecial(lineSpecial), specialCount(specialCount), specialCap(specialCap), seed(seed),
       blockFrequency(blockFrequency), specialFrequency(specialFrequency), showAvgLevel(showAvgLevel),
-      classic(classic), pieceNum(0), specialNum(0)
+      classic(classic), pieceNum(0), specialNum(0), randomBlockNum(0)
 {
 }
 
@@ -23,6 +24,20 @@ Piece GameSettings::GetPiece()
   size_t num = pieceNum++;
   return Piece(AllPieceShape[lexical_cast<size_t>(blockFrequency[rng(seed, num) % blockFrequency.size()]) - 1],
 	       PieceRotation(rng(seed, num) % 4));
+}
+
+FieldElement GameSettings::GetRandomBlock()
+{
+  size_t num = randomBlockNum++;
+  switch (rng(seed, num) % 5)
+  {
+  case 0: return FieldElement::BLUE;
+  case 1: return FieldElement::YELLOW;
+  case 2: return FieldElement::GREEN;
+  case 3: return FieldElement::PURPLE;
+  case 4: return FieldElement::RED;
+  }
+  return FieldElement::RED;
 }
 
 uint32_t GameSettings::mcg(uint32_t prev)

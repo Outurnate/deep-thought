@@ -23,10 +23,6 @@ PieceLocation::PieceLocation(const PieceLocation& location)
   updateTransform(); //maybe?
 }
 
-PieceLocation::~PieceLocation()
-{
-}
-
 sCoord PieceLocation::GetX() const
 {
   return x;

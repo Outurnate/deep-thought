@@ -13,7 +13,7 @@ public:
   
   GameSettings(unsigned startHeight, unsigned startLevel, unsigned lineLevel, unsigned levelIncr,
 	       unsigned lineSpecial, unsigned specialCount, unsigned specialCap, std::string blockFrequency,
-	       std::string specialFrequency, bool showAvgLevel, bool classic, unsigned seed);
+	       std::string specialFrequency, bool showAvgLevel, bool classic, unsigned seed); // TODO default .ctor
 
   Piece GetPiece();
   FieldElement GetRandomBlock();

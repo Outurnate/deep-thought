@@ -61,6 +61,14 @@ const FieldElement& Field::operator()(uCoord i) const
   return (*field)[i];
 }
 
+bool Field::operator == (const Field& field) const
+{
+  for (uCoord i = 0; i < fieldSize; ++i)
+    if ((*this)(i) != field(i))
+      return false;
+  return true;
+}
+
 const FieldType::const_iterator Field::begin() const
 {
   return field->cbegin();

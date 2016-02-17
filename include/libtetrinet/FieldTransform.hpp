@@ -28,19 +28,11 @@ public:
    */
   FieldTransform();
   /**
-   * Copies a transform
-   */
-  FieldTransform(const FieldTransform& transform);
-  /**
    * Constructs a transform from a given field message (long/short form)
    *
    * See protocol for details on format
    */
   explicit FieldTransform(const std::string& message);
-  /**
-   * Destructor
-   */
-  virtual ~FieldTransform();
 
   /**
    * Assignment operator.  Interal state of right hand side is not invalidated
@@ -96,9 +88,21 @@ public:
    * Iterator pointing to end of range
    */
   const const_iterator end() const;
+  /**
+   * Is this transform empty?  True after reset
+   */
+  bool Empty() const;
+  /**
+   * Does the transform define a change at this point?
+   */
+  bool ExistsAt(uCoord x, uCoord y) const;
+  /**
+   * Overload of above.  Row-major indexing less than fieldSize
+   */
+  bool ExistsAt(uCoord i) const;
 private:
   /** Internal state map */
-  std::unique_ptr<TransformType> transforms;
+  TransformType transforms;
 };
 
 namespace std

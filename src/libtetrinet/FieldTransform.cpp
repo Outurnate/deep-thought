@@ -11,27 +11,14 @@ using namespace std;
 using namespace boost;
 
 FieldTransform::FieldTransform()
-  : transforms(new TransformType())
 {
-}
-
-FieldTransform::FieldTransform(const FieldTransform& transform)
-  : FieldTransform()
-{
-  for (const auto pair : transform)
-    (*this)(pair.first) = pair.second;
 }
 
 FieldTransform::FieldTransform(const std::string& message)
-  : FieldTransform()
 {
   for (unsigned i = 0; i < message.size(); ++i)
     if (message[i] != char(FieldElement::NONE))
       (*this)(i) = FieldElement(message[i]);
-}
-
-FieldTransform::~FieldTransform()
-{
 }
 
 FieldTransform& FieldTransform::operator= (const FieldTransform& rhs)
@@ -48,29 +35,29 @@ FieldTransform& FieldTransform::operator= (const FieldTransform& rhs)
 
 ostream& FieldTransform::operator<< (ostream& stream) const
 {
-  for (pair<const uCoord, FieldElement>& element : *this->transforms)
+  for (const pair<const uCoord, FieldElement>& element : this->transforms)
     stream << (uCoord)element.first << " = " << element.second << endl;
   return stream;
 }
 
 FieldTransform& FieldTransform::operator+= (const FieldTransform& rhs)
 {
-  for (const auto& element : *this->transforms)
-    (*rhs.transforms)[element.first] = element.second;
+  for (const auto& element : rhs.transforms)
+    this->transforms[element.first] = element.second;
   return *this;
 }
 
 bool FieldTransform::operator== (const FieldTransform& rhs) const
 {
-  return *this->transforms == *rhs.transforms;
+  return this->transforms == rhs.transforms;
 }
 
 bool FieldTransform::operator&& (const FieldTransform& rhs) const
 {
-  return !(this->transforms->size() == 0 || rhs.transforms->size() == 0) &&
-    all_of(this->transforms->begin(), this->transforms->end(), [&rhs](const pair<uCoord, FieldElement>& element)
+  return !(this->transforms.size() == 0 || rhs.transforms.size() == 0) &&
+    all_of(this->transforms.begin(), this->transforms.end(), [&rhs](const pair<uCoord, FieldElement>& element)
 	   {
-	     return (*rhs.transforms)[element.first] != FieldElement::NONE;
+	     return rhs.ExistsAt(element.first) && rhs.transforms.find(element.first)->second == element.second;
 	   });
 }
 
@@ -88,20 +75,20 @@ FieldElement& FieldTransform::operator() (uCoord i)
 {
   if (!(i < fieldSize))
     throw out_of_range("i = " + lexical_cast<string>(i));
-  return transforms->count(i) ? transforms->at(i) : (transforms->emplace(i, FieldElement::NONE)).first->second;
+  return transforms.count(i) ? transforms[i] : (transforms.emplace(i, FieldElement::NONE)).first->second;
 }
 
 FieldTransform::operator string() const
 {
   string fstr(fieldSize, char(FieldElement::NONE));
-  for (pair<uCoord, FieldElement> element : *transforms)
+  for (pair<uCoord, FieldElement> element : transforms)
     fstr[element.first] = char(element.second);
   return fstr;
 }
 
 bool FieldTransform::CanApplyToField(const Field& field) const
 {
-  return all_of(transforms->begin(), transforms->end(), [&field](const pair<uCoord, FieldElement>& element)
+  return all_of(transforms.begin(), transforms.end(), [&field](const pair<uCoord, FieldElement>& element)
 		{
 		  return (element.second != FieldElement::NONE || element.second != FieldElement::UNDEFINED)
 		    && field(element.first) == FieldElement::NONE;
@@ -110,15 +97,30 @@ bool FieldTransform::CanApplyToField(const Field& field) const
 
 void FieldTransform::Reset()
 {
-  transforms.reset(new TransformType());
+  transforms.clear();
 }
 
 const FieldTransform::const_iterator FieldTransform::begin() const
 {
-  return transforms->begin();
+  return transforms.begin();
 }
 
 const FieldTransform::const_iterator FieldTransform::end() const
 {
-  return transforms->end();
+  return transforms.end();
+}
+
+bool FieldTransform::Empty() const
+{
+  return transforms.size() == 0;
+}
+
+bool FieldTransform::ExistsAt(uCoord x, uCoord y) const
+{
+  return ExistsAt((y * fieldWidth) + x);
+}
+
+bool FieldTransform::ExistsAt(uCoord i) const
+{
+  return transforms.find(i) != transforms.end();
 }

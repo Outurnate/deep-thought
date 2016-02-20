@@ -12,6 +12,7 @@
 
 #include <set>
 #include "CompilerMagic.hpp"
+#include "TetrinetForward.hpp"
 
 #define X(a, b) a=TOCHAR(b),
 /**
@@ -26,5 +27,7 @@ enum class SpecialPiece : char { SPECIALPIECES };
  */
 const std::set<SpecialPiece> AllSpecialPiece = { SPECIALPIECES };
 #undef X
+
+bool isSpecial(FieldElement e);
 
 #endif

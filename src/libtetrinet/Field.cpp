@@ -9,14 +9,16 @@
 
 #include "libtetrinet/Piece.hpp"
 #include "libtetrinet/FieldElement.hpp"
+#include "libtetrinet/FieldEvaluator.hpp"
 #include "libtetrinet/FieldTransform.hpp"
 
 using namespace std;
 using namespace boost;
 using namespace boost::adaptors;
+using namespace log4cxx;
 
-Field::Field()
-  : field(new FieldType(fieldSize, FieldElement::NONE)), heightCacheDirty(true), heightCache()
+Field::Field(log4cxx::LoggerPtr logger)
+  : field(new FieldType(fieldSize, FieldElement::NONE)), logger(logger), heightCacheDirty(true), heightCache()
 {
 }
 
@@ -36,13 +38,21 @@ ostream& operator<< (ostream& os, const Field& field)
 
 void Field::ApplyTransform(const FieldTransform& transform)
 {
+  this->copyTransform(transform);
+  FieldTransform clear;
+  if (FieldEvaluator::ClearCount(*this, clear))
+    this->copyTransform(clear);
+  heightCacheDirty = true;
+}
+
+void Field::copyTransform(const FieldTransform& transform)
+{
   for (const pair<const uCoord, FieldElement>& element : transform)
   {
     if (element.second == FieldElement::UNDEFINED)
       throw runtime_error("Attempted to apply transform containing undefined operations");
     (*field)[element.first] = element.second;
   }
-  heightCacheDirty = true;
 }
 
 const FieldElement& Field::operator()(uCoord x, uCoord y) const
@@ -93,7 +103,7 @@ const FieldElementRange Field::row(uCoord y) const
 Field operator "" _fd(const char* definition, size_t size)
 {
   assert(size == fieldSize);
-  Field field;
+  Field field(Logger::getRootLogger()); // TODO maybe not root logger
   for (unsigned i = 0; i < size; ++i)
     field.field->at(i) = static_cast<FieldElement>(definition[i]);
   return field;
@@ -135,4 +145,9 @@ void Field::Reset()
 {
   for (auto& e : *field)
     e = FieldElement::NONE;
+}
+
+LoggerPtr& Field::GetLogger() const
+{
+  return logger;
 }

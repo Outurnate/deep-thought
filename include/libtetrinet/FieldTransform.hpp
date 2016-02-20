@@ -100,9 +100,19 @@ public:
    * Overload of above.  Row-major indexing less than fieldSize
    */
   bool ExistsAt(uCoord i) const;
+  /**
+   * Indicates whether this transform represents a game over
+   */
+  bool IsGameOver() const;
+  /**
+   * Fills the transform with trash and flags as a game over
+   */
+  void SetGameOver(GameSettings& settings);
 private:
   /** Internal state map */
   TransformType transforms;
+  /** Represents a game-over state? */
+  bool gameOver;
 };
 
 namespace std

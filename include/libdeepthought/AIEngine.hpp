@@ -24,7 +24,7 @@ public:
   AIEngine(const Genome& genome, log4cxx::LoggerPtr logger);
 private:
   double Rank(Field field, PieceLocation piece);
-  PieceLocation NewPiece(const Piece& piece) override;
+  FieldTransform NewPiece(const Piece& piece) override;
   
   log4cxx::LoggerPtr logger;
   const Genome& genome;

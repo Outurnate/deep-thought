@@ -6,6 +6,7 @@
 
 #include "libtetrinet/FieldElement.hpp"
 #include "libtetrinet/Field.hpp"
+#include "libtetrinet/GameSettings.hpp"
 
 using namespace std;
 using namespace boost;
@@ -123,4 +124,17 @@ bool FieldTransform::ExistsAt(uCoord x, uCoord y) const
 bool FieldTransform::ExistsAt(uCoord i) const
 {
   return transforms.find(i) != transforms.end();
+}
+
+bool FieldTransform::IsGameOver() const
+{
+  return gameOver;
+}
+
+void FieldTransform::SetGameOver(GameSettings& settings)
+{
+  for (uCoord x = 0; x < fieldWidth; ++x)
+    for (uCoord y = 0; y < fieldHeight; ++y)
+      (*this)(x, y) = settings.GetRandomBlock();
+  gameOver = true;
 }

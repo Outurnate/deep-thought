@@ -22,7 +22,7 @@ using namespace boost::system;
 using namespace boost::asio;
 using namespace log4cxx;
 
-TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playerNum(0), connected(false), inGame(false), paused(false), eval(logger)
+TetrinetClient::TetrinetClient(string nickname, LoggerPtr logger) : service(), socket(), screenName(nickname), logger(logger), playerNum(0), connected(false), inGame(false), paused(false)
 {
 }
 
@@ -109,6 +109,11 @@ void TetrinetClient::Stop()
   onDisconnect(*this);
 }
 
+optional<GameSettings>& TetrinetClient::GetSettings()
+{
+  return gameData;
+}
+
 void TetrinetClient::placer()
 {
   if (!gameData)
@@ -119,12 +124,8 @@ void TetrinetClient::placer()
   while (inGame && !paused)
   {
     this_thread::sleep_for(seconds(1));
-    PieceLocation newPiece(NewPiece(gameData.get().GetPiece()));
-    LOG4CXX_TRACE(logger, "Placing x=" << newPiece.GetX() << ",y=" << newPiece.GetY());
+    FieldTransform newPiece(NewPiece(gameData.get().GetPiece()));
     players[playerNum.get()]->field.ApplyTransform(newPiece);
-    FieldTransform clear;
-    GetEvaluator().ClearCount(GetField(), clear);
-    players[playerNum.get()]->field.ApplyTransform(clear);
     sendCommand(TetrinetMessage::F, players[playerNum.get()]->field);
   }
 }
@@ -259,7 +260,7 @@ void TetrinetClient::setField(unsigned num, const string& name)
     LOG4CXX_WARN(logger, "Field leaked!");
     players[num].reset();
   }
-  players[num].reset(new TetrinetPlayer(name, ""));
+  players[num].reset(new TetrinetPlayer(logger, name, ""));
 }
 
 const string TetrinetClient::GetName() const
@@ -275,9 +276,4 @@ int TetrinetClient::GetID() const
 const Field& TetrinetClient::GetField() const
 {
   return players.at(playerNum.get())->field;
-}
-
-const FieldEvaluator& TetrinetClient::GetEvaluator() const
-{
-  return eval;
 }

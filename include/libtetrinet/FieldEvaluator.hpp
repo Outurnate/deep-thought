@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <algorithm>
 #include <iostream>
-#include <log4cxx/logger.h>
 
 #include "libtetrinet/TetrinetForward.hpp"
 
@@ -14,25 +13,21 @@ class FieldEvaluator
 public:
   typedef std::unordered_set<PieceLocation, std::hash<FieldTransform>, std::equal_to<FieldTransform> > PieceLocationTransformSet;
 
-  FieldEvaluator(log4cxx::LoggerPtr logger);
+  FieldEvaluator() = delete;
   
-  FieldTransform GenerateSheetTransform(const Field& field) const;
-  void FillGap(const Field& field, const uCoord start, FieldTransform& result) const;
-  PieceLocationTransformSet DiscoverTransforms(const Field& field, PieceShape pieceShape) const;
-  bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start) const;
-  bool Rotate(PieceLocation& location, const Field& field, RotationDirection direction) const;
-  unsigned GapCount(const Field& field) const;
-  unsigned BlockadeCount(const Field& field) const;
-  unsigned RowCount(const Field& field) const;
-  unsigned ClearCount(const Field& field, FieldTransform& clearTrans) const;
+  static FieldTransform GenerateSheetTransform(const Field& field);
+  static void FillGap(const Field& field, const uCoord start, FieldTransform& result);
+  static PieceLocationTransformSet DiscoverTransforms(const Field& field, PieceShape pieceShape);
+  static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start);
+  static bool Rotate(PieceLocation& location, const Field& field, RotationDirection direction);
+  static unsigned GapCount(const Field& field);
+  static unsigned BlockadeCount(const Field& field);
+  static unsigned RowCount(const Field& field);
+  static unsigned ClearCount(const Field& field, FieldTransform& clearTrans);
 private:
-  log4cxx::LoggerPtr logger;
-
-  bool ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location) const; // TODO inline
-  void TryNewLocation(std::vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy) const;
-  bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint) const;
+  static bool ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location); // TODO inline
+  static void TryNewLocation(const Field& field, std::vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy);
+  static bool CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint);
 };
-
-//log4cxx::LoggerPtr FieldEvaluator::logger = 
 
 #endif

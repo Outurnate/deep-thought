@@ -3,6 +3,7 @@
 
 #include <boost/core/noncopyable.hpp>
 #include <boost/range/any_range.hpp>
+#include <log4cxx/logger.h>
 #include <memory>
 
 #include "libtetrinet/TetrinetForward.hpp"
@@ -19,8 +20,10 @@ class Field
 {
   friend std::ostream& operator<< (std::ostream& stream, const Field& field);
   friend Field operator "" _fd(const char* definition, size_t size);
+
+  friend FieldEvaluator; // for getlogger
 public:
-  Field();
+  explicit Field(log4cxx::LoggerPtr logger);
   Field(const Field& field);
 
   void ApplyTransform(const FieldTransform& transform);
@@ -42,9 +45,12 @@ public:
   void Reset();
 private:
   typedef std::array<uCoord, fieldWidth> HeightCacheType;
+  void copyTransform(const FieldTransform& transform);
   void updateHeightCache() const;
+  log4cxx::LoggerPtr& GetLogger() const;
 
   std::unique_ptr<FieldType> field;
+  mutable log4cxx::LoggerPtr logger;
   mutable bool heightCacheDirty;
   mutable HeightCacheType heightCache;
 };

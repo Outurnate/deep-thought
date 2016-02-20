@@ -17,11 +17,7 @@ using namespace std;
 using namespace boost;
 using namespace log4cxx;
 
-FieldEvaluator::FieldEvaluator(LoggerPtr logger) : logger(logger)
-{
-}
-
-FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field) const
+FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field)
 {//TODO revist
   FieldTransform result;
   vector<bool> tripped = vector<bool>(fieldWidth, false); // will be set to true each column that has a block
@@ -39,7 +35,7 @@ FieldTransform FieldEvaluator::GenerateSheetTransform(const Field& field) const
   return result;
 }
 
-void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result) const // TODO maybe return?
+void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransform& result) // TODO maybe return?
 {
   if (field(start) != FieldElement::NONE)
     throw runtime_error("cannot fill gap, start block exists");
@@ -50,7 +46,7 @@ void FieldEvaluator::FillGap(const Field& field, const uCoord start, FieldTransf
       FillGap(field, location, result);
 }
 
-FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape) const
+FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(const Field& field, PieceShape pieceShape)
 {
   PieceLocationTransformSet transforms;
   FieldTransform sheet(GenerateSheetTransform(field));
@@ -70,21 +66,21 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
 	    {
 	      if (tmp.CanApplyToField(field))
 	      {
-		LOG4CXX_TRACE(logger,
+		LOG4CXX_TRACE(field.GetLogger(),
 			      "Accepted x=" << xf - xp <<
 			      ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 <<
 			      ",fh=" << field.GetHeightAt(xf));
 		transforms.insert(tmp);
 	      }
 	      else
-		LOG4CXX_TRACE(logger,
+		LOG4CXX_TRACE(field.GetLogger(),
 			      "Rejected (off field) x=" << tmp.GetX() <<
 			      ",y=" << tmp.GetY() <<
 			      ",p=" << char(tmp.GetPiece().GetShape()) <<
 			      ",r=" << char('0' + char(tmp.GetPiece().GetRotation())));
 	    }
 	    else
-	      LOG4CXX_TRACE(logger,
+	      LOG4CXX_TRACE(field.GetLogger(),
 			    "Invalidated x=" << tmp.GetX() <<
 			    ",y=" << tmp.GetY() <<
 			    ",p=" << char(tmp.GetPiece().GetShape()) <<
@@ -92,7 +88,7 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
 	  }
 	  catch (out_of_range) // TODO remove case
 	  {
-	    LOG4CXX_TRACE(logger,
+	    LOG4CXX_TRACE(field.GetLogger(),
 			  "Rejected (invalid) x=" << xf - xp <<
 			  ",y=" << fieldHeight - field.GetHeightAt(xf) - piece.GetHeightAt(xp).value() - 1 <<
 			  ",fh=" << field.GetHeightAt(xf));
@@ -103,13 +99,13 @@ FieldEvaluator::PieceLocationTransformSet FieldEvaluator::DiscoverTransforms(con
   return transforms;
 }
 
-bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start) const
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start)
 {
   FieldTransform paint;
   return CanEscape(field, escapeRegion, start, paint);
 }
 
-void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy) const
+void FieldEvaluator::TryNewLocation(const Field& field, vector<PieceLocation>& locations, const PieceLocation& location, sCoord dx, sCoord dy)
 {
   try
   {
@@ -121,20 +117,20 @@ void FieldEvaluator::TryNewLocation(vector<PieceLocation>& locations, const Piec
   }
   catch (out_of_range)
   {
-    LOG4CXX_TRACE(logger, "Rejected (translation) x=" << (location.GetX() + dx) << ",y=" << (location.GetY() + dy)); //TODO
+    LOG4CXX_TRACE(field.GetLogger(), "Rejected (translation) x=" << (location.GetX() + dx) << ",y=" << (location.GetY() + dy)); //TODO
     return;
   }
 }
 
-bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint) const
+bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeRegion, const PieceLocation start, FieldTransform& paint)
 {
   paint += start;
   if (escapeRegion && start)
   {
     vector<PieceLocation> locations;
-    TryNewLocation(locations, start, 1,  0);
-    TryNewLocation(locations, start, -1, 0);
-    TryNewLocation(locations, start, 0,  1);
+    TryNewLocation(field, locations, start, 1,  0);
+    TryNewLocation(field, locations, start, -1, 0);
+    TryNewLocation(field, locations, start, 0,  1);
     if (start.GetPiece().GetShape() != PieceShape::O)
     {
       PieceLocation pCW = PieceLocation(start);
@@ -162,7 +158,7 @@ bool FieldEvaluator::CanEscape(const Field& field, const FieldTransform& escapeR
   return false;
 }
 
-bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location) const
+bool FieldEvaluator::ValidateTransform(const Field& field, const FieldTransform& sheetTransform, PieceLocation& location)
 {
   return true;//!((location && sheetTransform) && !CanEscape(field, sheetTransform, location));
 }
@@ -333,7 +329,7 @@ static SRSKickMap srsmap_jlstz = SRSKickMap
   },
 };
 
-bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction) const
+bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, RotationDirection direction)
 {
   if (location.GetPiece().GetShape() == PieceShape::O)
     return true;
@@ -362,7 +358,7 @@ bool FieldEvaluator::Rotate(PieceLocation& location, const Field& field, Rotatio
   return false;
 }
 
-unsigned FieldEvaluator::GapCount(const Field& field) const
+unsigned FieldEvaluator::GapCount(const Field& field)
 {
   unsigned gapCount = 0;
   for (uCoord x = 0; x < fieldWidth; ++x)
@@ -379,7 +375,7 @@ unsigned FieldEvaluator::GapCount(const Field& field) const
   return gapCount;
 }
 
-unsigned FieldEvaluator::BlockadeCount(const Field& field) const
+unsigned FieldEvaluator::BlockadeCount(const Field& field)
 {
   unsigned totalBlock = 0;
   for (uCoord x = 0; x < fieldWidth; ++x)
@@ -403,7 +399,7 @@ legitimateUseOfGoto:
   return totalBlock;
 }
 
-unsigned FieldEvaluator::RowCount(const Field& field) const
+unsigned FieldEvaluator::RowCount(const Field& field)
 {
   vector<unsigned> heights;
   for (unsigned x = 0; x < fieldWidth; ++x)
@@ -411,7 +407,7 @@ unsigned FieldEvaluator::RowCount(const Field& field) const
   return *std::max_element(heights.begin(), heights.end()); // find the tallest column
 }
 
-unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans) const
+unsigned FieldEvaluator::ClearCount(const Field& field, FieldTransform& clearTrans)
 {
   int clears = 0, crow = 0; // https://www.youtube.com/watch?v=jYmn3Gwn3oI
   for (uCoord i = 0; i < fieldSize; ++i)

@@ -57,9 +57,9 @@ public:
   const boost::signals2::connection AddOnPlayerWin  (const GenericSignal::slot_type& slot) const;
   const boost::signals2::connection AddOnPlayerLost (const GenericSignal::slot_type& slot) const;
 protected:
-  virtual PieceLocation NewPiece(const Piece& piece) = 0;
+  virtual FieldTransform NewPiece(const Piece& piece) = 0;
   const Field& GetField() const;
-  const FieldEvaluator& GetEvaluator() const;
+  boost::optional<GameSettings>& GetSettings();
 private:
   struct TetrinetPlayer
   {
@@ -68,7 +68,8 @@ private:
     unsigned level;
     bool playing;
     
-    TetrinetPlayer(std::string name, std::string team) : field(), name(name), team(team), level(0), playing(false) {}
+    TetrinetPlayer(log4cxx::LoggerPtr logger, std::string name, std::string team)
+      : field(logger), name(name), team(team), level(0), playing(false) {}
   };
   
   /** Processes a command issued from the server */
@@ -88,7 +89,6 @@ private:
   boost::optional<GameSettings> gameData;
   bool connected, inGame, paused;
   boost::optional<boost::thread> gameThread;
-  const FieldEvaluator eval;
   
   mutable GenericSignal onField;
   mutable GenericSignal onSpecial;

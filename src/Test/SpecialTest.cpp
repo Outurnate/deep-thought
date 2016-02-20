@@ -5,10 +5,11 @@
 #include "libtetrinet/Tetrinet.hpp"
 
 GameSettings settings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", true, false, 42);
+auto logger = log4cxx::Logger::getLogger("eval");
 
 BOOST_AUTO_TEST_CASE(SpecialSanity)
 {
-  Field field;
+  Field field(logger);
   auto derp = SpecialTransform(SpecialPiece::NUKE, settings, field, boost::none);
   BOOST_CHECK(!derp.Empty());
 }
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE(Nuke)
               "101010101010"
               "101010101010"_fd);
   field.ApplyTransform(SpecialTransform(SpecialPiece::NUKE, settings, field, boost::none));
-  BOOST_CHECK_EQUAL(field, Field());
+  BOOST_CHECK_EQUAL(field, Field(logger));
 }
 
 BOOST_AUTO_TEST_CASE(RandomClear)

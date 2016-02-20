@@ -5,7 +5,7 @@
  *      Author: joseph
  */
 
-#include <cctype> // lolwhy
+//#include <cctype> // lolwhy
 
 #include "libdeepthought/AIEngine.hpp"
 
@@ -24,15 +24,15 @@ AIEngine::AIEngine(const Genome& genome, log4cxx::LoggerPtr logger)
 double AIEngine::Rank(Field field, PieceLocation piece)
 {
   FieldTransform clearTrans;
-  auto pr = GetEvaluator().RowCount(field); //TODO opt
-  auto pb = GetEvaluator().BlockadeCount(field);
-  auto pg = GetEvaluator().GapCount(field);
+  auto pr = FieldEvaluator::RowCount(field); //TODO opt
+  auto pb = FieldEvaluator::BlockadeCount(field);
+  auto pg = FieldEvaluator::GapCount(field);
   field.ApplyTransform(piece);
-  auto c = GetEvaluator().ClearCount(field, clearTrans);
+  auto c = FieldEvaluator::ClearCount(field, clearTrans);
   field.ApplyTransform(clearTrans);
-  auto r = GetEvaluator().RowCount(field);
-  auto b = GetEvaluator().BlockadeCount(field);
-  auto g = GetEvaluator().GapCount(field);
+  auto r = FieldEvaluator::RowCount(field);
+  auto b = FieldEvaluator::BlockadeCount(field);
+  auto g = FieldEvaluator::GapCount(field);
 
   LOG4CXX_TRACE(logger, "Ranked piece: " <<
 		"x=" << piece.GetX() <<
@@ -53,10 +53,15 @@ double AIEngine::Rank(Field field, PieceLocation piece)
     genome.G * (pg - g);
 }
 
-PieceLocation AIEngine::NewPiece(const Piece& piece)
+FieldTransform AIEngine::NewPiece(const Piece& piece)
 {
-  auto transforms = GetEvaluator().DiscoverTransforms(GetField(), piece.GetShape());
-  if (transforms.size() == 0) throw 42;
+  auto transforms = FieldEvaluator::DiscoverTransforms(GetField(), piece.GetShape());
+  if (transforms.size() == 0)
+  {
+    FieldTransform transform;
+    transform.SetGameOver(GetSettings().get());
+    return transform;
+  }
   vector<pair<PieceLocation, double> > ranked;
   for (const auto& transform : transforms)
     ranked.push_back(pair<PieceLocation, double>(transform, Rank(GetField(), transform)));

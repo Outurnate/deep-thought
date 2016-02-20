@@ -9,7 +9,7 @@ GameSettings settings(0, 0, 0, 0, 0, 0, 0, "1234567", "1234567", true, false, 42
 BOOST_AUTO_TEST_CASE(SpecialSanity)
 {
   Field field;
-  auto derp = CreateSpecialTransform(SpecialPiece::NUKE, settings, field, boost::none);
+  auto derp = SpecialTransform(SpecialPiece::NUKE, settings, field, boost::none);
   BOOST_CHECK(!derp.Empty());
 }
 
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(ClearLine)
               "000000000000"
               "101010101010"
               "101010101010"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::CLEARLINE, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::CLEARLINE, settings, field, boost::none));
   BOOST_CHECK_EQUAL(field,
                     "000000000000"
                     "000000000000"
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(Nuke)
               "000000000000"
               "101010101010"
               "101010101010"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::NUKE, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::NUKE, settings, field, boost::none));
   BOOST_CHECK_EQUAL(field, Field());
 }
 
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(RandomClear)
               "111111111111"
               "111111111111"
               "111111111111"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::RANDOMCLEAR, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::RANDOMCLEAR, settings, field, boost::none));
   BOOST_CHECK_PREDICATE(std::not_equal_to<size_t>(), (fieldSize)(std::count_if(field.begin(), field.end(), [](const FieldElement& e)
                                                                                {
                                                                                  return e != FieldElement::NONE;
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(Switch)
                "000001000000"
                "000001000000"
                "000001000000"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::SWITCH, settings, field, field2));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::SWITCH, settings, field, field2));
   BOOST_CHECK_EQUAL(field, field2);
 }
 
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(ClearSpecials)
               "1111111111o1"
               "111111111111"
               "111111111111"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::CLEARSPECIALS, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::CLEARSPECIALS, settings, field, boost::none));
   BOOST_CHECK_EQUAL(fieldSize, std::count_if(field.begin(), field.end(), [](const FieldElement& e)
                                              {
                                                return !isSpecial(e);
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE(Gravity)
                "000000000000"
                "000000000000"
                "111111111111"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::GRAVITY, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::GRAVITY, settings, field, boost::none));
   BOOST_CHECK_EQUAL(field, field2);
 }
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(Quake)
               "000001000000"
               "000001000000"
               "000001000000"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::QUAKE, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::QUAKE, settings, field, boost::none));
   BOOST_CHECK(!std::all_of(field.column(5).begin(), field.column(5).end(), [](const auto& e) { return e != FieldElement::NONE; }));
 }
 
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE(Bomb)
               "000000000000"
               "000000000000"
               "000000000000"_fd);
-  field.ApplyTransform(CreateSpecialTransform(SpecialPiece::BOMB, settings, field, boost::none));
+  field.ApplyTransform(SpecialTransform(SpecialPiece::BOMB, settings, field, boost::none));
   BOOST_CHECK_EQUAL(fieldSize, std::count_if(field.begin(), field.end(), [](const FieldElement& e)
                                              {
                                                return !isSpecial(e);

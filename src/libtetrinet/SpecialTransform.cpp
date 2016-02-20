@@ -8,19 +8,17 @@
 using namespace std;
 using namespace boost;
 
-unsigned getRand(unsigned max)
+unsigned SpecialTransform::getRand(unsigned max)
 {
   return rand() % max; // TODO make a proper one
 }
 
-FieldTransform CreateSpecialTransform(SpecialPiece special,
-                                      GameSettings& settings,
-                                      optional<const Field&> field,
-                                      optional<const Field&> target,
-                                      unsigned addCount)
+SpecialTransform::SpecialTransform(SpecialPiece special,
+                                   GameSettings& settings,
+                                   optional<const Field&> field,
+                                   optional<const Field&> target,
+                                   unsigned addCount)
 {
-  FieldTransform transform;
-  
   static const std::array<TransformPair, 8> dp
   {
     make_pair(-1, -1),
@@ -43,7 +41,7 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
       knockout[i] = getRand(fieldWidth);
     for (uCoord x = 0; x < fieldWidth; ++x)
       for (uCoord y = fieldHeight - 1; y < fieldHeight; --y)
-        transform(x, y) = ((y - fieldHeight - 1) < addCount) ?
+        (*this)(x, y) = ((y - fieldHeight - 1) < addCount) ?
           (x == knockout[(y - fieldHeight - 1)] ?
            FieldElement::NONE : settings.GetRandomBlock()) :
           field.get()(x, y + addCount);
@@ -54,28 +52,28 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
   {
     for (uCoord x = 0; x < fieldWidth; ++x)
       for (uCoord y = fieldHeight - 1; y < fieldHeight; --y)
-        transform(x, y) = y == 0 ? FieldElement::NONE : field.get()(x, y - 1);
+        (*this)(x, y) = y == 0 ? FieldElement::NONE : field.get()(x, y - 1);
   }
   break;
 
   case SpecialPiece::NUKE:
   {
     for (uCoord i = 0; i < fieldSize; ++i)
-      transform(i) = FieldElement::NONE;
+      (*this)(i) = FieldElement::NONE;
   }
   break;
 
   case SpecialPiece::RANDOMCLEAR:
   {
     for (unsigned i = 0; i < 10; ++i)
-      transform(getRand(fieldSize)) = FieldElement::NONE;
+      (*this)(getRand(fieldSize)) = FieldElement::NONE;
   }
   break;
 
   case SpecialPiece::SWITCH:
   {
     for (uCoord i = 0; i < fieldSize; ++i)
-      transform(i) = target.get()(i);
+      (*this)(i) = target.get()(i);
   }
   break;
 
@@ -83,7 +81,7 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
   {
     for (uCoord i = 0; i < fieldSize; ++i)
       if (isSpecial(field.get()(i)))
-        transform(i) = FieldElement::RED;
+        (*this)(i) = FieldElement::RED;
   }
   break;
 
@@ -99,7 +97,7 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
         if (field.get()(x, y) != FieldElement::NONE)
           tempCol[n++] = field.get()(x, y);
       for (uCoord y = 0; y < fieldHeight; ++y)
-        transform(x, y) = tempCol[fieldHeight - y - 1];
+        (*this)(x, y) = tempCol[fieldHeight - y - 1];
     }
   }
   break;
@@ -117,14 +115,14 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
       if (s > 0) // right
       {
         for (uCoord x = 1; x < fieldWidth; ++x)
-          transform(x, y) = field.get()(x - 1, y);
-        transform(0, y) = field.get()(fieldWidth - 1, y);
+          (*this)(x, y) = field.get()(x - 1, y);
+        (*this)(0, y) = field.get()(fieldWidth - 1, y);
       }
       else if (s < 0) // left
       {
         for (uCoord x = fieldWidth - 1 - 1; x < fieldWidth; --x)
-          transform(x, y) = field.get()(x + 1, y);
-        transform(fieldWidth - 1, y) = field.get()(0, y);
+          (*this)(x, y) = field.get()(x + 1, y);
+        (*this)(fieldWidth - 1, y) = field.get()(0, y);
       }
     }
   }
@@ -137,7 +135,7 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
       for (uCoord x = 0; x < fieldWidth; ++x)
         if (field.get()(x, y) == FieldElement::BOMB)
         {
-          transform(x, y) = FieldElement::NONE;
+          (*this)(x, y) = FieldElement::NONE;
           for (uCoord i = 0; i < dp.size(); ++i)
           {
             if (!(boost::numeric_cast<uCoord>(x + dp[i].first)  < fieldWidth) &&
@@ -147,16 +145,14 @@ FieldTransform CreateSpecialTransform(SpecialPiece special,
             if (tmp == FieldElement::BOMB)
               tmp = FieldElement::NONE;
             else
-              transform(x + dp[i].first, y + dp[i].second) = FieldElement::NONE;
+              (*this)(x + dp[i].first, y + dp[i].second) = FieldElement::NONE;
             scatters.push_back(tmp);
           }
         }
     for (unsigned i = 0; i < scatters.size(); ++i)
-      transform(getRand(fieldWidth), getRand(fieldHeight - 6) + 6) = scatters[i];
+      (*this)(getRand(fieldWidth), getRand(fieldHeight - 6) + 6) = scatters[i];
   }
   break;
   
   }
-
-  return transform;
 }
